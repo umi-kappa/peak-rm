@@ -1,1 +1,25 @@
-/.idea/
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.vite/
+
+# Test / coverage
+coverage/
+
+# Storybook
+storybook-static/
+
+# OS
+.DS_Store
+
+# Editor
+.idea/
+
+# Logs
+*.log
+
+# Env files
+.env.local
+.env.*.local
