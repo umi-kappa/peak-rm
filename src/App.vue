@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { APP_VERSION } from '@/env'
-
-const appName = 'PeakRM'
+const version = import.meta.env.VITE_APP_VERSION
 </script>
 
 <template>
   <main class="root">
-    <h1 class="title">{{ appName }}</h1>
-    <p class="sub">Scaffold ready. v{{ APP_VERSION }}</p>
+    <h1 class="title">PeakRM</h1>
+    <p class="version">v{{ version }}</p>
   </main>
 </template>
 
@@ -25,7 +23,7 @@ const appName = 'PeakRM'
   font-weight: 700;
   margin: 0;
 }
-.sub {
+.version {
   font-size: 14px;
   margin: 0;
 }
