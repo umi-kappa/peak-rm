@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { APP_VERSION } from '@/env'
+
 const appName = 'PeakRM'
 </script>
 
 <template>
   <main class="root">
     <h1 class="title">{{ appName }}</h1>
-    <p class="sub">Scaffold ready.</p>
+    <p class="sub">Scaffold ready. v{{ APP_VERSION }}</p>
   </main>
 </template>
 
