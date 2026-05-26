@@ -28,3 +28,7 @@ npm run format:check  # Prettier の差分確認のみ
 npm test           # 全テストを 1 回実行
 npm run test:watch # ファイル変更を監視して再実行
 ```
+
+## 規約
+
+ファイル命名・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。
