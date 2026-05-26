@@ -36,7 +36,6 @@ export default meta
 type Story = StoryObj<typeof SampleButton>
 
 export const IncrementsOnClick: Story = {
-  name: 'クリックでカウントが増える',
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button')

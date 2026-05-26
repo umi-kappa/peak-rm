@@ -46,8 +46,7 @@ describe('oneRm', () => {
 
 - Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
-- **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない
-- UI 表示名は `name: 'クリックでカウントが増える'` で日本語化する（Vitest のテスト名日本語ルールと整合）
+- **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
 - Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
 - **コンポーネント説明や argTypes を Docs タブに表示するには `meta.tags: ['autodocs']` を必ず付ける**。Storybook v10 はデフォルトで `docs.autodocs: 'tag'` モードで、付けないと Docs ページが生成されない
 
@@ -62,7 +61,6 @@ export default meta
 type Story = StoryObj<typeof SampleButton>
 
 export const IncrementsOnClick: Story = {
-  name: 'クリックでカウントが増える',
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button')
