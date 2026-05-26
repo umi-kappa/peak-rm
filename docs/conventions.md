@@ -7,7 +7,14 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 - **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠
 - **TypeScript ロジック・composable・store**: camelCase（`oneRm.ts`、`useSession.ts`、`menuStore.ts`）
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
+- **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`SampleButton.vue` → `SampleButton.stories.ts`）
 - **設定ファイル（プロジェクトルート）**: ツール慣習に従う（`vite.config.ts`、`eslint.config.js`、`.prettierrc.json`）
+
+## import
+
+- `src/` 配下のモジュールを参照するときは alias `@/` の絶対パスを使う（`import x from '@/lib/oneRm'`）
+- 同階層であっても相対パス（`./`、`../`）は使わない。`vite.config.ts` の `resolve.alias` と `tsconfig.json` の `paths` に `@/* → src/*` を定義済み
+- サードパーティパッケージは通常どおりパッケージ名で import する
 
 ## テスト
 
@@ -33,11 +40,47 @@ describe('oneRm', () => {
 })
 ```
 
+### Storybook（コンポーネントの play 関数）
+
+コンポーネントのインタラクションテストは Story の `play` 関数に書き、Vitest と役割を分担する。同じ振る舞いを両方で書かない。
+
+- Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
+- `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
+- **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない
+- UI 表示名は `name: 'クリックでカウントが増える'` で日本語化する（Vitest のテスト名日本語ルールと整合）
+- Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
+- **コンポーネント説明や argTypes を Docs タブに表示するには `meta.tags: ['autodocs']` を必ず付ける**。Storybook v10 はデフォルトで `docs.autodocs: 'tag'` モードで、付けないと Docs ページが生成されない
+
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { expect, userEvent, within } from 'storybook/test'
+import SampleButton from '@/components/SampleButton.vue'
+
+const meta: Meta<typeof SampleButton> = { component: SampleButton }
+export default meta
+
+type Story = StoryObj<typeof SampleButton>
+
+export const IncrementsOnClick: Story = {
+  name: 'クリックでカウントが増える',
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button')
+    await expect(button).toHaveTextContent('0')
+    await userEvent.click(button)
+    await expect(button).toHaveTextContent('1')
+  },
+}
+```
+
 ### コマンド
 
 ```bash
-npm test           # 全テストを 1 回実行
-npm run test:watch # ファイル変更を監視して再実行
+npm test                # 全テストを 1 回実行
+npm run test:watch      # ファイル変更を監視して再実行
+npm run storybook       # http://localhost:6006 で起動
+npm run build-storybook # storybook-static/ に静的ビルド生成
+npm run test-storybook  # storybook 起動中に play 関数を実行（初回 npx playwright install chromium）
 ```
 
 ## スタイル（CSS）
