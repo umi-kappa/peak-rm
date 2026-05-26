@@ -10,6 +10,7 @@ export default defineConfigWithVueTs(
   },
   {
     name: 'app/files-to-ignore',
+    // ビルド成果物 storybook-static/ は除外しつつ、.storybook/ 設定ファイル本体は lint 対象に含める
     ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'storybook-static/**', '!.storybook'],
   },
   pluginVue.configs['flat/essential'],
