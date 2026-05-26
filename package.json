@@ -10,23 +10,31 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test-storybook": "test-storybook",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@storybook/addon-docs": "^10.4.1",
+    "@storybook/test-runner": "^0.24.4",
+    "@storybook/vue3-vite": "^10.4.1",
     "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^10.4.0",
+    "eslint-plugin-storybook": "^10.4.1",
     "eslint-plugin-vue": "^10.9.1",
     "prettier": "^3.8.3",
+    "storybook": "^10.4.1",
     "typescript": "~5.7.2",
     "vite": "^6.0.5",
     "vitest": "^4.1.7",

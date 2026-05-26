@@ -29,6 +29,20 @@ npm test           # 全テストを 1 回実行
 npm run test:watch # ファイル変更を監視して再実行
 ```
 
+## コンポーネント開発（Storybook）
+
+初回のみ Playwright のブラウザバイナリを取得する。
+
+```bash
+npx playwright install chromium
+```
+
+```bash
+npm run storybook         # http://localhost:6006 で起動
+npm run build-storybook   # storybook-static/ に静的ビルド生成
+npm run test-storybook    # storybook 起動中に play 関数を実行
+```
+
 ## 規約
 
 ファイル命名・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。
