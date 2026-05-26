@@ -3,9 +3,9 @@ import vue from '@vitejs/plugin-vue'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
-const pkg = JSON.parse(
-  readFileSync(new URL('./package.json', import.meta.url), 'utf-8'),
-) as { version: string }
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as {
+  version: string
+}
 
 export default defineConfig({
   plugins: [vue()],

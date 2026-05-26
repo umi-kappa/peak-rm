@@ -11,6 +11,12 @@ coverage/
 # Storybook
 storybook-static/
 
+# Lint cache
+.eslintcache
+
+# Agent artifacts (ce-review run output 等)
+.context/
+
 # OS
 .DS_Store
 
