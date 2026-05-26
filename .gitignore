@@ -10,6 +10,7 @@ coverage/
 
 # Storybook
 storybook-static/
+*storybook.log
 
 # Lint cache
 .eslintcache
