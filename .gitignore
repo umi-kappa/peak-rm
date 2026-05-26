@@ -11,6 +11,9 @@ coverage/
 # Storybook
 storybook-static/
 
+# Lint cache
+.eslintcache
+
 # OS
 .DS_Store
 

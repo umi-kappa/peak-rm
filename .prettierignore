@@ -1,0 +1,16 @@
+# Build outputs
+dist/
+storybook-static/
+
+# Dependencies
+node_modules/
+
+# Test / coverage
+coverage/
+
+# Generated
+package-lock.json
+*.min.*
+
+# Docs (spec / design references are hand-maintained)
+docs/
