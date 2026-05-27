@@ -53,6 +53,12 @@ npm run test-storybook    # storybook 起動中に play 関数を実行
 npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
 ```
 
+## Git hooks（commit 時の自動チェック）
+
+`husky` + `lint-staged` により、commit 時に pre-commit フックで lint-staged → typecheck → test が自動で走り、いずれか失敗すると commit は中断される。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
+
+対象 glob・実行順・設計方針など詳細は [docs/conventions.md](docs/conventions.md) の「Git hooks」節を参照する。
+
 ## CI
 
 GitHub Actions（`.github/workflows/`）で次を実行する。
