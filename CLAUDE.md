@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **ストレージ**: IndexedDB（Dexie.js）
 - **PWA**: vite-plugin-pwa（`registerType: 'autoUpdate'`、確認ダイアログ無し）
 - **コンポーネント開発**: Storybook（Vue 3 + Vite）
-- **テスト**: Vitest（ロジック） / Storybook play 関数 + test runner（コンポーネントのインタラクション）
+- **テスト**: Vitest（ロジックは `node`、Storybook の play 関数は Portable Stories + `jsdom`。すべて Vitest で実行）
 - **Lint / Format**: ESLint + Prettier
 - **ホスティング**: 本体は Cloudflare Pages、Storybook は Chromatic（`main` push で自動デプロイ）
 

@@ -9,7 +9,7 @@ const meta: Meta<typeof SampleButton> = {
     docs: {
       description: {
         component:
-          'クリックするとカウントが増えるサンプルボタン。Storybook + test-runner の動作確認用に最小実装。`label` が空でなければカウントの左に補助ラベルを表示し、クリック時には `step` の値だけ加算する。',
+          'クリックするとカウントが増えるサンプルボタン。Storybook と play 関数（Portable Stories + jsdom）の動作確認用に最小実装。`label` が空でなければカウントの左に補助ラベルを表示し、クリック時には `step` の値だけ加算する。',
       },
     },
   },
