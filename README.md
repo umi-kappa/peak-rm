@@ -24,12 +24,19 @@ npm run format:check  # Prettier の差分確認のみ
 
 ## テスト
 
+初回のみ、Story テスト用に Playwright の Chromium を取得する。
+
 ```bash
-npm test           # 全テストを 1 回実行（ロジック spec + Story の play 関数）
-npm run test:watch # ファイル変更を監視して再実行
+npx playwright install chromium
 ```
 
-コンポーネントのインタラクションテスト（Story の `play` 関数）は Portable Stories + jsdom で `npm test`（Vitest）に含まれて走る。実ブラウザは使わない。
+```bash
+npm test              # 全テストを 1 回実行（unit + Story の play 関数）
+npm run test:storybook # Story の play 関数のみ実行
+npm run test:watch    # ファイル変更を監視して再実行
+```
+
+Vitest を projects 構成で動かす。`unit`（ロジック spec、`happy-dom`）と `storybook`（Story の `play` 関数、`@storybook/addon-vitest` で **headless Chromium** 実行）。`npm test` は両方を走らせるため、pre-commit でも play 関数が headless ブラウザで検証される。
 
 ## コンポーネント開発（Storybook）
 

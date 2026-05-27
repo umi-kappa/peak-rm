@@ -445,14 +445,14 @@ function estimate1RM(exercise: Exercise, weight: number, reps: number): number {
 | ストレージ | IndexedDB（Dexie.js） |
 | PWA | vite-plugin-pwa（インストール可能・オフライン対応） |
 | コンポーネント開発 | Storybook（Vue 3 + Vite） |
-| テスト | Vitest（ロジックは `node`、Story の play 関数は Portable Stories + `jsdom`。すべて Vitest で実行） |
+| テスト | Vitest projects（ロジックは `happy-dom`、Story の play 関数は `@storybook/addon-vitest` + headless Chromium。すべて Vitest で実行） |
 | Lint / Format | ESLint + Prettier |
 | Git hooks | husky + lint-staged（pre-commit で lint-staged → typecheck → test） |
 
 ### テスト方針
 
-- **ロジック層**（1RM 計算、`menu_presets` / `sessions` の保存・更新、その他 composable のビジネスロジック）は **Vitest**（`node` 環境）で単体テスト
-- **コンポーネント層**（メニュー設定フォーム、トレーニング画面のセット表示、タイマー UI など）は **Storybook** に Story を書き、`play` 関数でクリック・入力などのインタラクションテストを記述。play 関数は **Portable Stories（`composeStories`）+ jsdom** で Vitest から実行する（ブラウザ起動なしで pre-commit / CI に組み込むため）
+- **ロジック層**（1RM 計算、`menu_presets` / `sessions` の保存・更新、その他 composable のビジネスロジック）は **Vitest**（`unit` project、`happy-dom`）で単体テスト
+- **コンポーネント層**（メニュー設定フォーム、トレーニング画面のセット表示、タイマー UI など）は **Storybook** に Story を書き、`play` 関数でクリック・入力などのインタラクションテストを記述。play 関数は **`@storybook/addon-vitest` + Vitest browser mode（headless Chromium / Playwright）** で実行する（`storybook` project）
 - 実ブラウザ・実描画に依存する視覚検証は **Chromatic**（visual regression）が担う
 - ロジックと Story は役割で分担し、同じ振る舞いを両方では書かない
 

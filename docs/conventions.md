@@ -18,7 +18,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 
 ## テスト
 
-Vitest でロジック層の単体テスト（`node` 環境）と、Storybook の play 関数によるコンポーネントのインタラクションテスト（Portable Stories + `jsdom` 環境）の両方を実行する。play 関数は jsdom 上で走らせるため、ブラウザ起動なしで pre-commit / CI に組み込める。ロジックとコンポーネントで役割を分担し、同じ振る舞いを両方で書かない。
+Vitest を projects 構成で動かし、ロジック層の単体テスト（`unit` project、`happy-dom`）と、Storybook の play 関数によるコンポーネントのインタラクションテスト（`storybook` project、`@storybook/addon-vitest` + **headless Chromium**）の両方を実行する。`npm test` で両 project が走る。ロジックとコンポーネントで役割を分担し、同じ振る舞いを両方で書かない。
 
 ### 配置
 
@@ -44,9 +44,9 @@ describe('oneRm', () => {
 
 コンポーネントのインタラクションテストは Story の `play` 関数に書き、Vitest と役割を分担する。同じ振る舞いを両方で書かない。
 
-`play` 関数は汎用ランナー `src/stories.spec.ts` が Portable Stories（`composeStories` / `setProjectAnnotations`）で全 Story を集めて `run()` し、jsdom 上で実行する。**Story を書けば自動でテスト対象になる**ため、play 用の spec を個別に量産しない。実ブラウザ・実描画に依存する視覚検証は Chromatic（visual regression）が担う。
+`play` 関数は `@storybook/addon-vitest` の `storybookTest` プラグインが `.storybook/main.ts` の Story を自動でテスト化し、headless Chromium（Playwright）で実行する（`vitest.config.ts` の `storybook` project）。**Story を書けば自動でテスト対象になる**ため、play 用の spec を個別に書かない。実描画に依存する視覚的な差分検証は Chromatic（visual regression）が担う。
 
-> ランナーが生成するテスト名は Story の `export` 識別子（英語 PascalCase）由来になる。「テスト名は日本語」の原則に対する例外として許容する（Story 識別子は英語固定のため。`describe` にはファイルパスが入る）。
+> Story から生成されるテスト名は Story の `export` 識別子（英語 PascalCase）由来になる。「テスト名は日本語」の原則に対する例外として許容する（Story 識別子は英語固定のため）。
 
 - Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
@@ -78,8 +78,11 @@ export const IncrementsOnClick: Story = {
 
 ### コマンド
 
+初回のみ Story テスト用に Playwright の Chromium を取得する（`npx playwright install chromium`）。
+
 ```bash
-npm test                # 全テストを 1 回実行（ロジック spec + Story の play 関数）
+npm test                # 全テストを 1 回実行（unit + Story の play 関数）
+npm run test:storybook  # Story の play 関数のみ（storybook project）
 npm run test:watch      # ファイル変更を監視して再実行
 npm run storybook       # http://localhost:6006 で起動
 npm run build-storybook # storybook-static/ に静的ビルド生成
@@ -92,7 +95,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - 実行順は `npx lint-staged` → `npm run typecheck` → `npm run test`。いずれか失敗で commit を中断する
 - `lint-staged`（設定は `package.json`）は **変更ファイルのみ** 対象。`*.{ts,vue}` は ESLint `--fix` → Prettier `--write` を順に実行し、`*.{js,cjs,json,md,css,html}` は Prettier `--write`。glob を重複させると同一ファイルへ並行書き込みが起きるため、`ts` / `vue` は1エントリに配列でまとめて直列化する
 - `typecheck` / `test` は **プロジェクト全体** を対象に実行する
-- `npm run test` は `vitest run`（run モード）。watch にしないこと（フックが終了しなくなる）。Story の play 関数も Portable Stories + jsdom で Vitest に含まれるため、フックで一緒に検証される
+- `npm run test` は `vitest run`（run モード）。watch にしないこと（フックが終了しなくなる）。Story の play 関数も `storybook` project（headless Chromium）として含まれるため、フックで一緒に検証される（初回 `npx playwright install chromium` が必要）
 - フックは pre-commit に集約する。pre-push は設けない
 
 ## スタイル（CSS）

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { readFileSync } from 'node:fs'
@@ -9,6 +9,8 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 }
 
 // Vitest / Storybook はこの config を共有するため、SW・manifest 生成を巻き込まないよう PWA を無効化する。
+// Vitest は実行時に process.env.VITEST を自動設定し、Storybook は STORYBOOK を立てるため、これで判別できる。
+// （この判定は load-bearing。外すとテスト・Storybook 実行時に PWA プラグインが混入する）
 const enablePwa = !process.env.VITEST && !process.env.STORYBOOK
 
 export default defineConfig({
@@ -55,9 +57,5 @@ export default defineConfig({
   },
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
-  },
-  test: {
-    environment: 'node',
-    include: ['src/**/*.spec.ts'],
   },
 })
