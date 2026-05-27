@@ -46,6 +46,8 @@ describe('oneRm', () => {
 
 `play` 関数は汎用ランナー `src/stories.spec.ts` が Portable Stories（`composeStories` / `setProjectAnnotations`）で全 Story を集めて `run()` し、jsdom 上で実行する。**Story を書けば自動でテスト対象になる**ため、play 用の spec を個別に量産しない。実ブラウザ・実描画に依存する視覚検証は Chromatic（visual regression）が担う。
 
+> ランナーが生成するテスト名は Story の `export` 識別子（英語 PascalCase）由来になる。「テスト名は日本語」の原則に対する例外として許容する（Story 識別子は英語固定のため。`describe` にはファイルパスが入る）。
+
 - Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
 - **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
