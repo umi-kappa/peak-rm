@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --only-changed"
   },
   "dependencies": {
     "vue": "^3.5.13"
@@ -31,15 +32,19 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.7.0",
+    "chromatic": "^17.0.1",
+    "concurrently": "^9.2.1",
     "eslint": "^10.4.0",
     "eslint-plugin-storybook": "^10.4.1",
     "eslint-plugin-vue": "^10.9.1",
+    "http-server": "^14.1.1",
     "prettier": "^3.8.3",
     "storybook": "^10.4.1",
     "typescript": "~5.7.2",
     "vite": "^6.0.5",
     "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.7",
-    "vue-tsc": "^2.2.0"
+    "vue-tsc": "^2.2.0",
+    "wait-on": "^9.0.10"
   }
 }

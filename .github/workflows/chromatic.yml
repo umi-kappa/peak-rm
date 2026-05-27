@@ -1,0 +1,27 @@
+name: Chromatic
+
+# main への push でのみ Chromatic にデプロイ（PR/feature ブランチでは起動しない）。
+# 視覚差分があれば CI を落とし、Chromatic UI で手動承認するとベースラインが更新される。
+on:
+  push:
+    branches: [main]
+
+jobs:
+  chromatic:
+    name: chromatic deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # TurboSnap は git 履歴で変更 story を判定するため全履歴が必要
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: chromaui/action@latest
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          # 変更があった story のみ snapshot（無料枠節約）
+          onlyChanged: true

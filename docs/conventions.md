@@ -49,6 +49,7 @@ describe('oneRm', () => {
 - **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
 - Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
 - **コンポーネント説明や argTypes を Docs タブに表示するには `meta.tags: ['autodocs']` を必ず付ける**。Storybook v10 はデフォルトで `docs.autodocs: 'tag'` モードで、付けないと Docs ページが生成されない
+- **Chromatic の snapshot を消費しない Playground 系 story には `parameters: { chromatic: { disableSnapshot: true } }` を付ける**。引数を動かして見るだけの探索用 story は視覚差分の対象にせず、実機 UI として価値ある代表状態のみ snapshot を取る（無料枠 5,000/月 を守るため）。viewport（390px）・ブラウザ（Chrome のみ）は `.storybook/preview.ts` でグローバル設定済みなので個別指定は不要
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
