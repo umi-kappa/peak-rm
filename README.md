@@ -25,22 +25,17 @@ npm run format:check  # Prettier の差分確認のみ
 ## テスト
 
 ```bash
-npm test           # 全テストを 1 回実行
+npm test           # 全テストを 1 回実行（ロジック spec + Story の play 関数）
 npm run test:watch # ファイル変更を監視して再実行
 ```
 
+コンポーネントのインタラクションテスト（Story の `play` 関数）は Portable Stories + jsdom で `npm test`（Vitest）に含まれて走る。実ブラウザは使わない。
+
 ## コンポーネント開発（Storybook）
-
-初回のみ Playwright のブラウザバイナリを取得する。
-
-```bash
-npx playwright install chromium
-```
 
 ```bash
 npm run storybook         # http://localhost:6006 で起動
 npm run build-storybook   # storybook-static/ に静的ビルド生成
-npm run test-storybook    # storybook 起動中に play 関数を実行
 ```
 
 ## PWA
@@ -63,7 +58,7 @@ npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
 
 GitHub Actions（`.github/workflows/`）で次を実行する。
 
-- **CI（`ci.yml`）**: PR で、lint / `format:check` / `typecheck` / Vitest と、`build-storybook` → `test-storybook`（play 関数）を走らせる
+- **CI（`ci.yml`）**: PR で、lint / `format:check` / `typecheck` / Vitest（ロジック spec ＋ Story の play 関数）と、`build-storybook`（Story のビルド検証）を走らせる
 - **Chromatic（`chromatic.yml`）**: `main` push のみで Chromatic にデプロイする
 
 ローカルから Chromatic を実行する場合は `npm run chromatic`（要 `CHROMATIC_PROJECT_TOKEN`）。
