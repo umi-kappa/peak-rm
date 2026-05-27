@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- PeakRM プレースホルダアイコン。デザイントークン bg(#0a0a0b) + accent(#22e8ff) 準拠。
+       本番アイコンの最終デザインは別 Issue。再生成は @vite-pwa/assets-generator で行う。 -->
+  <rect width="512" height="512" fill="#0a0a0b" />
+  <text
+    x="256"
+    y="256"
+    fill="#22e8ff"
+    font-family="ui-monospace, 'Roboto Mono', Menlo, monospace"
+    font-size="92"
+    font-weight="700"
+    text-anchor="middle"
+    dominant-baseline="central"
+  >PeakRM</text>
+</svg>
