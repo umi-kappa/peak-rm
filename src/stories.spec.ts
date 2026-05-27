@@ -8,13 +8,17 @@ import previewAnnotations from '../.storybook/preview'
 // ブラウザ起動なしで Vitest に取り込む。
 setProjectAnnotations(previewAnnotations)
 
-// composeStories の戻り値は glob 経由だと値型が unknown に落ちるため、使用する run() のみを構造的に型付けする。
+// glob を CSF モジュール型で型付けし、composeStories へ cast 無しで渡す。
+type StoryModule = Parameters<typeof composeStories>[0]
+// composeStories の戻り値は glob 経由だと値型が unknown に落ちるため、使う run() のみ構造的に型付けする。
 type RunnableStory = { run: () => Promise<void> }
 
-const storyModules = import.meta.glob('./**/*.stories.ts', { eager: true })
+// glob 対象は .storybook/main.ts の stories（'../src/**/*.stories.ts'）と揃える。
+// 片方だけ変えると Storybook と Vitest で対象がドリフトするため両方を更新すること。
+const storyModules = import.meta.glob<StoryModule>('./**/*.stories.ts', { eager: true })
 
 for (const [path, storyModule] of Object.entries(storyModules)) {
-  const composed = composeStories(storyModule as Parameters<typeof composeStories>[0])
+  const composed = composeStories(storyModule)
 
   describe(path, () => {
     for (const [name, story] of Object.entries(composed)) {
