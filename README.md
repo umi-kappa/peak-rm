@@ -55,13 +55,9 @@ npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
 
 ## Git hooks（commit 時の自動チェック）
 
-`husky` + `lint-staged` により、commit 時に pre-commit フックが自動で走る。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
+`husky` + `lint-staged` により、commit 時に pre-commit フックで lint-staged → typecheck → test が自動で走り、いずれか失敗すると commit は中断される。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
 
-- **lint-staged（変更ファイルのみ）**: `*.{ts,vue}` に ESLint `--fix`、対象拡張子に Prettier `--write`
-- **typecheck（全体）**: `vue-tsc --noEmit`
-- **test（全体）**: Vitest を run モードで実行
-
-いずれかが失敗すると commit は中断される。重い Storybook の `test-storybook` はフックに含めず CI に任せる。
+対象 glob・実行順・設計方針など詳細は [docs/conventions.md](docs/conventions.md) の「Git hooks」節を参照する。
 
 ## CI
 

@@ -21,8 +21,11 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,vue}": "eslint --fix",
-    "*.{ts,vue,js,cjs,json,md,css,html}": "prettier --write"
+    "*.{ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,cjs,json,md,css,html}": "prettier --write"
   },
   "dependencies": {
     "vue": "^3.5.13"
