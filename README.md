@@ -53,6 +53,19 @@ npm run test-storybook    # storybook 起動中に play 関数を実行
 npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
 ```
 
+## CI
+
+GitHub Actions（`.github/workflows/`）で次を実行する。
+
+- **CI（`ci.yml`）**: PR で、lint / `format:check` / `typecheck` / Vitest と、`build-storybook` → `test-storybook`（play 関数）を走らせる
+- **Chromatic（`chromatic.yml`）**: `main` push のみで Chromatic にデプロイする
+
+ローカルから Chromatic を実行する場合は `npm run chromatic`（要 `CHROMATIC_PROJECT_TOKEN`）。
+
+## デプロイ
+
+`main` への push で、本体は [Cloudflare Pages](https://pages.cloudflare.com/)、Storybook は [Chromatic](https://www.chromatic.com/) に自動デプロイされる。本体は検索エンジン非表示のため、全レスポンスに `X-Robots-Tag: noindex` を付与する（`public/_headers`）。
+
 ## 規約
 
 ファイル命名・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。

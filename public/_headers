@@ -1,0 +1,4 @@
+# Cloudflare Pages: 全レスポンスに noindex を付与し検索エンジンのインデックス登録を防ぐ
+# 個人用アプリのため、検索結果に一切表示させない（クロール可否に依存しないヘッダー方式）
+/*
+  X-Robots-Tag: noindex, nofollow

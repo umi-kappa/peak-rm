@@ -3,6 +3,8 @@ import '@/styles/global.css'
 
 const preview: Preview = {
   parameters: {
+    // Chromatic snapshot は viewport 1 つ（390px・モバイル前提）のみ。ブラウザは Chrome のみ（デフォルト）。
+    chromatic: { viewports: [390] },
     backgrounds: {
       default: 'dark',
       values: [
