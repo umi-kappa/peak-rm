@@ -53,6 +53,16 @@ npm run test-storybook    # storybook 起動中に play 関数を実行
 npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
 ```
 
+## Git hooks（commit 時の自動チェック）
+
+`husky` + `lint-staged` により、commit 時に pre-commit フックが自動で走る。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
+
+- **lint-staged（変更ファイルのみ）**: `*.{ts,vue}` に ESLint `--fix`、対象拡張子に Prettier `--write`
+- **typecheck（全体）**: `vue-tsc --noEmit`
+- **test（全体）**: Vitest を run モードで実行
+
+いずれかが失敗すると commit は中断される。重い Storybook の `test-storybook` はフックに含めず CI に任せる。
+
 ## CI
 
 GitHub Actions（`.github/workflows/`）で次を実行する。

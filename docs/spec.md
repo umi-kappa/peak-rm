@@ -447,6 +447,7 @@ function estimate1RM(exercise: Exercise, weight: number, reps: number): number {
 | コンポーネント開発 | Storybook（Vue 3 + Vite） |
 | テスト | Vitest（ロジック） / Storybook play 関数 + test runner（コンポーネントのインタラクション） |
 | Lint / Format | ESLint + Prettier |
+| Git hooks | husky + lint-staged（pre-commit で lint-staged → typecheck → test） |
 
 ### テスト方針
 

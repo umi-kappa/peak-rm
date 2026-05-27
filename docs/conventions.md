@@ -82,6 +82,16 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 npm run test-storybook  # storybook 起動中に play 関数を実行（初回 npx playwright install chromium）
 ```
 
+## Git hooks
+
+`husky` + `lint-staged` を導入し、commit 時に pre-commit フック（`.husky/pre-commit`）で品質チェックを自動実行する。`npm install`（`prepare: "husky"` script）でフックが有効化される。
+
+- 実行順は `npx lint-staged` → `npm run typecheck` → `npm run test`。いずれか失敗で commit を中断する
+- `lint-staged`（設定は `package.json`）は **変更ファイルのみ** 対象。`*.{ts,vue}` に ESLint `--fix`、`*.{ts,vue,js,cjs,json,md,css,html}` に Prettier `--write`
+- `typecheck` / `test` は **プロジェクト全体** を対象に実行する
+- `npm run test` は `vitest run`（run モード）。watch にしないこと（フックが終了しなくなる）
+- フックは pre-commit に集約する。pre-push は設けず、Storybook の `test-storybook`（Playwright 起動が重い）は CI に任せる
+
 ## スタイル（CSS）
 
 - Vue の **scoped CSS** を使う。Tailwind は使わない
