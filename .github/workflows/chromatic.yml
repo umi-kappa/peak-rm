@@ -20,7 +20,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - uses: chromaui/action@latest
+      - uses: chromaui/action@v17
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           # 変更があった story のみ snapshot（無料枠節約）
