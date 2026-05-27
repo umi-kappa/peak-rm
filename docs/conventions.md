@@ -87,6 +87,11 @@ npm run test-storybook  # storybook 起動中に play 関数を実行（初回 n
 - クラス名は **短く（`.title`、`.list`）**。BEM 記法（`app__title`）は使わない
 - 値（色・タイポグラフィ・スペーシング）は `docs/design/README.md` のデザイントークンに厳密に従う
 
+## PWA・静的アセット
+
+- 静的アセット（PWA アイコン・favicon など）は `public/` に置き、ビルド時に `dist/` 直下へコピーする
+- PWA アイコンは手書きせず `assets/icon-source.svg` を元に `@vite-pwa/assets-generator`（`minimal-2023` プリセット）で再生成する。生成した PNG / favicon を `public/` へ移して使う
+
 ## .gitignore
 
 フラットな羅列ではなく、`# Dependencies`、`# Build outputs`、`# Test / coverage` のようなコメント見出しでセクション分けして記述する。

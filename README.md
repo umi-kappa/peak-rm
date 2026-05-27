@@ -43,6 +43,16 @@ npm run build-storybook   # storybook-static/ に静的ビルド生成
 npm run test-storybook    # storybook 起動中に play 関数を実行
 ```
 
+## PWA
+
+`vite-plugin-pwa`（`registerType: 'autoUpdate'`）で PWA 化している。`npm run build` で `dist/` に manifest・Service Worker・アイコンが生成され、`npm run preview` で動作確認できる（SW は本番ビルドでのみ有効、dev では動かない）。
+
+アイコンはプレースホルダ（本番デザインは別途）。元データは `assets/icon-source.svg`。再生成は以下で行い、出力 PNG / favicon を `public/` へ移す。
+
+```bash
+npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
+```
+
 ## 規約
 
 ファイル命名・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。
