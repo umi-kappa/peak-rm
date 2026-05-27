@@ -13,10 +13,18 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      # Playwright のブラウザ本体（~/.cache/ms-playwright）をキャッシュし、毎回の DL を避ける。
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
+      # npm test は storybook project（headless Chromium）も走らせるため Playwright が要る。
+      - run: npx playwright install --with-deps chromium
       - run: npm test
 
   storybook:
@@ -30,5 +38,5 @@ jobs:
           cache: npm
       - run: npm ci
       # Story が壊れていないかのビルド検証。play 関数のインタラクションテストは
-      # check ジョブの Vitest（Portable Stories + jsdom）が担う。
+      # check ジョブの Vitest（@storybook/addon-vitest + headless Chromium）が担う。
       - run: npm run build-storybook -- --quiet
