@@ -2,17 +2,49 @@
 
 PeakRM のコーディング・命名・テスト・ドキュメント表記の規約をここに集約する。実装前後で必ず参照する。技術スタック・仕様の詳細は `docs/spec.md` を、デザイントークンは `docs/design/README.md` を参照する。
 
+## ディレクトリ構成
+
+`src/` 配下は **責務で分割** する。各レイヤを共通ルールで分岐させる: **画面専用のものは各レイヤの `pages/<画面名>/` に置く**、**複数画面で使う横断的なものは各レイヤの共有バケツ（`shared/` など）に置く**。
+
+```
+src/
+  core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
+    types.ts  oneRm.ts  linearProgression.ts  session.ts  chartData.ts
+  storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
+    db.ts  sessionRepo.ts  menuPresetRepo.ts  backup.ts
+  composables/
+    pages/<画面>/       # 画面専用に切り出した composable
+    shared/
+      session/         # useSession / useIntervalTimer（実行中セッションの状態系）
+      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
+  components/
+    pages/<画面>/        # その画面専用のコンポーネント
+    shared/
+      ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）
+      *.vue            # 横断のアプリ固有複合（ConfirmDialog.vue / SetEditModal.vue など）
+  pages/<画面>/index.vue # 画面エントリ（Nuxt 風の index.vue 命名。ファイルベースルーティングではない）
+  router/index.ts        # vue-router のルート定義
+  styles/  tokens.css  global.css
+```
+
+- **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`
+- **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
+- **`components/shared/ui/`** はデザインシステムのプリミティブ専用。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
+- **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`createSession()`）の単一インスタンスを App ルートで `provide` し、子孫が `inject` で共有する。依存リポジトリは composable の引数で注入する。
+
+`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/PrimaryButton.vue`、`@/pages/home/index.vue`。
+
 ## ファイル命名
 
 - **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠
-- **TypeScript ロジック・composable・store**: camelCase（`oneRm.ts`、`useSession.ts`、`menuStore.ts`）
+- **TypeScript ロジック・composable**: camelCase（`oneRm.ts`、`useSession.ts`）
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
 - **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`SampleButton.vue` → `SampleButton.stories.ts`）
 - **設定ファイル（プロジェクトルート）**: ツール慣習に従う（`vite.config.ts`、`eslint.config.js`、`.prettierrc.json`）
 
 ## import
 
-- `src/` 配下のモジュールを参照するときは alias `@/` の絶対パスを使う（`import x from '@/lib/oneRm'`）
+- `src/` 配下のモジュールを参照するときは alias `@/` の絶対パスを使う（`import x from '@/core/oneRm'`）
 - 同階層であっても相対パス（`./`、`../`）は使わない。`vite.config.ts` の `resolve.alias` と `tsconfig.json` の `paths` に `@/* → src/*` を定義済み
 - サードパーティパッケージは通常どおりパッケージ名で import する
 
@@ -22,7 +54,7 @@ Vitest を projects 構成で動かし、ロジック層の単体テスト（`un
 
 ### 配置
 
-テスト対象のソースと同じディレクトリに co-located で置く（例: `src/lib/oneRm.ts` の隣に `src/lib/oneRm.spec.ts`）。`tests/` のような分離ディレクトリは使わない。Vitest は `src/**/*.spec.ts` を拾う。
+テスト対象のソースと同じディレクトリに co-located で置く（例: `src/core/oneRm.ts` の隣に `src/core/oneRm.spec.ts`）。`tests/` のような分離ディレクトリは使わない。Vitest は `src/**/*.spec.ts` を拾う。
 
 ### スタイル
 
