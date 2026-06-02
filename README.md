@@ -2,6 +2,29 @@
 
 1RMの成長を可視化するシンプルなトレーニングアプリ
 
+## ディレクトリ構成
+
+`src/` は責務で分割している。各レイヤは **画面専用（`pages/<画面>/`）** と **横断（`shared/`）** で分岐する。
+
+```
+src/
+├─ core/          純ロジック（型・1RM 計算・linear progression・集約）。副作用なし
+├─ storage/       永続化（Dexie / IndexedDB・リポジトリ・Export / Import）
+├─ composables/   Vue composable
+│  ├─ shared/session/    useSession / useIntervalTimer
+│  ├─ shared/platform/   useWakeLock / useAudioCue
+│  └─ pages/<画面>/       画面専用ロジック
+├─ components/    Vue コンポーネント
+│  ├─ shared/ui/         デザインプリミティブ（汎用・ドメイン非依存）
+│  ├─ shared/*.vue       横断の複合（ConfirmDialog / SetEditModal）
+│  └─ pages/<画面>/       画面専用コンポーネント
+├─ pages/         画面エントリ（<画面>/index.vue）
+├─ router/        vue-router のルート定義
+└─ styles/        デザイントークン・グローバル CSS
+```
+
+分岐ルールの詳細（`shared/` の使い分け、`core ↔ storage` の依存方向など）は [docs/conventions.md](docs/conventions.md) の「ディレクトリ構成」節を参照する。
+
 ## 開発
 
 Node 22 LTS / npm 前提。
