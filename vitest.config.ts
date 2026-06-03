@@ -16,6 +16,8 @@ export default defineConfig({
           name: 'unit',
           environment: 'happy-dom',
           include: ['src/**/*.spec.ts'],
+          // happy-dom は IndexedDB を持たないため fake-indexeddb で global を補う。
+          setupFiles: ['fake-indexeddb/auto'],
         },
       },
       // Story の play 関数を headless Chromium（Playwright）で実行する。
