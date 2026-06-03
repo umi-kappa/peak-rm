@@ -346,7 +346,7 @@ stateDiagram-v2
 実装言語は TypeScript。型定義はおおよそ次の通り。
 
 ```ts
-type Exercise = 'bench' | 'squat' | 'deadlift'
+type Exercise = 'benchPress' | 'squat' | 'deadlift'
 
 type MenuPreset = {
   exercise: Exercise
@@ -377,7 +377,7 @@ type Session = {
 function estimate1RM(exercise: Exercise, weight: number, reps: number): number {
   if (reps < 1) return 0
   switch (exercise) {
-    case 'bench':
+    case 'benchPress':
       return weight * (1 + reps / 40)
     case 'squat':
     case 'deadlift':

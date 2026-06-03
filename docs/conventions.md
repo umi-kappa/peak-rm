@@ -67,7 +67,7 @@ import { describe, expect, test } from 'vitest'
 
 describe('oneRm', () => {
   test('ベンチプレスの 1RM を FWJ 換算式で計算する', () => {
-    expect(estimateOneRm('bench', 100, 5)).toBe(112.5)
+    expect(estimateOneRm('benchPress', 100, 5)).toBe(112.5)
   })
 })
 ```
