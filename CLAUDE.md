@@ -51,7 +51,7 @@ PeakRM は「1RM の成長を可視化する筋トレアプリ」だが、UI/UX 
 
 ### Linear progression（常時有効）
 
-- トリガー: **同一種目の直前セッション**が `executed`（= 全セットで `actualReps ≥ targetReps` を満たして終了）
+- トリガー: **同一種目の直前セッション**が `executed`（= 全セットで `actualReps ≥ menu.reps` を満たして終了）
 - 増量幅: ベンチ `+2.5 kg` / スクワット・デッドリフト `+5 kg`
 - ベースラインは `menu_presets[exercise].weight`（手動編集は累積する）
 - 失敗 / 中断時は据え置き。連続据え置き時の自動デロード提案は実装しない

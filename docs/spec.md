@@ -87,7 +87,7 @@
 
 「計画通り実行」のコンセプトに時間軸を与えるため、自動増量を常時有効とする。
 
-- **`executed` の定義**: 全セットで `actualReps ≥ targetReps` を満たした状態でセッションが終了したとき、ステータスは `executed` となる。すなわち `executed` は常に linear progression のトリガー条件を満たす。`aborted` セッションは（その中の完了セット内訳によらず）増量トリガーの対象外
+- **`executed` の定義**: 全セットで `actualReps ≥ menu.reps`（= 目標回数）を満たした状態でセッションが終了したとき、ステータスは `executed` となる。すなわち `executed` は常に linear progression のトリガー条件を満たす。`aborted` セッションは（その中の完了セット内訳によらず）増量トリガーの対象外
 - **トリガー**: **同一種目の** 直前セッションが `executed` であること
 - **増量幅**: ベンチプレス `+2.5 kg`、スクワット・デッドリフト `+5 kg`
 - **ベースライン**: 増量計算は `menu_presets[exercise].weight`（直前セッションが実際に使用した重量）に対して行う。ユーザーが手動編集した値が次の `menu_presets` に保存され、それが次回のベースラインになる（編集は累積する）
@@ -357,11 +357,10 @@ type MenuPreset = {
 }
 
 type SetResult = {
-  setIndex: number        // 0-based
-  targetReps: number
   actualReps: number      // 0 以上の整数。`actualReps === 0` は実質的なスキップと同義
   memo: string            // ユーザー記述のメモ。初期値 ""、文字数上限なし。不変性の対象外
 }
+// セットの順序は results 配列のインデックスで表す（append only・並び替えなし）
 
 type Session = {
   id: string
