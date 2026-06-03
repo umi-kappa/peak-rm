@@ -1,3 +1,5 @@
+import Dexie from 'dexie'
+
 import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import { db } from '@/storage/db'
 import type { Exercise, SetResult, Session } from '@/core/types'
@@ -47,10 +49,13 @@ async function listForHistory(): Promise<Session[]> {
 /**
  * 同一種目の直前セッション（startedAt 最大）を返す。無ければ undefined。
  * ステータスで絞らない（ホーム表示・progression 双方で使い、executed 判定は呼び出し側）。
+ * [exercise+startedAt] 複合 index の範囲末尾を DB 側で 1 件取得する（全件展開しない）。
  */
 async function latestByExercise(exercise: Exercise): Promise<Session | undefined> {
-  const sessions = await db.sessions.where('exercise').equals(exercise).sortBy('startedAt')
-  return sessions.at(-1)
+  return db.sessions
+    .where('[exercise+startedAt]')
+    .between([exercise, Dexie.minKey], [exercise, Dexie.maxKey])
+    .last()
 }
 
 export const sessionRepo = {

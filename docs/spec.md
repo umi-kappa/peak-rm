@@ -396,7 +396,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 
 - **実装**: IndexedDB（[Dexie.js](https://dexie.org/) 経由）
 - **テーブル設計**:
-  - `sessions`: `Session` をそのまま保存。主キー `id`、`exercise` と `startedAt` にインデックス
+  - `sessions`: `Session` をそのまま保存。主キー `id`、`startedAt` 単独インデックス（全件降順一覧用）、`[exercise+startedAt]` 複合インデックス（同種目の直前 1 件を末尾取得用）
   - `menuPresets`: `Exercise` をキーに最後の `MenuPreset` を保存（次回の初期表示用）
 - **永続化のタイミング**: セッション開始時に `status = 'aborted'`（保守的なデフォルト）で 1 回 insert する。セット完了ごとに `results` を増分 update。最終セット完了時に `status = 'executed'` へ更新、中断ボタン時はそのまま `aborted` で確定。タブクローズ / クラッシュ / SW autoUpdate 経由のリロードでも、それまでの実績は `aborted` セッションとして履歴に残る
 - **スキーマバージョン**: 初版は v1。スキーマ変更時は Dexie の `version()` チェーンで明示的にマイグレーションを宣言する
