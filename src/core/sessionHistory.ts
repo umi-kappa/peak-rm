@@ -35,8 +35,8 @@ function isHigherPriority(a: Session, b: Session): boolean {
  * timestamp が属するローカルカレンダー日のキー。
  * 同一日の判定はデバイスのローカルタイムゾーン基準（UTC の toISOString は使わない）。
  */
-export function localDayKey(startedAt: number): string {
-  const d = new Date(startedAt)
+export function localDayKey(timestamp: number): string {
+  const d = new Date(timestamp)
   // 月は 1 始まり・ゼロ詰めし、`2026-01-09` のように整形する
   // （ソート / 表示 / 直列化に流用しても破綻しないキー形にする）。
   const month = String(d.getMonth() + 1).padStart(2, '0')
