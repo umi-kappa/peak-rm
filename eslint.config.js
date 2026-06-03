@@ -2,6 +2,7 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
 import pluginVue from 'eslint-plugin-vue'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import storybook from 'eslint-plugin-storybook'
+import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 
 export default defineConfigWithVueTs(
   {
@@ -16,5 +17,12 @@ export default defineConfigWithVueTs(
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
   ...storybook.configs['flat/recommended'],
+  {
+    name: 'app/no-null',
+    files: ['**/*.{ts,mts,tsx,vue}'],
+    plugins: { unicorn: eslintPluginUnicorn },
+    // 値の不在は null ではなく undefined で統一する（Dexie / Array.at() / ?? の自然な返り値に揃える）。
+    rules: { 'unicorn/no-null': 'error' },
+  },
   skipFormatting,
 )

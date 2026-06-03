@@ -18,10 +18,10 @@ const PROGRESSION_STEP_KG: Record<Exercise, number> = {
  * （手動編集の累積はその値に反映済み）。本関数はベースライン管理を持たない純関数。
  */
 export function computeLinearProgression(
-  prevSession: Session | null,
+  prevSession: Session | undefined,
   baselineWeight: number,
 ): number {
-  if (prevSession === null) return baselineWeight
+  if (prevSession === undefined) return baselineWeight
   // status が executed かつ results も条件を満たすときだけ増量する
   if (prevSession.status === 'executed' && isExecuted(prevSession)) {
     return baselineWeight + PROGRESSION_STEP_KG[prevSession.exercise]
