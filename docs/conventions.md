@@ -48,6 +48,11 @@ src/
 - 同階層であっても相対パス（`./`、`../`）は使わない。`vite.config.ts` の `resolve.alias` と `tsconfig.json` の `paths` に `@/* → src/*` を定義済み
 - サードパーティパッケージは通常どおりパッケージ名で import する
 
+## 型定義（TypeScript）
+
+- アプリ内部の型は、オブジェクト形状も含め原則 **`type`** で定義する（`type Session = { ... }`）。ユニオン型（例: `type Exercise = 'benchPress' | 'squat' | 'deadlift'`）が `type` 必須なため、全体を `type` に揃えて表記の混在を防ぐ
+- **`interface` は declaration merging が必要な型拡張のみ**に使う（例: `vite-env.d.ts` の `ImportMetaEnv` 拡張）。アプリ内の閉じたドメインモデルは `interface` にしない。意図しない再宣言マージ（footgun）を防ぎ、`Readonly<>` で固める不変モデルの思想とも揃える
+
 ## テスト
 
 Vitest を projects 構成で動かし、ロジック層の単体テスト（`unit` project、`happy-dom`）と、Storybook の play 関数によるコンポーネントのインタラクションテスト（`storybook` project、`@storybook/addon-vitest` + **headless Chromium**）の両方を実行する。`npm test` で両 project が走る。ロジックとコンポーネントで役割を分担し、同じ振る舞いを両方で書かない。
