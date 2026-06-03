@@ -24,6 +24,9 @@ async function patchResults(id: string, results: SetResult[]): Promise<void> {
 /**
  * 最終セット完了時の確定。results と status='executed' を 1 update で同時に書き込み、
  * 「results は最終だが status は aborted」という中間状態を構造的に排除する。
+ * 担保するのは status の二相整合のみで、results が完遂条件（isExecuted）を満たすかは
+ * 検証しない。呼び出し側は executed 確定時（全セット完了かつ target 達成）にのみ呼ぶこと。
+ * 仮に未完遂で呼ばれても、増量トリガーは linearProgression 側が isExecuted で再判定する。
  * 対象 id が無ければ update は 0 件 no-op になるため例外を投げる（patchResults と同じ理由）。
  */
 async function finalize(id: string, results: SetResult[]): Promise<void> {
