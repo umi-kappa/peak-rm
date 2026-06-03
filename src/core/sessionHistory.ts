@@ -23,5 +23,9 @@ export function dedupeHistoryByDayLatest(sessions: Session[]): Session[] {
  */
 export function localDayKey(startedAt: number): string {
   const d = new Date(startedAt)
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+  // 月は 1 始まり・ゼロ詰めし、`2026-01-09` のように整形する
+  // （ソート / 表示 / 直列化に流用しても破綻しないキー形にする）。
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
 }
