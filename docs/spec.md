@@ -376,19 +376,16 @@ type Session = {
   results: SetResult[]
 }
 
+// FWJ 換算式 1RM = w × (1 + r / divisor) の種目別 divisor
+const ONE_RM_DIVISOR: Record<Exercise, number> = {
+  benchPress: 40,
+  squat: 33.3,
+  deadlift: 33.3,
+}
+
 function estimateOneRm(exercise: Exercise, weight: number, reps: number): number {
   if (reps < 1) return 0
-  switch (exercise) {
-    case 'benchPress':
-      return weight * (1 + reps / 40)
-    case 'squat':
-    case 'deadlift':
-      return weight * (1 + reps / 33.3)
-    default: {
-      const _exhaustive: never = exercise
-      throw new Error(`Unknown exercise: ${_exhaustive}`)
-    }
-  }
+  return weight * (1 + reps / ONE_RM_DIVISOR[exercise])
 }
 ```
 

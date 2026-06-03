@@ -16,6 +16,10 @@ describe('estimateOneRm', () => {
     expect(estimateOneRm('deadlift', 100, 8)).toBeCloseTo(100 * (1 + 8 / 33.3))
   })
 
+  test('reps = 1（有効レンジ下限）は除外せず計算する', () => {
+    expect(estimateOneRm('benchPress', 100, 1)).toBe(100 * (1 + 1 / 40))
+  })
+
   test('実績 0 回（スキップ）は 1RM 計算から除外して 0 を返す', () => {
     expect(estimateOneRm('benchPress', 100, 0)).toBe(0)
   })

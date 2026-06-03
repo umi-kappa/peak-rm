@@ -1,5 +1,13 @@
 import type { Exercise } from '@/core/types'
 
+// FWJ 換算式 1RM = w × (1 + r / divisor) の種目別 divisor。
+// Record<Exercise, number> により種目追加時はコンパイル時に網羅漏れを検出する。
+const ONE_RM_DIVISOR: Record<Exercise, number> = {
+  benchPress: 40,
+  squat: 33.3,
+  deadlift: 33.3,
+}
+
 /**
  * FWJ 換算式で 1RM 相当値を推定する。
  * 有効レンジは 1〜12 reps。超過入力も受け付ける（精度低下は許容し上限バリデーションは入れない）。
@@ -7,15 +15,5 @@ import type { Exercise } from '@/core/types'
  */
 export function estimateOneRm(exercise: Exercise, weight: number, reps: number): number {
   if (reps < 1) return 0
-  switch (exercise) {
-    case 'benchPress':
-      return weight * (1 + reps / 40)
-    case 'squat':
-    case 'deadlift':
-      return weight * (1 + reps / 33.3)
-    default: {
-      const _exhaustive: never = exercise
-      throw new Error(`Unknown exercise: ${_exhaustive}`)
-    }
-  }
+  return weight * (1 + reps / ONE_RM_DIVISOR[exercise])
 }
