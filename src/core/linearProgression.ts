@@ -14,7 +14,7 @@ const PROGRESSION_STEP_KG: Record<Exercise, number> = {
  *
  * 増量幅は prevSession.exercise から導出する（同一種目の直前セッションを渡す前提。
  * 種目を別引数で受けると prevSession.exercise と食い違うため受けない）。
- * baselineWeight は呼び出し側が menu_presets[exercise].weight を渡す
+ * baselineWeight は呼び出し側が menuPresets[exercise].weight を渡す
  * （手動編集の累積はその値に反映済み）。本関数はベースライン管理を持たない純関数。
  */
 export function computeLinearProgression(
