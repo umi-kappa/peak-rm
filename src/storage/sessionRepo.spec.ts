@@ -61,6 +61,14 @@ describe('永続化シーケンス', () => {
     const updated = await db.sessions.get('s1')
     expect(updated?.results).toEqual([reps(5)])
   })
+
+  test('patchResults を存在しない id に呼ぶと例外を投げる（サイレント no-op を防ぐ）', async () => {
+    await expect(sessionRepo.patchResults('missing', [reps(8)])).rejects.toThrow()
+  })
+
+  test('finalize を存在しない id に呼ぶと例外を投げる', async () => {
+    await expect(sessionRepo.finalize('missing', [reps(8)])).rejects.toThrow()
+  })
 })
 
 describe('remove', () => {

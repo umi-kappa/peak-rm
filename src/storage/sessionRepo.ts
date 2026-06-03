@@ -10,17 +10,23 @@ async function insert(session: Session): Promise<void> {
   await db.sessions.add(session)
 }
 
-/** セット完了ごとの増分保存。results 配列を全置換する。 */
+/**
+ * セット完了ごとの増分保存。results 配列を全置換する。
+ * 対象 id が無ければ update は 0 件 no-op になるため、サイレントな実績喪失を防ぐべく例外を投げる。
+ */
 async function patchResults(id: string, results: SetResult[]): Promise<void> {
-  await db.sessions.update(id, { results })
+  const updated = await db.sessions.update(id, { results })
+  if (updated === 0) throw new Error(`session not found: ${id}`)
 }
 
 /**
  * 最終セット完了時の確定。results と status='executed' を 1 update で同時に書き込み、
  * 「results は最終だが status は aborted」という中間状態を構造的に排除する。
+ * 対象 id が無ければ update は 0 件 no-op になるため例外を投げる（patchResults と同じ理由）。
  */
 async function finalize(id: string, results: SetResult[]): Promise<void> {
-  await db.sessions.update(id, { results, status: 'executed' })
+  const updated = await db.sessions.update(id, { results, status: 'executed' })
+  if (updated === 0) throw new Error(`session not found: ${id}`)
 }
 
 /** 当該 1 件のみ削除する（menuPresets には影響しない）。 */
