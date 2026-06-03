@@ -46,7 +46,7 @@ describe('computeLinearProgression', () => {
   })
 
   test('直前セッションが無ければ据え置き', () => {
-    expect(computeLinearProgression(null, 100)).toBe(100)
+    expect(computeLinearProgression(undefined, 100)).toBe(100)
   })
 
   test('直前が失敗（target 未満セットあり）なら据え置き', () => {
