@@ -376,7 +376,7 @@ type Session = {
   results: SetResult[]
 }
 
-function estimate1RM(exercise: Exercise, weight: number, reps: number): number {
+function estimateOneRm(exercise: Exercise, weight: number, reps: number): number {
   if (reps < 1) return 0
   switch (exercise) {
     case 'benchPress':
