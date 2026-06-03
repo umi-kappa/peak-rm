@@ -14,12 +14,11 @@ class PeakDexie extends Dexie {
 
   constructor() {
     super('peak-rm')
+    // version().stores() が同名プロパティ（sessions / menuPresets）に Table を自動バインドする。
     this.version(1).stores({
       sessions: 'id, exercise, startedAt',
       menuPresets: 'exercise',
     })
-    this.sessions = this.table('sessions')
-    this.menuPresets = this.table('menuPresets')
   }
 }
 
