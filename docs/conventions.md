@@ -9,7 +9,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
-    types.ts  oneRm.ts  linearProgression.ts  session.ts  chartData.ts
+    types.ts  oneRm.ts  linearProgression.ts  session.ts  sessionHistory.ts  chartData.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  menuPresetRepo.ts  backup.ts
   composables/
@@ -58,6 +58,8 @@ src/
 ## テスト
 
 Vitest を projects 構成で動かし、ロジック層の単体テスト（`unit` project、`happy-dom`）と、Storybook の play 関数によるコンポーネントのインタラクションテスト（`storybook` project、`@storybook/addon-vitest` + **headless Chromium**）の両方を実行する。`npm test` で両 project が走る。ロジックとコンポーネントで役割を分担し、同じ振る舞いを両方で書かない。
+
+`storage/` のテストも `unit` project で動かす。happy-dom は IndexedDB を持たないため、`unit` project の `setupFiles` に `fake-indexeddb/auto` を読み込んでグローバルを補う。リポジトリのテストは `beforeEach` で `db.delete()` → `db.open()` してケース間の状態を分離する。
 
 ### 配置
 
