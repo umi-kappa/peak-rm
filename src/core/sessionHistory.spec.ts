@@ -62,6 +62,28 @@ describe('dedupeHistoryByDay', () => {
     expect(result.map((s) => s.id)).toEqual(['earlyBest'])
   })
 
+  test('executed が無く全 aborted なら、最新ではなく推定 1RM が最大の aborted を残す', () => {
+    // 早い方が高 reps（高 1RM）。executed が 1 件も無い場合の「aborted の中で 1RM 最大」分岐。
+    const result = dedupeHistoryByDay([
+      makeSession('abortedBest', 'benchPress', day1Morning, 'aborted', [reps(10)]),
+      makeSession('abortedWorse', 'benchPress', day1Evening, 'aborted', [reps(5)]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['abortedBest'])
+  })
+
+  test('入力順に依らず executed を優先する（aborted が先・executed が後でも executed を残す）', () => {
+    // DB が startedAt 昇順で渡すケース。先に Map へ入った aborted を後続 executed が置き換える分岐。
+    const result = dedupeHistoryByDay([
+      makeSession('abortedFirst', 'benchPress', day1Morning, 'aborted'),
+      makeSession('executedLater', 'benchPress', day1Evening, 'executed', [
+        reps(8),
+        reps(8),
+        reps(8),
+      ]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['executedLater'])
+  })
+
   test('同日同種目・同 status・1RM 同値なら最新（startedAt 最大）を残す', () => {
     const result = dedupeHistoryByDay([
       makeSession('early', 'benchPress', day1Morning, 'executed', [reps(8), reps(8), reps(8)]),

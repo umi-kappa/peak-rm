@@ -102,13 +102,23 @@ describe('listForHistory', () => {
   const day1Evening = new Date(2026, 0, 1, 18, 0).getTime()
   const day2 = new Date(2026, 0, 2, 9, 0).getTime()
 
-  test('DB 経由で取得し、同日同種目は最新 1 件に集約して startedAt 降順で返す', async () => {
-    await sessionRepo.insert(makeSession('benchMorning', 'benchPress', day1Morning))
+  test('DB 経由で取得し、同日同種目は集約規則（executed 優先 → 1RM 最大 → startedAt 最大）で 1 件に絞り startedAt 降順で返す', async () => {
+    // 朝 executed・夜 aborted を同日同種目で insert。後発 aborted が完遂記録を上書きせず
+    // executed の benchMorning が残ることを DB → list() → dedupeHistoryByDay の統合パスで確認する。
+    await sessionRepo.insert(
+      makeSession(
+        'benchMorning',
+        'benchPress',
+        day1Morning,
+        [reps(8), reps(8), reps(8)],
+        'executed',
+      ),
+    )
     await sessionRepo.insert(makeSession('benchEvening', 'benchPress', day1Evening))
     await sessionRepo.insert(makeSession('squatDay2', 'squat', day2))
 
     const sessions = await sessionRepo.listForHistory()
-    expect(sessions.map((s) => s.id)).toEqual(['squatDay2', 'benchEvening'])
+    expect(sessions.map((s) => s.id)).toEqual(['squatDay2', 'benchMorning'])
   })
 })
 
