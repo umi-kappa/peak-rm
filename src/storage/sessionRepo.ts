@@ -1,4 +1,4 @@
-import { dedupeHistoryByDayLatest } from '@/core/sessionHistory'
+import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import { db } from '@/storage/db'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
@@ -39,9 +39,9 @@ async function list(): Promise<Session[]> {
   return db.sessions.orderBy('startedAt').reverse().toArray()
 }
 
-/** 履歴一覧用。同日同種目は最新 1 件に集約した降順リストを返す。 */
+/** 履歴一覧用。同日同種目は executed 優先で 1 件に集約した降順リストを返す。 */
 async function listForHistory(): Promise<Session[]> {
-  return dedupeHistoryByDayLatest(await list())
+  return dedupeHistoryByDay(await list())
 }
 
 /**

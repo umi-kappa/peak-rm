@@ -1,16 +1,26 @@
 import { describe, expect, test } from 'vitest'
 
-import { dedupeHistoryByDayLatest, localDayKey } from '@/core/sessionHistory'
-import type { Exercise, Session } from '@/core/types'
+import { dedupeHistoryByDay, localDayKey } from '@/core/sessionHistory'
+import type { Exercise, SetResult, Session } from '@/core/types'
 
-function makeSession(id: string, exercise: Exercise, startedAt: number): Session {
+function reps(actualReps: number): SetResult {
+  return { actualReps, memo: '' }
+}
+
+function makeSession(
+  id: string,
+  exercise: Exercise,
+  startedAt: number,
+  status: Session['status'] = 'aborted',
+  results: SetResult[] = [],
+): Session {
   return {
     id,
     exercise,
-    status: 'aborted',
+    status,
     startedAt,
     menu: { exercise, weight: 100, reps: 8, sets: 3, intervalSec: 90 },
-    results: [],
+    results,
   }
 }
 
@@ -30,17 +40,38 @@ describe('localDayKey', () => {
   })
 })
 
-describe('dedupeHistoryByDayLatest', () => {
-  test('同日同種目は最新 1 件のみ残す', () => {
-    const result = dedupeHistoryByDayLatest([
-      makeSession('old', 'benchPress', day1Morning),
-      makeSession('new', 'benchPress', day1Evening),
+describe('dedupeHistoryByDay', () => {
+  test('同日同種目で executed があれば、後発の aborted より executed を優先する', () => {
+    const result = dedupeHistoryByDay([
+      makeSession('done', 'benchPress', day1Morning, 'executed', [reps(8), reps(8), reps(8)]),
+      makeSession('reopenedAborted', 'benchPress', day1Evening, 'aborted'),
     ])
-    expect(result.map((s) => s.id)).toEqual(['new'])
+    expect(result.map((s) => s.id)).toEqual(['done'])
+  })
+
+  test('同日同種目・同 status では、最新ではなく推定 1RM が最大のものを残す', () => {
+    // 早い方が高 reps（高 1RM）、遅い方が低 reps（低 1RM）。ベスト記録の earlyBest を採用する。
+    const result = dedupeHistoryByDay([
+      makeSession('earlyBest', 'benchPress', day1Morning, 'executed', [
+        reps(10),
+        reps(10),
+        reps(10),
+      ]),
+      makeSession('lateWorse', 'benchPress', day1Evening, 'executed', [reps(8), reps(8), reps(8)]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['earlyBest'])
+  })
+
+  test('同日同種目・同 status・1RM 同値なら最新（startedAt 最大）を残す', () => {
+    const result = dedupeHistoryByDay([
+      makeSession('early', 'benchPress', day1Morning, 'executed', [reps(8), reps(8), reps(8)]),
+      makeSession('late', 'benchPress', day1Evening, 'executed', [reps(8), reps(8), reps(8)]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['late'])
   })
 
   test('同日でも種目が違えば両方残る', () => {
-    const result = dedupeHistoryByDayLatest([
+    const result = dedupeHistoryByDay([
       makeSession('bench', 'benchPress', day1Morning),
       makeSession('squat', 'squat', day1Evening),
     ])
@@ -48,7 +79,7 @@ describe('dedupeHistoryByDayLatest', () => {
   })
 
   test('日付が違えば同種目でも両方残る', () => {
-    const result = dedupeHistoryByDayLatest([
+    const result = dedupeHistoryByDay([
       makeSession('d1', 'benchPress', day1Morning),
       makeSession('d2', 'benchPress', day2Start),
     ])
@@ -56,7 +87,7 @@ describe('dedupeHistoryByDayLatest', () => {
   })
 
   test('入力順に依らず startedAt 降順で返す', () => {
-    const result = dedupeHistoryByDayLatest([
+    const result = dedupeHistoryByDay([
       makeSession('d1', 'benchPress', day1Morning),
       makeSession('d2', 'squat', day2Start),
     ])
