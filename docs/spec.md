@@ -360,7 +360,6 @@ type SetResult = {
   setIndex: number        // 0-based
   targetReps: number
   actualReps: number      // 0 以上の整数。`actualReps === 0` は実質的なスキップと同義
-  completedAt: number     // unix ms
   memo: string            // ユーザー記述のメモ。初期値 ""、文字数上限なし。不変性の対象外
 }
 
@@ -369,7 +368,6 @@ type Session = {
   exercise: Exercise
   status: 'executed' | 'aborted'
   startedAt: number       // unix ms
-  endedAt: number         // unix ms
   menu: Readonly<MenuPreset>  // セッション開始時点の deep copy。以降の menu_presets 変更は反映しない
   results: SetResult[]
 }
