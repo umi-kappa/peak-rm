@@ -87,7 +87,7 @@
 
 「計画通り実行」のコンセプトに時間軸を与えるため、自動増量を常時有効とする。
 
-- **`executed` の定義**: 全セットで `actualReps ≥ targetReps` を満たした状態でセッションが終了したとき、ステータスは `executed` となる。すなわち `executed` は常に linear progression のトリガー条件を満たす。`aborted` セッションは（その中の完了セット内訳によらず）増量トリガーの対象外
+- **`executed` の定義**: 全セットで `actualReps ≥ menu.reps`（= 目標回数）を満たした状態でセッションが終了したとき、ステータスは `executed` となる。すなわち `executed` は常に linear progression のトリガー条件を満たす。`aborted` セッションは（その中の完了セット内訳によらず）増量トリガーの対象外
 - **トリガー**: **同一種目の** 直前セッションが `executed` であること
 - **増量幅**: ベンチプレス `+2.5 kg`、スクワット・デッドリフト `+5 kg`
 - **ベースライン**: 増量計算は `menu_presets[exercise].weight`（直前セッションが実際に使用した重量）に対して行う。ユーザーが手動編集した値が次の `menu_presets` に保存され、それが次回のベースラインになる（編集は累積する）
@@ -194,6 +194,10 @@
   - **トレーニング終了・中断経由**: 画面下部の **「トレーニング終了」** ボタンでホームへ（実行・中断を包含する中立なラベルとして「終了」を採用）。ヘッダーに戻る矢印は置かない（メインの導線をボタンに集約）
   - **履歴一覧から開いた**: ヘッダー左上の **「←」** で履歴へ戻る。下部にボタンは置かない（戻り導線を1か所に絞る）
   - ブラウザ / OS の戻る操作も同じ遷移先に揃える
+- **セッション削除（履歴詳細経由でのみ）**: 履歴一覧から開いた場合のみ、ヘッダー右上に削除（ゴミ箱）アクションを表示する。完了・中断直後の結果確認画面には**表示しない**（やり終えた直後に「なかったことにする」導線を出さないため）
+  - **破壊的操作のため確認ダイアログを振る**。承認時に当該セッションを `sessions` テーブルから `id` で 1 件削除し、履歴一覧へ戻る
+  - 削除対象は当該 `Session` のみ。`menu_presets` には影響しない
+  - **副作用**: 削除したセッションは 1RM グラフのデータ点から外れる。linear progression が参照する「同一種目の直前セッション」も変わりうる（直近を削除すると 1 つ前が直前セッションになる）。増量ベースライン自体は `menu_presets[exercise].weight` に保持されるため失われない
 
 ---
 
@@ -235,6 +239,7 @@
 
 - 過去のセッション一覧（日付降順）
 - セッションを開くと結果確認画面と同じ詳細を表示（セットメモもこの画面で閲覧・編集できる）。**ただし実績回数は読み専用**（§3 「実績値の編集ポリシー」参照）
+- 履歴詳細では当該セッションを削除できる（§5「結果確認画面」のセッション削除を参照）。**一覧画面から直接の削除導線は設けない**（削除は詳細を開いた上での明示操作に限定）
 - **同一日・同一種目のセッションが複数ある場合は、最新の 1 件のみ** を一覧に表示（後で行われた記録で表示上書き）
 - **「同一日」の判定**: デバイスのローカルタイムゾーン基準
 
@@ -346,7 +351,7 @@ stateDiagram-v2
 実装言語は TypeScript。型定義はおおよそ次の通り。
 
 ```ts
-type Exercise = 'bench' | 'squat' | 'deadlift'
+type Exercise = 'benchPress' | 'squat' | 'deadlift'
 
 type MenuPreset = {
   exercise: Exercise
@@ -357,36 +362,30 @@ type MenuPreset = {
 }
 
 type SetResult = {
-  setIndex: number        // 0-based
-  targetReps: number
   actualReps: number      // 0 以上の整数。`actualReps === 0` は実質的なスキップと同義
-  completedAt: number     // unix ms
   memo: string            // ユーザー記述のメモ。初期値 ""、文字数上限なし。不変性の対象外
 }
+// セットの順序は results 配列のインデックスで表す（append only・並び替えなし）
 
 type Session = {
   id: string
   exercise: Exercise
   status: 'executed' | 'aborted'
   startedAt: number       // unix ms
-  endedAt: number         // unix ms
   menu: Readonly<MenuPreset>  // セッション開始時点の deep copy。以降の menu_presets 変更は反映しない
   results: SetResult[]
 }
 
-function estimate1RM(exercise: Exercise, weight: number, reps: number): number {
+// FWJ 換算式 1RM = w × (1 + r / divisor) の種目別 divisor
+const ONE_RM_DIVISOR: Record<Exercise, number> = {
+  benchPress: 40,
+  squat: 33.3,
+  deadlift: 33.3,
+}
+
+function estimateOneRm(exercise: Exercise, weight: number, reps: number): number {
   if (reps < 1) return 0
-  switch (exercise) {
-    case 'bench':
-      return weight * (1 + reps / 40)
-    case 'squat':
-    case 'deadlift':
-      return weight * (1 + reps / 33.3)
-    default: {
-      const _exhaustive: never = exercise
-      throw new Error(`Unknown exercise: ${_exhaustive}`)
-    }
-  }
+  return weight * (1 + reps / ONE_RM_DIVISOR[exercise])
 }
 ```
 
