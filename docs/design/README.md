@@ -48,7 +48,7 @@ JSX 側は React で書かれているが、これは見た目の意図を示す
 ```css
 text-shadow:
   0 0 4px rgba(34, 232, 255, 0.45),
-  0 0 14px rgba(34, 232, 255, 0.45);
+  0 0 12px rgba(34, 232, 255, 0.45);
 ```
 
 ### Type Scale (6段階・全偶数・最小 12px)
@@ -72,12 +72,13 @@ text-shadow:
 ### Font Family
 
 ```css
---font-sans: system-ui, -apple-system, "Noto Sans JP", sans-serif;
---font-mono: ui-monospace, "Roboto Mono", Menlo, monospace;
+--font-sans: system-ui, -apple-system, sans-serif;
+--font-mono: ui-monospace, monospace;
 ```
 
 - **Sans**: 本文・タイトル・ヘッドライン
 - **Mono**: すべての数字・大文字ラベル (タブラー数字必須: `font-variant-numeric: tabular-nums`)
+- **web font は読み込まない**: スタックは `system-ui` 始まりで、iOS=SF / macOS=SF / Windows=Segoe UI / Android=Roboto の各システムフォントを使う。日本語は OS のグリフ補完 (Hiragino / Yu Gothic / Noto CJK) に任せる。PWA の軽量・オフライン性を優先し `@font-face` / Google Fonts は使わない
 
 ### Font Weight (3段階)
 
@@ -103,7 +104,7 @@ text-shadow:
 | 20 | card padding x・Pad gap |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
-| 32 | design tokens card outer pad |
+| (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |
 
 ### Radius
 
@@ -120,6 +121,7 @@ text-shadow:
 
 - `1.0` — hero numbers・large display digits
 - `1.4` — body・labels・captions (デフォルト)
+- `1.5` — Settings の説明テキストのみ (例外。トークン化せず inline)
 
 ---
 
@@ -171,7 +173,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - Progress hairline (1 px line)
 - セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (fg3, regular)
 - 各完了セットの行: タップでセット編集モーダル (重量 read-only + 実績ステッパー + メモ)
-- 下部: `NEXT SET` (primary, fill accent) と `ABORT` (ghost, danger color `#3a2622` border / `#d05a4a` text)
+- 下部: `Next set` (primary, fill accent) と `End session` (ghost, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
 
 ### 5. Result (`M_Result`)
 

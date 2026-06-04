@@ -1,8 +1,8 @@
 // PeakRM Hi-Fi · design tokens (dark mode, 8px grid)
 // Two directions share the base palette; accent differs.
 
-const FONT_SANS = 'system-ui, -apple-system, "Noto Sans JP", sans-serif';
-const FONT_MONO = 'ui-monospace, "Roboto Mono", Menlo, monospace';
+const FONT_SANS = 'system-ui, -apple-system, sans-serif';
+const FONT_MONO = 'ui-monospace, monospace';
 
 // Base dark palette · monotone scale (dark → light)
 const C = {

@@ -16,11 +16,11 @@ const PrimaryButton = ({ children, accent, dark, caps, style }) => (
   }}>{children}</div>
 );
 
-const GhostButton = ({ children, style, danger, caps }) => (
+const GhostButton = ({ children, style, caps }) => (
   <div style={{
     height: 44, minHeight: 44, flexShrink: 0, borderRadius: 4,
-    border: `1px solid ${danger ? '#3a2622' : C.line}`,
-    color: danger ? '#d05a4a' : C.fg2,
+    border: `1px solid ${C.line}`,
+    color: C.fg2,
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     fontFamily: caps ? FONT_MONO : FONT_SANS,
     fontSize: T.body, fontWeight: caps ? W.semibold : W.regular,
