@@ -16,7 +16,7 @@ const PrimaryButton = ({ children, accent, dark, caps, style }) => (
   }}>{children}</div>
 );
 
-const GhostButton = ({ children, style, caps }) => (
+const SecondaryButton = ({ children, style, caps }) => (
   <div style={{
     height: 44, minHeight: 44, flexShrink: 0, borderRadius: 4,
     border: `1px solid ${C.line}`,
@@ -122,12 +122,12 @@ const Card = ({ children, raised, accent, style, onClickHint }) => (
 );
 
 // Section label · caps mono
-const SectionLabel = ({ children, right, style }) => (
+const SectionTitle = ({ children, right, style }) => (
   <div style={{
     display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
     padding: '0px 4px', ...style,
   }}>
-    <Eyebrow>{children}</Eyebrow>
+    <Label>{children}</Label>
     {right}
   </div>
 );
@@ -147,38 +147,8 @@ const BigNumber = ({ value, unit, size = T.stat, color, style }) => (
     </div>
 );
 
-// Status pill · neutral chip
-const Pill = ({ children, accent, style }) => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center', gap: 8,
-    fontFamily: FONT_MONO, fontSize: T.caption, textTransform: 'uppercase',
-    color: accent || C.fg2,
-    padding: '4px 12px', borderRadius: 999,
-    border: `1px solid ${accent ? accent : C.line}`,
-    fontWeight: W.semibold,
-    ...style,
-  }}>{children}</span>
-);
-
-// Set chip indicator (numbered circle)
-const SetCircle = ({ n, state = 'done', color }) => {
-  // states: done | current | pending
-  const bg = state === 'done' ? C.fg : state === 'current' ? (color || C.fg) : 'transparent';
-  const border = state === 'pending' ? `1.5px solid ${C.line}` : 'none';
-  const txt = state === 'pending' ? C.fg3 : '#0a0a0b';
-  return (
-    <div style={{
-      width: 24, height: 24, borderRadius: 4,
-      background: bg, border, color: txt,
-      ...NumStyle, fontSize: T.caption, fontWeight: W.bold,
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-    }}>{n}</div>
-  );
-};
-
-// Pad / Screen body
-const Pad = ({ children, p = 24, gap = 16, style }) => (
+// Screen body
+const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
   <div style={{
     padding: `0 ${p}px`, flex: 1, minHeight: 0,
     display: 'flex', flexDirection: 'column', gap,
@@ -188,6 +158,6 @@ const Pad = ({ children, p = 24, gap = 16, style }) => (
 );
 
 Object.assign(window, {
-  PrimaryButton, GhostButton, IconButton, AppBar, Stepper, Card,
-  SectionLabel, BigNumber, Pill, SetCircle, Pad, Unit,
+  PrimaryButton, SecondaryButton, IconButton, AppBar, Stepper, Card,
+  SectionTitle, BigNumber, ScreenBody, Unit,
 });

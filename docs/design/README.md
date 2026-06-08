@@ -60,7 +60,7 @@ text-shadow:
 | `stat` | 32 | mono | bold | home/chart 1RM・stepper(大)・modal 重量 |
 | `title` | 20 | sans | semibold | AppBar・card title・modal title・× 8 reps |
 | `body` | 14 | sans/mono | regular / bold (numbers) | 行ラベル・メモ・サマリ数値 (mono numbers は bold) |
-| `caption` | 12 | mono | regular / bold (active) | eyebrow・unit・日付軸・badge |
+| `caption` | 12 | mono | regular / bold (active) | Label・unit・日付軸・badge |
 
 **ルール:**
 
@@ -84,8 +84,8 @@ text-shadow:
 
 | Role | Weight | 用途 |
 | --- | --- | --- |
-| `regular` | 500 | body・行ラベル・メモ・Eyebrow・Unit・日付軸・pending |
-| `semibold` | 600 | sans タイトル (card / AppBar / modal)・× 8 reps・ghost button caps |
+| `regular` | 500 | body・行ラベル・メモ・Label・Unit・日付軸・pending |
+| `semibold` | 600 | sans タイトル (card / AppBar / modal)・× 8 reps・secondary button caps |
 | `bold` | 700 | すべての数字・brand・primary button caps・badge・active state |
 
 **覚え方: 数字は bold ・ sans タイトルは semibold ・ それ以外は regular**
@@ -101,7 +101,7 @@ text-shadow:
 | 8 | default chip・sub-row gap |
 | 12 | card row gap・grid gap |
 | 16 | card padding y・section gap |
-| 20 | card padding x・Pad gap |
+| 20 | card padding x・ScreenBody gap |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
 | (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |
@@ -136,9 +136,9 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - ブランド `PeakRM` (sans title bold) + タグライン "Train the plan. Track your peak." (caption fg3)
 - 3 つの種目カード (Bench Press / Squat / Deadlift) を縦に配置。各カード:
   - 種目名 (sans title semibold, uppercase)
-  - 左: `EST. 1RM` eyebrow + 推定1RM 数値 (mono stat bold, アクセント色 + glow)。未記録時は `—` (fg3)
-  - 右: `LAST` eyebrow + 重量 (mono body bold) + reps (mono caption regular, `× 82.5/8/7` 形式)
-  - 未記録時は eyebrow 行のみ ("No record yet")
+  - 左: `EST. 1RM` Label + 推定1RM 数値 (mono stat bold, アクセント色 + glow)。未記録時は `—` (fg3)
+  - 右: `LAST` Label + 重量 (mono body bold) + reps (mono caption regular, `× 82.5/8/7` 形式)
+  - 未記録時は Label 行のみ ("No record yet")
 - 下部: History 行 (アイコン + ラベル) と Settings 行を縦に並べる
 - カードタップでメニュー設定画面へ
 
@@ -155,7 +155,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 ### 3. Training (`M_TrainingSet`)
 
 - AppBar: 左 ← / 中央 "Bench Press"
-- Set position row: `Set` eyebrow + `2/4` (final 時は `Final set` ＋ accent + glow)
+- Set position row: `Set` Label + `2/4` (final 時は `Final set` ＋ accent + glow)
 - ヒーロー数値: `82.5` (mono display bold, accent, glow) + `kg` unit
 - 副情報: `× 8` (mono title semibold) + `reps` unit
 - 中央ラベル: `Reps done` (sans body regular)
@@ -169,11 +169,11 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - AppBar: 左 ← / 中央 "Bench Press"
 - 上部サマリ: `82.5 kg · 8 reps · 4 sets` (mono body bold + Unit regular)
 - Timer ヒーロー: `0:47` (mono hero bold, accent + glow) + `.32` ms 部 (mono body bold, fg3)
-- Target 行: `Target 1:30` eyebrow
+- Target 行: `Target 1:30` Label
 - Progress hairline (1 px line)
 - セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (fg3, regular)
 - 各完了セットの行: タップでセット編集モーダル (重量 read-only + 実績ステッパー + メモ)
-- 下部: `Next set` (primary, fill accent) と `End session` (ghost, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
+- 下部: `Next set` (primary, fill accent) と `End session` (secondary, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
 
 ### 5. Result (`M_Result`)
 
@@ -182,7 +182,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - 種目名 (sans title semibold)
 - Prescription summary: `82.5 kg · 8 reps · 3 sets`
 - Status marker: `EXECUTED` (accent + glow) または `ABORTED` (fg2, no glow)
-- ヒーロー: `Est. 1RM` eyebrow + `99.0` (mono hero bold, accent + glow) + `kg` unit
+- ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit
 - Delta badge (前回 executed セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
 - Next session preview (LP triggered 時のみ): `Next session +2.5 kg` 形式の hint
 - セットタイムライン (実績回数読み専用 / 履歴詳細時)
