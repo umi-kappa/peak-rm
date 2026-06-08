@@ -147,36 +147,6 @@ const BigNumber = ({ value, unit, size = T.stat, color, style }) => (
     </div>
 );
 
-// Status pill · neutral chip
-const Pill = ({ children, accent, style }) => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center', gap: 8,
-    fontFamily: FONT_MONO, fontSize: T.caption, textTransform: 'uppercase',
-    color: accent || C.fg2,
-    padding: '4px 12px', borderRadius: 999,
-    border: `1px solid ${accent ? accent : C.line}`,
-    fontWeight: W.semibold,
-    ...style,
-  }}>{children}</span>
-);
-
-// Set chip indicator (numbered circle)
-const SetCircle = ({ n, state = 'done', color }) => {
-  // states: done | current | pending
-  const bg = state === 'done' ? C.fg : state === 'current' ? (color || C.fg) : 'transparent';
-  const border = state === 'pending' ? `1.5px solid ${C.line}` : 'none';
-  const txt = state === 'pending' ? C.fg3 : '#0a0a0b';
-  return (
-    <div style={{
-      width: 24, height: 24, borderRadius: 4,
-      background: bg, border, color: txt,
-      ...NumStyle, fontSize: T.caption, fontWeight: W.bold,
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-    }}>{n}</div>
-  );
-};
-
 // Screen body
 const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
   <div style={{
@@ -189,5 +159,5 @@ const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
 
 Object.assign(window, {
   PrimaryButton, SecondaryButton, IconButton, AppBar, Stepper, Card,
-  SectionTitle, BigNumber, Pill, SetCircle, ScreenBody, Unit,
+  SectionTitle, BigNumber, ScreenBody, Unit,
 });
