@@ -140,7 +140,7 @@ const DesignTokens = () => {
         <TypeRow size={T.stat}    role="Stat"     weight={W.bold}     family={FONT_MONO} sample="99.0" label="home/chart 1RM ・ stepper(大) ・ modal 重量" />
         <TypeRow size={T.title}   role="Title"    weight={W.semibold} family={FONT_SANS} sample="Bench Press" label="AppBar ・ card title ・ modal title ・ × 8 reps" />
         <TypeRow size={T.body}    role="Body"     weight={W.regular}  family={FONT_SANS} sample="Reps done" label="行ラベル ・ メモ ・ モーダルのノート" />
-        <TypeRow size={T.caption} role="Caption"  weight={W.regular}  family={FONT_MONO} sample="EST. 1RM" label="eyebrow ・ unit ・ 日付軸" />
+        <TypeRow size={T.caption} role="Caption"  weight={W.regular}  family={FONT_MONO} sample="EST. 1RM" label="Label ・ unit ・ 日付軸" />
 
         {/* WEIGHT scale */}
         <div style={{
@@ -151,7 +151,7 @@ const DesignTokens = () => {
           覚え方: <strong style={{ color: C.fg2 }}>数字は bold ・ sans タイトルは semibold ・ それ以外は regular</strong>
         </div>
         <WeightRow weight={W.regular}  name="regular"  use="body / 行ラベル / メモ / Label / Unit / 日付軸 / pending state" />
-        <WeightRow weight={W.semibold} name="semibold" use="sans タイトル (card / AppBar / modal) ・ × 8 reps ・ ghost button caps" />
+        <WeightRow weight={W.semibold} name="semibold" use="sans タイトル (card / AppBar / modal) ・ × 8 reps ・ secondary button caps" />
         <WeightRow weight={W.bold}     name="bold"     use="すべての数字 ・ brand ・ primary button caps ・ badge ・ active state" />
       </div>
 

@@ -67,7 +67,7 @@ const T = {
   stat:    32,  // mono · home/chart 1RM ・ stepper(大) ・ modal 重量
   title:   20,  // sans · AppBar ・ card title ・ set reps 値
   body:    14,  // sans · 行ラベル ・ ボタン caps ・ サマリ数値
-  caption: 12,  // mono · eyebrow ・ unit ・ badge ・ 補助テキスト
+  caption: 12,  // mono · Label ・ unit ・ badge ・ 補助テキスト
 };
 
 // Font weights · 3 levels only.

@@ -42,7 +42,7 @@ const M_Home = ({ empty = false }) =>
       }}>
             {/* TITLE row */}
             <span style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.semibold, color: C.fg, textTransform: 'uppercase' }}>{e.name}</span>
-            {/* DATA row · Est. 1RM (left) / Last (right) — eyebrows aligned */}
+            {/* DATA row · Est. 1RM (left) / Last (right) — Labels aligned */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 <Label color={C.fg3}>Est. 1RM</Label>
