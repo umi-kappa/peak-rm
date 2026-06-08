@@ -22,7 +22,7 @@ const exercises = [
 // ---------- 01 HOME ----------
 const M_Home = ({ empty = false }) =>
 <PhoneFrame label={empty ? '01 Home (記録なし)' : '01 Home'}>
-    <Pad gap={20} p={24}>
+    <ScreenBody gap={20} p={24}>
       {/* brand row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingTop: 8 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -45,7 +45,7 @@ const M_Home = ({ empty = false }) =>
             {/* DATA row · Est. 1RM (left) / Last (right) — eyebrows aligned */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, alignItems: 'start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                <Eyebrow color={C.fg3}>Est. 1RM</Eyebrow>
+                <Label color={C.fg3}>Est. 1RM</Label>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                   {empty ?
               <span style={{ ...NumStyle, fontSize: T.stat, fontWeight: W.bold, color: C.fg3, lineHeight: 1 }}>—</span> :
@@ -56,7 +56,7 @@ const M_Home = ({ empty = false }) =>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                <Eyebrow color={C.fg3}>Last</Eyebrow>
+                <Label color={C.fg3}>Last</Label>
                 {empty ?
             <Unit size={12}>No log</Unit> :
             (() => {
@@ -92,7 +92,7 @@ const M_Home = ({ empty = false }) =>
         </div>
         <Ic.Chevron dir="right" color={C.fg3} size={18} />
       </div>
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>;
 
 
@@ -100,9 +100,9 @@ const M_Home = ({ empty = false }) =>
 const M_Menu = () =>
 <PhoneFrame label="02 Menu" h={840}>
     <AppBar caps title="Bench Press" />
-    <Pad gap={24} p={24}>
+    <ScreenBody gap={24} p={24}>
       <div style={{ paddingTop: 8 }}>
-        <Eyebrow>Weight</Eyebrow>
+        <Label>Weight</Label>
         <div style={{
         marginTop: 16,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
@@ -118,7 +118,7 @@ const M_Menu = () =>
           </div>
           <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
             <BigNumber value="150.25" unit="kg" size={T.stat} color={MA} style={minGlow()} />
-            <Eyebrow style={{ marginTop: 8 }}>Step · 0.25 kg</Eyebrow>
+            <Label style={{ marginTop: 8 }}>Step · 0.25 kg</Label>
           </div>
           <div style={{
           width: 44, height: 44, borderRadius: 4, border: `1px solid ${C.line}`,
@@ -138,7 +138,7 @@ const M_Menu = () =>
       }}>
           <Ic.Trend color={C.fg} size={18} />
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Eyebrow color={C.fg2}>Linear Progression</Eyebrow>
+            <Label color={C.fg2}>Linear Progression</Label>
             <div style={{
             fontFamily: FONT_MONO, fontSize: T.caption,
             textTransform: 'uppercase', color: C.fg, fontWeight: W.regular
@@ -156,7 +156,7 @@ const M_Menu = () =>
       </div>
 
       <div>
-        <SectionLabel>Plan</SectionLabel>
+        <SectionTitle>Plan</SectionTitle>
         <div style={{
         marginTop: 12,
         background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}`,
@@ -181,7 +181,7 @@ const M_Menu = () =>
 
       <div style={{ flex: 1 }} />
       <PrimaryButton caps accent={MA} dark="#0a0a0b">Start</PrimaryButton>
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>;
 
 
@@ -193,7 +193,7 @@ const M_TrainingSet = ({ final = false }) => {
   return (
     <PhoneFrame label="03a Training">
     <AppBar caps title="Bench Press" />
-    <Pad gap={20} p={24}>
+    <ScreenBody gap={20} p={24}>
       {/* hero — prescription for this set */}
       <div style={{
           flex: 1, minHeight: 0,
@@ -233,7 +233,7 @@ const M_TrainingSet = ({ final = false }) => {
       </div>
 
       <PrimaryButton caps accent={MA} dark="#0a0a0b" style={{ marginTop: 16 }}>{final ? 'Finish session' : 'Complete set'}</PrimaryButton>
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>);
 
 };
@@ -244,7 +244,7 @@ const M_Interval = () => {
   return (
     <PhoneFrame label="03b Interval" h={920}>
     <AppBar caps title="Bench Press" />
-    <Pad gap={16} p={24}>
+    <ScreenBody gap={16} p={24}>
       {/* prescription summary */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: 4 }}>
         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>82.5</span>
@@ -264,8 +264,8 @@ const M_Interval = () => {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
         }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', lineHeight: "1.4" }}>
-          <Eyebrow>Interval</Eyebrow>
-          <Eyebrow color={C.fg3}>Target 1:30</Eyebrow>
+          <Label>Interval</Label>
+          <Label color={C.fg3}>Target 1:30</Label>
         </div>
         <div style={{ ...NumStyle, fontSize: T.hero, fontWeight: W.bold, lineHeight: 1, display: 'flex', alignItems: 'baseline' }}>
           <span style={{ color: MA, ...g }}>0:47</span>
@@ -277,7 +277,7 @@ const M_Interval = () => {
         </div>
       </div>
 
-      <SectionLabel>Sets</SectionLabel>
+      <SectionTitle>Sets</SectionTitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* set 1 — done with memo */}
@@ -298,8 +298,8 @@ const M_Interval = () => {
 
       <div style={{ flex: 1 }} />
       <PrimaryButton caps accent={MA} dark="#0a0a0b">Next set</PrimaryButton>
-      <GhostButton caps>End session</GhostButton>
-    </Pad>
+      <SecondaryButton caps>End session</SecondaryButton>
+    </ScreenBody>
   </PhoneFrame>);
 
 };
@@ -321,7 +321,7 @@ const SetRow_M = ({ n, state, reps, target, memo, memoPrompt, highlight, readOnl
       <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
         {state === 'pending' || state === 'next' ?
       <>
-            {state === 'next' && <Eyebrow color={MA}>Next</Eyebrow>}
+            {state === 'next' && <Label color={MA}>Next</Label>}
             <span style={{ ...NumStyle, fontSize: T.body, color: state === 'next' ? C.fg : C.fg3, marginLeft: 'auto', fontWeight: W.bold }}>{target}</span>
             <Unit size={12} color={state === 'next' ? C.fg2 : C.fg3}>reps</Unit>
           </> :
@@ -358,7 +358,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
     {fromHistory ?
       <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} /></IconButton>} /> :
       <AppBar caps title="Bench Press" />}
-    <Pad gap={20} p={24}>
+    <ScreenBody gap={20} p={24}>
       {/* date · history only */}
       {fromHistory &&
         <div style={{
@@ -409,7 +409,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
 
         {/* Est. 1RM headline */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <Eyebrow color={C.fg3}>Est. 1RM</Eyebrow>
+          <Label color={C.fg3}>Est. 1RM</Label>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
             <span style={{ ...NumStyle, fontSize: T.hero, fontWeight: W.bold, color: MA, lineHeight: 1, ...g }}>{aborted ? '98.4' : '99.0'}</span>
             <Unit>kg</Unit>
@@ -437,7 +437,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
         }}>
           <Ic.Trend color={C.fg} size={18} />
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Eyebrow color={C.fg2}>Linear Progression</Eyebrow>
+            <Label color={C.fg2}>Linear Progression</Label>
             <div style={{
               fontFamily: FONT_MONO, fontSize: T.caption,
               textTransform: 'uppercase', color: C.fg, fontWeight: W.regular
@@ -455,7 +455,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
         }
 
       {/* Set list */}
-      <SectionLabel>Sets</SectionLabel>
+      <SectionTitle>Sets</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {aborted ?
           <>
@@ -480,7 +480,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
 
       <div style={{ flex: 1 }} />
       {live && <PrimaryButton caps accent={MA} dark="#0a0a0b">Finish</PrimaryButton>}
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>);
 
 };
@@ -491,7 +491,7 @@ const M_History = () => {
   return (
     <PhoneFrame label="05 History" h={860}>
     <AppBar caps title="History" />
-    <Pad gap={16} p={24}>
+    <ScreenBody gap={16} p={24}>
       {/* tabs */}
       <div style={{ display: 'flex', gap: 4, padding: 4, background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}` }}>
         {['Bench Press', 'Squat', 'Deadlift'].map((t, i) =>
@@ -510,14 +510,14 @@ const M_History = () => {
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div>
-            <Eyebrow>Est. 1RM</Eyebrow>
+            <Label>Est. 1RM</Label>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
               <span style={{ ...NumStyle, fontSize: T.stat, fontWeight: W.bold, color: MA, ...g }}>99.0</span>
               <Unit size={12}>kg</Unit>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-            <Eyebrow color={C.fg3}>Last 8 sessions</Eyebrow>
+            <Label color={C.fg3}>Last 8 sessions</Label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <Ic.Arrow dir="up" size={12} color={C.fg} />
               <span style={{ ...NumStyle, fontSize: T.body, color: C.fg, fontWeight: W.bold }}>+9.0</span>
@@ -555,7 +555,7 @@ const M_History = () => {
         </div>
       </div>
 
-      <SectionLabel>Sessions</SectionLabel>
+      <SectionTitle>Sessions</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[
           ['05/12', '82.5', '8/8/7', '99.0', 'executed'],
@@ -597,7 +597,7 @@ const M_History = () => {
           </div>);
           })}
       </div>
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>);
 
 };
@@ -606,9 +606,9 @@ const M_History = () => {
 const M_Settings = () =>
 <PhoneFrame label="06 Settings">
     <AppBar caps title="Settings" />
-    <Pad gap={20} p={24}>
+    <ScreenBody gap={20} p={24}>
       <div>
-        <SectionLabel>Data</SectionLabel>
+        <SectionTitle>Data</SectionTitle>
         <div style={{
         padding: '6px 4px 0', fontSize: T.caption, color: C.fg3, lineHeight: 1.5
       }}>
@@ -627,13 +627,13 @@ const M_Settings = () =>
       
       </div>
 
-      <SectionLabel>About</SectionLabel>
+      <SectionTitle>About</SectionTitle>
       <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
         <SettingRow title="Version" right={<span style={{ ...NumStyle, fontSize: T.body, color: C.fg2 }}>1.0.0</span>} />
       </div>
 
       <div style={{ flex: 1 }} />
-    </Pad>
+    </ScreenBody>
   </PhoneFrame>;
 
 
@@ -694,7 +694,7 @@ const M_Modal = () =>
 
       {/* EDITABLE · reps */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Eyebrow color={C.fg2}>Reps done</Eyebrow>
+        <Label color={C.fg2}>Reps done</Label>
         <div style={{
         background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4,
         padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end'
@@ -705,7 +705,7 @@ const M_Modal = () =>
 
       {/* EDITABLE · note */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Eyebrow color={C.fg2}>Note</Eyebrow>
+        <Label color={C.fg2}>Note</Label>
         <div style={{
         padding: '12px 14px', borderRadius: 4, background: C.surface, border: `1px solid ${C.lineSoft}`,
         minHeight: 64, fontSize: T.body, color: C.fg, fontWeight: W.regular
@@ -725,7 +725,7 @@ const M_InputStepper = () =>
   display: 'flex', flexDirection: 'column', gap: 16, border: `1px solid ${C.lineSoft}`
 }}>
     <div>
-      <Eyebrow>A · Stepper</Eyebrow>
+      <Label>A · Stepper</Label>
       <div style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.semibold, marginTop: 4 }}>採用 · 0.25 kg 刻み</div>
     </div>
     <div style={{
@@ -755,8 +755,8 @@ const M_InputStepper = () =>
       </div>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Eyebrow color={C.fg3}>Hold 500ms · 加速連造</Eyebrow>
-      <Eyebrow color={C.fg3}>Hit area 64×64</Eyebrow>
+      <Label color={C.fg3}>Hold 500ms · 加速連造</Label>
+      <Label color={C.fg3}>Hit area 64×64</Label>
     </div>
   </div>;
 

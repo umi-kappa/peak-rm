@@ -84,7 +84,7 @@ text-shadow:
 
 | Role | Weight | 用途 |
 | --- | --- | --- |
-| `regular` | 500 | body・行ラベル・メモ・Eyebrow・Unit・日付軸・pending |
+| `regular` | 500 | body・行ラベル・メモ・Label・Unit・日付軸・pending |
 | `semibold` | 600 | sans タイトル (card / AppBar / modal)・× 8 reps・ghost button caps |
 | `bold` | 700 | すべての数字・brand・primary button caps・badge・active state |
 
@@ -101,7 +101,7 @@ text-shadow:
 | 8 | default chip・sub-row gap |
 | 12 | card row gap・grid gap |
 | 16 | card padding y・section gap |
-| 20 | card padding x・Pad gap |
+| 20 | card padding x・ScreenBody gap |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
 | (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |

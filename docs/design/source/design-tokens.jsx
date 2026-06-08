@@ -20,7 +20,7 @@ const Swatch = ({ name, value, sub }) => (
 
 const ColorGroup = ({ title, items }) => (
   <div style={{ marginBottom: 16 }}>
-    <Eyebrow style={{ marginBottom: 4 }}>{title}</Eyebrow>
+    <Label style={{ marginBottom: 4 }}>{title}</Label>
     {items.map(([k, v, sub]) => <Swatch key={k} name={k} value={v} sub={sub} />)}
   </div>
 );
@@ -94,7 +94,7 @@ const DesignTokens = () => {
         ]} />
 
         <div>
-          <Eyebrow style={{ marginBottom: 4 }}>Accent</Eyebrow>
+          <Label style={{ marginBottom: 4 }}>Accent</Label>
           <Swatch name="Cyan" value="#22e8ff" sub="hero 1RM・current weight・active timer・primary CTA・glow" />
         </div>
       </div>
@@ -150,7 +150,7 @@ const DesignTokens = () => {
         <div style={{ fontSize: 12, color: C.fg3, lineHeight: 1.5, marginBottom: 8 }}>
           覚え方: <strong style={{ color: C.fg2 }}>数字は bold ・ sans タイトルは semibold ・ それ以外は regular</strong>
         </div>
-        <WeightRow weight={W.regular}  name="regular"  use="body / 行ラベル / メモ / Eyebrow / Unit / 日付軸 / pending state" />
+        <WeightRow weight={W.regular}  name="regular"  use="body / 行ラベル / メモ / Label / Unit / 日付軸 / pending state" />
         <WeightRow weight={W.semibold} name="semibold" use="sans タイトル (card / AppBar / modal) ・ × 8 reps ・ ghost button caps" />
         <WeightRow weight={W.bold}     name="bold"     use="すべての数字 ・ brand ・ primary button caps ・ badge ・ active state" />
       </div>
@@ -168,22 +168,22 @@ const DesignTokens = () => {
           8 px base grid. 2 px allowed for tight stacks; otherwise multiples of 4.
         </div>
 
-        <Eyebrow style={{ marginBottom: 4 }}>Micro</Eyebrow>
+        <Label style={{ marginBottom: 4 }}>Micro</Label>
         <SpaceRow value={2}  label="baseline tweaks · tight stack gap" />
         <SpaceRow value={4}  label="inline label/value gap" />
         <SpaceRow value={8}  label="default chip · sub-row gap" />
 
-        <Eyebrow style={{ marginBottom: 4, marginTop: 16 }}>Card & Row</Eyebrow>
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Card & Row</Label>
         <SpaceRow value={12} label="card row gap · grid gap" />
         <SpaceRow value={16} label="card padding y · section gap" />
-        <SpaceRow value={20} label="card padding x · Pad gap" />
+        <SpaceRow value={20} label="card padding x · ScreenBody gap" />
         <SpaceRow value={24} label="screen pad · stage gap" />
 
-        <Eyebrow style={{ marginBottom: 4, marginTop: 16 }}>Hero</Eyebrow>
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Hero</Label>
         <SpaceRow value={28} label="result hero padding y top" />
         <SpaceRow value={32} label="design tokens card outer pad" />
 
-        <Eyebrow style={{ marginBottom: 4, marginTop: 16 }}>Radius</Eyebrow>
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Radius</Label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
           <div style={{ width: 44, height: 44, borderRadius: 4, background: C.surface, border: `1px solid ${C.line}` }} />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -199,7 +199,7 @@ const DesignTokens = () => {
           </div>
         </div>
 
-        <Eyebrow style={{ marginBottom: 4, marginTop: 16 }}>Tap target</Eyebrow>
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Tap target</Label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
           <div style={{ width: 44, height: 44, borderRadius: 4, background: C.surface, border: `1px solid ${C.line}` }} />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -208,7 +208,7 @@ const DesignTokens = () => {
           </div>
         </div>
 
-        <Eyebrow style={{ marginBottom: 4, marginTop: 16 }}>Line height</Eyebrow>
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Line height</Label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ padding: '10px 0' }}>
             <span style={{ ...NumStyle, fontSize: 14, color: C.fg, fontWeight: 700 }}>1.0</span>

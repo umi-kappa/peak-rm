@@ -16,7 +16,7 @@ const PrimaryButton = ({ children, accent, dark, caps, style }) => (
   }}>{children}</div>
 );
 
-const GhostButton = ({ children, style, caps }) => (
+const SecondaryButton = ({ children, style, caps }) => (
   <div style={{
     height: 44, minHeight: 44, flexShrink: 0, borderRadius: 4,
     border: `1px solid ${C.line}`,
@@ -122,12 +122,12 @@ const Card = ({ children, raised, accent, style, onClickHint }) => (
 );
 
 // Section label · caps mono
-const SectionLabel = ({ children, right, style }) => (
+const SectionTitle = ({ children, right, style }) => (
   <div style={{
     display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
     padding: '0px 4px', ...style,
   }}>
-    <Eyebrow>{children}</Eyebrow>
+    <Label>{children}</Label>
     {right}
   </div>
 );
@@ -177,8 +177,8 @@ const SetCircle = ({ n, state = 'done', color }) => {
   );
 };
 
-// Pad / Screen body
-const Pad = ({ children, p = 24, gap = 16, style }) => (
+// ScreenBody / Screen body
+const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
   <div style={{
     padding: `0 ${p}px`, flex: 1, minHeight: 0,
     display: 'flex', flexDirection: 'column', gap,
@@ -188,6 +188,6 @@ const Pad = ({ children, p = 24, gap = 16, style }) => (
 );
 
 Object.assign(window, {
-  PrimaryButton, GhostButton, IconButton, AppBar, Stepper, Card,
-  SectionLabel, BigNumber, Pill, SetCircle, Pad, Unit,
+  PrimaryButton, SecondaryButton, IconButton, AppBar, Stepper, Card,
+  SectionTitle, BigNumber, Pill, SetCircle, ScreenBody, Unit,
 });

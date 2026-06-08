@@ -73,13 +73,13 @@ const T = {
 // Font weights · 3 levels only.
 // Use the role, not a raw number.
 const W = {
-  regular:  500,  // body / list rows / memo / Eyebrow / Unit / 補助
+  regular:  500,  // body / list rows / memo / Label / Unit / 補助
   semibold: 600,  // card title / AppBar title / title-level numbers / summary 中数値
   bold:     700,  // display/hero/stat 大数値 / button caps / brand / badge / active state
 };
 
 // Caps mono label
-const Eyebrow = ({ children, style, color }) => (
+const Label = ({ children, style, color }) => (
   <div style={{
     fontFamily: FONT_MONO, fontSize: T.caption,
     textTransform: 'uppercase', color: color || C.fg3,
@@ -97,5 +97,5 @@ const formatLast = (weight, sets) => {
 
 // expose globally so other babel files can use
 Object.assign(window, {
-  FONT_SANS, FONT_MONO, C, T, W, PhoneFrame, StatusBar, HomeIndicator, NumStyle, Eyebrow, formatLast,
+  FONT_SANS, FONT_MONO, C, T, W, PhoneFrame, StatusBar, HomeIndicator, NumStyle, Label, formatLast,
 });
