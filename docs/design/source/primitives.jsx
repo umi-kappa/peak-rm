@@ -177,7 +177,7 @@ const SetCircle = ({ n, state = 'done', color }) => {
   );
 };
 
-// ScreenBody / Screen body
+// Screen body
 const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
   <div style={{
     padding: `0 ${p}px`, flex: 1, minHeight: 0,

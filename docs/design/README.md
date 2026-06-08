@@ -173,7 +173,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - Progress hairline (1 px line)
 - セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (fg3, regular)
 - 各完了セットの行: タップでセット編集モーダル (重量 read-only + 実績ステッパー + メモ)
-- 下部: `Next set` (primary, fill accent) と `End session` (ghost, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
+- 下部: `Next set` (primary, fill accent) と `End session` (secondary, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
 
 ### 5. Result (`M_Result`)
 
