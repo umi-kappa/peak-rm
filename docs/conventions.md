@@ -17,10 +17,16 @@ src/
     shared/
       session/         # useSession / useIntervalTimer（実行中セッションの状態系）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
+      inputs/          # useStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
-    pages/<画面>/        # その画面専用のコンポーネント
+    pages/<画面>/        # その画面専用のコンポーネント（例: menu/WeightStepper.vue）
     shared/
-      ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）
+      ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
+        buttons/       # PrimaryButton / SecondaryButton / IconButton
+        typography/    # Unit / Label / BigNumber
+        inputs/        # Stepper
+        layout/        # ScreenBody / AppBar / Card / SectionTitle
+        icons/         # アイコン SVG
       *.vue            # 横断のアプリ固有複合（ConfirmDialog.vue / SetEditModal.vue など）
   pages/<画面>/index.vue # 画面エントリ（Nuxt 風の index.vue 命名。ファイルベースルーティングではない）
   router/index.ts        # vue-router のルート定義
@@ -29,10 +35,12 @@ src/
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`
 - **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
-- **`components/shared/ui/`** はデザインシステムのプリミティブ専用。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
+- **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`buttons/` / `typography/` / `inputs/` / `layout/` / `icons/`）に分ける。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
+- **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `Stepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
+- **ステッパーのロジックは 3 層に分離**: ① `core/stepper.ts` = 純関数（increment / decrement / clamp・0.25 kg 刻みなどのルール。副作用なし）、② `composables/shared/inputs/useStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）、③ `components/shared/ui/inputs/Stepper.vue` = 見た目（presentational）。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
 - **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`createSession()`）の単一インスタンスを App ルートで `provide` し、子孫が `inject` で共有する。依存リポジトリは composable の引数で注入する。
 
-`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/PrimaryButton.vue`、`@/pages/home/index.vue`。
+`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/buttons/PrimaryButton.vue`、`@/components/shared/ui/inputs/Stepper.vue`、`@/pages/home/index.vue`。
 
 ## ファイル命名
 
