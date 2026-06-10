@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { icons, type IconName } from '@/assets/icons'
 
-withDefaults(defineProps<{ name: IconName; size?: number }>(), {
-  size: 16,
-})
+const { name, size = 16 } = defineProps<{ name: IconName; size?: number }>()
 </script>
 
 <template>
