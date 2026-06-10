@@ -48,4 +48,10 @@
   /* ===== radius ===== */
   --radius: 4px; /* card・button・stepper・modal */
   --radius-pill: 999px; /* 短辺の半分で頭打ち → 高さ可変でも完全なカプセル形 */
+
+  /* ===== easing ===== */
+  --easing-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ===== transition ===== */
+  --transition: 300ms var(--easing-ease-out-expo);
 }
