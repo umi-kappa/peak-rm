@@ -53,7 +53,7 @@ src/
 - **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠。`components/shared/ui/` 配下の基底プリミティブで名前が 1 語になるもの（`BaseIcon` / `BaseLabel` / `BaseUnit`）は、Vue 公式の base component 規約に従い `Base` プレフィックスを付けて 2 語にする（`vue/multi-word-component-names` を満たすため）。修飾子を持つものはその機能名 2 語でよい（`IconButton` / `BigNumber`）
 - **TypeScript ロジック・composable**: camelCase（`oneRm.ts`、`useSession.ts`）
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
-- **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`SampleButton.vue` → `SampleButton.stories.ts`）
+- **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`BaseButton.vue` → `BaseButton.stories.ts`）
 - **設定ファイル（プロジェクトルート）**: ツール慣習に従う（`vite.config.ts`、`eslint.config.js`、`.prettierrc.json`）
 
 ## import
@@ -111,7 +111,7 @@ describe('oneRm', () => {
 
 > Story から生成されるテスト名は Story の `export` 識別子（英語 PascalCase）由来になる。「テスト名は日本語」の原則に対する例外として許容する（Story 識別子は英語固定のため）。
 
-- Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
+- Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`BaseButton.vue` の隣に `BaseButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
 - **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
 - Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
@@ -120,21 +120,22 @@ describe('oneRm', () => {
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, userEvent, within } from 'storybook/test'
-import SampleButton from '@/components/SampleButton.vue'
+import { expect, within } from 'storybook/test'
+import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
 
-const meta: Meta<typeof SampleButton> = { component: SampleButton }
+const meta: Meta<typeof IconButton> = {
+  component: IconButton,
+  args: { name: 'plus', label: 'セットを追加' },
+}
+
 export default meta
 
-type Story = StoryObj<typeof SampleButton>
+type Story = StoryObj<typeof IconButton>
 
-export const IncrementsOnClick: Story = {
+export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
-    await expect(button).toHaveTextContent('0')
-    await userEvent.click(button)
-    await expect(button).toHaveTextContent('1')
+    await expect(canvas.getByRole('button', { name: 'セットを追加' })).toBeVisible()
   },
 }
 ```
