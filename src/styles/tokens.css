@@ -33,7 +33,7 @@
 
   /* ===== line height（既定は bare・例外のみ接尾辞） ===== */
   --line-height: 1.4; /* デフォルト: 本文・ラベル・caption */
-  --line-height-tight: 1; /* 例外: hero/display の数字 */
+  --line-height-tight: 1; /* 例外: BigNumber（stat/hero/display）の数字 */
 
   /* ===== space（8px グリッド・2px はタイトスタックのみ） ===== */
   --space-2: 2px; /* baseline tweak・tight stack */
