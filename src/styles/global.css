@@ -24,6 +24,8 @@ body {
 }
 
 button {
+  /* UA スタイルの font / line-height を打ち消し、body の既定を継承させる */
+  font: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
