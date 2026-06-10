@@ -22,35 +22,38 @@ src/
     pages/<画面>/        # その画面専用のコンポーネント（例: menu/WeightStepper.vue）
     shared/
       ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
-        buttons/       # PrimaryButton / SecondaryButton / IconButton
-        typography/    # Unit / Label / BigNumber
+        base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit）
+        buttons/       # IconButton（円形アイコン専用ボタン）
+        typography/    # BigNumber（複合の文字表示）
         inputs/        # Stepper
         layout/        # ScreenBody / AppBar / Card / SectionTitle
-        icons/         # アイコン SVG
       *.vue            # 横断のアプリ固有複合（ConfirmDialog.vue / SetEditModal.vue など）
   pages/<画面>/index.vue # 画面エントリ（Nuxt 風の index.vue 命名。ファイルベースルーティングではない）
   router/index.ts        # vue-router のルート定義
+  assets/
+    icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`
 - **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
-- **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`buttons/` / `typography/` / `inputs/` / `layout/` / `icons/`）に分ける。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
+- **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/`）に分ける。`base/` は単一の HTML 要素をラップする基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit`）専用で、`Base` プレフィックスで揃える。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
 - **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `Stepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
 - **ステッパーのロジックは 3 層に分離**する。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
   1. `core/stepper.ts` = 純関数（increment / decrement / clamp・0.25 kg 刻みなどのルール。副作用なし）
   2. `composables/shared/inputs/useStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
   3. `components/shared/ui/inputs/Stepper.vue` = 見た目（presentational）
+- **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
 - **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`createSession()`）の単一インスタンスを App ルートで `provide` し、子孫が `inject` で共有する。依存リポジトリは composable の引数で注入する。
 
-`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/buttons/PrimaryButton.vue`、`@/components/shared/ui/inputs/Stepper.vue`、`@/pages/home/index.vue`。
+`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/Stepper.vue`、`@/pages/home/index.vue`。
 
 ## ファイル命名
 
-- **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠
+- **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠。`components/shared/ui/` 配下の基底プリミティブで名前が 1 語になるもの（`BaseIcon` / `BaseLabel` / `BaseUnit`）は、Vue 公式の base component 規約に従い `Base` プレフィックスを付けて 2 語にする（`vue/multi-word-component-names` を満たすため）。修飾子を持つものはその機能名 2 語でよい（`IconButton` / `BigNumber`）
 - **TypeScript ロジック・composable**: camelCase（`oneRm.ts`、`useSession.ts`）
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
-- **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`SampleButton.vue` → `SampleButton.stories.ts`）
+- **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`BaseButton.vue` → `BaseButton.stories.ts`）
 - **設定ファイル（プロジェクトルート）**: ツール慣習に従う（`vite.config.ts`、`eslint.config.js`、`.prettierrc.json`）
 
 ## import
@@ -60,6 +63,13 @@ src/
 - サードパーティパッケージは通常どおりパッケージ名で import する
 - `storage/` のリポジトリ（`sessionRepo` / `menuPresetRepo`）は **メソッドを束ねた 1 つのオブジェクトを export** する（`export const sessionRepo = { insert, list, ... }`）。個々の関数を named export しないことで、主語が消える `import { get }` を構造的に不可能にする（lint ルールではなく export 形で縛る）。メソッド名は主語を繰り返さず素の動詞にし（`get` / `put` / `list` / `insert` / `remove`）、主語は呼び出し側で `sessionRepo.list()` / `menuPresetRepo.get()` と表現する
   - **内部スタイル**: 各メソッドはモジュールスコープの関数として定義し、末尾の `export const repo = { ... }` で参照を束ねる（オブジェクトリテラル内にメソッドを直書きしない）。関数ごとに JSDoc を持たせられ、末尾の束ねがメソッド一覧（シグネチャの索引）として機能する
+
+## Vue コンポーネント
+
+- script ブロックは **`<script setup lang="ts">` 1 つに統一**する。通常の `<script lang="ts">` ブロックを併設しない
+- コンポーネント外から参照する型・定数（props の union 型など）は `<script setup>` から export できない（値 export はビルド時に compiler-sfc が拒否する。vue-tsc では検出されない）ため、`.ts` モジュールに切り出して双方から import する（例: `assets/icons/index.ts` の `iconNames` / `IconName`）。モジュールスコープで 1 回だけ実行したい処理（`import.meta.glob` のマップ構築など）も `<script setup>` 内ではなく `.ts` 側に置く（`<script setup>` の本文はインスタンス生成ごとに実行されるため）
+- props は型引数つき `defineProps` を **reactive props destructure**（Vue 3.5+）で受け、デフォルト値は分割代入のデフォルト値で書く（`const { size = 16 } = defineProps<{ size?: number }>()`）。`withDefaults` は使わない
+  - destructure した props を `<script setup>` 直下の式で使うとリアクティビティを失う（setup は 1 回しか走らない）。派生値は `computed` かテンプレート内の式にする
 
 ## 型定義（TypeScript）
 
@@ -101,7 +111,7 @@ describe('oneRm', () => {
 
 > Story から生成されるテスト名は Story の `export` 識別子（英語 PascalCase）由来になる。「テスト名は日本語」の原則に対する例外として許容する（Story 識別子は英語固定のため）。
 
-- Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`SampleButton.vue` の隣に `SampleButton.stories.ts`）
+- Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`BaseButton.vue` の隣に `BaseButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
 - **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
 - Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
@@ -110,21 +120,22 @@ describe('oneRm', () => {
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, userEvent, within } from 'storybook/test'
-import SampleButton from '@/components/SampleButton.vue'
+import { expect, within } from 'storybook/test'
+import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
 
-const meta: Meta<typeof SampleButton> = { component: SampleButton }
+const meta: Meta<typeof IconButton> = {
+  component: IconButton,
+  args: { name: 'plus', label: 'セットを追加' },
+}
+
 export default meta
 
-type Story = StoryObj<typeof SampleButton>
+type Story = StoryObj<typeof IconButton>
 
-export const IncrementsOnClick: Story = {
+export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
-    await expect(button).toHaveTextContent('0')
-    await userEvent.click(button)
-    await expect(button).toHaveTextContent('1')
+    await expect(canvas.getByRole('button', { name: 'セットを追加' })).toBeVisible()
   },
 }
 ```
@@ -156,12 +167,17 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - Vue の **scoped CSS** を使う。Tailwind は使わない（Sass も使わない。プレーン CSS + カスタムプロパティで足り、必要になった時点で後付けする）
 - クラス名は **短く（`.title`、`.list`）**。BEM 記法（`app__title`）は使わない
 - 値（色・タイポグラフィ・スペーシング）は `docs/design/README.md` のデザイントークンに厳密に従う
+- **`text-transform: uppercase` は使わない**。大文字で見せたいテキストは呼び出し側がラベル文字列そのものを大文字で書く（例: `START SESSION`・`KG`）。表示とソース文字列（コピー・読み上げ内容）を一致させる
+- **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
+- **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない
+- **`transition` は対象プロパティを明示する**（`transition: background-color var(--transition), color var(--transition)`）。プロパティ省略（= `all`）は全プロパティが変更監視され、意図しない変化（レイアウト系含む）までアニメーションされるため使わない
 
 ### デザイントークン
 
 - トークンの**値**は `src/styles/tokens.css` の `:root` カスタムプロパティに集約する（単一ソース）。`main.ts` / `.storybook/preview.ts` で `global.css` より前に読み込む。各コンポーネントの scoped CSS からは `var(--*)` で参照する
 - 多プロパティの**レシピ**（glow 付き数字・mono タブラー数字など）は共通 CSS ではなく**プリミティブコンポーネントに内包**して使い回す
-- 命名はカテゴリ接頭辞: `--color-*` / `--font-family-*` / `--font-size-*` / `--font-weight-*` / `--line-height*` / `--space-<px>` / `--radius*` / `--shadow-*`
+- 命名はカテゴリ接頭辞: `--color-*` / `--font-family-*` / `--font-size-*` / `--font-weight-*` / `--line-height*` / `--space-<px>` / `--radius*` / `--shadow-*` / `--easing-*` / `--transition`（`--transition` は既定値のみのトークンなので bare 名。下記の bare 規則に従う）
+- **`--font-size-*` の値は rem で定義する**。`global.css` の `html { font-size: 62.5% }` により 1rem = 10px なので、値はデザインの px ÷ 10（例: 14px → `1.4rem`）。% 基準のためブラウザのフォントサイズ設定（アクセシビリティ）にも追従する。スペーシング・radius など寸法系は px のままでよい
 - **既定値は接尾辞なし（bare）・変種のみ接尾辞**を付ける（例: `--line-height` / `--line-height-tight`、`--radius` / `--radius-pill`、`--color-text` / `--color-text-secondary`）
 - README の抽象名は用途が湧く名前に改名してよい（`fg`→`--color-text`、`line`→`--color-line` 等）。ただし**値は実デザイン（`docs/design/source/*.jsx`）に一致**させる。`font-size` の役割名（display/hero/stat…）は標準語なので維持しコメントで補足する
 

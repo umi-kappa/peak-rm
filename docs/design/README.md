@@ -113,9 +113,20 @@ text-shadow:
 | 4 | カード・ボタン・stepper・modal |
 | 999 | status pill・delta badge |
 
+### Motion
+
+| Token | 値 | 用途 |
+| --- | --- | --- |
+| `easing-ease-out-expo` | `cubic-bezier(0.16, 1, 0.3, 1)` | 変化が前半に集中する ease-out。transition の既定イージング |
+| `transition` | `300ms var(--easing-ease-out-expo)` | ボタン等の状態変化 (hover / active) の既定 transition |
+
+`source/tokens.jsx` には未定義（実装側 `tokens.css` 起点のトークン）。装飾的なアニメーションには使わず、状態変化のフィードバックのみに使う（トーンガイド準拠）。
+
 ### Tap Target
 
 最小 **44 px** (iOS HIG)。全ボタン・stepper・タブで遵守。
+
+例外: `IconButton` は `source/primitives.jsx` のデザイン値どおり 40 × 40 px とする（AppBar の補助操作用で、隣接要素と十分な間隔を取って配置する前提）。
 
 ### Line Height
 

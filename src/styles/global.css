@@ -10,7 +10,22 @@ body {
   padding: 0;
 }
 
+html {
+  font-size: 62.5%;
+}
+
 body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-family-sans);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height);
   -webkit-font-smoothing: antialiased;
+}
+
+button {
+  /* UA スタイルの font / line-height を打ち消し、body の既定を継承させる */
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }

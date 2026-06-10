@@ -5,7 +5,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "vite-svg-loader"]
   },
   "include": ["src/**/*", "src/**/*.vue", "vite.config.ts", ".storybook/**/*"]
 }

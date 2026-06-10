@@ -18,13 +18,13 @@
   --font-family-sans: system-ui, -apple-system, sans-serif;
   --font-family-mono: ui-monospace, monospace;
 
-  /* ===== font size（type scale・サイズのみ） ===== */
-  --font-size-display: 96px; /* 最大: training で持ち上げる重量（1画面1つ） */
-  --font-size-hero: 64px; /* 主役: result 1RM・interval timer */
-  --font-size-stat: 32px; /* 指標: home/chart 1RM・大 stepper・modal 重量 */
-  --font-size-title: 20px; /* 見出し: AppBar・card title・modal title・× 8 reps */
-  --font-size-body: 14px; /* 本文: 行ラベル・メモ・サマリ数値 */
-  --font-size-caption: 12px; /* 最小: Label・unit・日付軸・badge */
+  /* ===== font size（type scale・サイズのみ。rem = デザイン px ÷ 10。global.css の html { font-size: 62.5% } が前提） ===== */
+  --font-size-display: 9.6rem; /* 96px 最大: training で持ち上げる重量（1画面1つ） */
+  --font-size-hero: 6.4rem; /* 64px 主役: result 1RM・interval timer */
+  --font-size-stat: 3.2rem; /* 32px 指標: home/chart 1RM・大 stepper・modal 重量 */
+  --font-size-title: 2rem; /* 20px 見出し: AppBar・card title・modal title・× 8 reps */
+  --font-size-body: 1.4rem; /* 14px 本文: 行ラベル・メモ・サマリ数値 */
+  --font-size-caption: 1.2rem; /* 12px 最小: Label・unit・日付軸・badge */
 
   /* ===== font weight ===== */
   --font-weight-regular: 500; /* このアプリの既定の太さ（本文・ラベル等） */
@@ -33,7 +33,7 @@
 
   /* ===== line height（既定は bare・例外のみ接尾辞） ===== */
   --line-height: 1.4; /* デフォルト: 本文・ラベル・caption */
-  --line-height-tight: 1; /* 例外: hero/display の数字 */
+  --line-height-tight: 1; /* 例外: BigNumber（stat/hero/display）の数字 */
 
   /* ===== space（8px グリッド・2px はタイトスタックのみ） ===== */
   --space-2: 2px; /* baseline tweak・tight stack */
@@ -48,4 +48,10 @@
   /* ===== radius ===== */
   --radius: 4px; /* card・button・stepper・modal */
   --radius-pill: 999px; /* 短辺の半分で頭打ち → 高さ可変でも完全なカプセル形 */
+
+  /* ===== easing ===== */
+  --easing-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ===== transition ===== */
+  --transition: 300ms var(--easing-ease-out-expo);
 }
