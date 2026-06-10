@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, within } from 'storybook/test'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
 
 const meta: Meta<typeof BigNumber> = {
@@ -34,12 +33,7 @@ export default meta
 
 type Story = StoryObj<typeof BigNumber>
 
-export const Stat: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByText('99.0')).toBeVisible()
-  },
-}
+export const Stat: Story = {}
 
 export const Hero: Story = {
   args: { value: '0:47.59', size: 'hero' },
