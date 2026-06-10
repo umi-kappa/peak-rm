@@ -25,6 +25,14 @@ export default defineConfig({
       {
         extends: './vite.config.ts',
         plugins: [storybookTest({ configDir: storybookDir })],
+        // Storybook の vue3 フレームワークは template 文字列をコンパイルするため
+        // vue を full build（vue/dist/vue.esm-bundler.js）にエイリアスする。これは Vite の
+        // 事前スキャンでは発見されず、初回実行（CI 等のキャッシュなし環境）の途中で
+        // 最適化 → 強制リロードが走ってテストが落ちるため、事前最適化の対象に明示する
+        // （include のエントリにもエイリアスが適用されるため、エイリアス前の vue で指定）。
+        optimizeDeps: {
+          include: ['vue'],
+        },
         test: {
           name: 'storybook',
           // preview.ts の annotations は @storybook/addon-vitest が自動適用する（v10.3+）。
