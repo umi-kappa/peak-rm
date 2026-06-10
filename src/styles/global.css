@@ -19,5 +19,11 @@ body {
   color: var(--color-text);
   font-family: var(--font-family-sans);
   font-size: var(--font-size-body);
+  line-height: var(--line-height);
   -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }

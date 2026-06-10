@@ -23,9 +23,9 @@ const { name } = defineProps<{ name: IconName }>()
   background: var(--color-bg-light);
   border: none;
   color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: var(--transition);
-  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--transition),
+    color var(--transition);
 }
 
 /* hover はポインタ環境のみ */

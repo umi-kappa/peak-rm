@@ -17,11 +17,12 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
   padding-block: 0;
   padding-inline: var(--space-20);
   border-radius: var(--radius);
-  cursor: pointer;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-body);
-  transition: var(--transition);
-  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition);
 }
 
 /* primary: アクセント色の塗りで主アクションを担う */
