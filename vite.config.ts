@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import svgLoader from 'vite-svg-loader'
 import { VitePWA } from 'vite-plugin-pwa'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
@@ -16,6 +17,9 @@ const enablePwa = !process.env.VITEST && !process.env.STORYBOOK
 export default defineConfig({
   plugins: [
     vue(),
+    // lucide の純正 SVG（src/assets/icons/*.svg）を ?component でインライン展開する。
+    // svgo: false で stroke 属性などを無加工のまま保持し、currentColor 継承を効かせる。
+    svgLoader({ svgo: false }),
     ...(enablePwa
       ? [
           VitePWA({
