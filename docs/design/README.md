@@ -126,6 +126,8 @@ text-shadow:
 
 最小 **44 px** (iOS HIG)。全ボタン・stepper・タブで遵守。
 
+例外: `IconButton` は `source/primitives.jsx` のデザイン値どおり 40 × 40 px とする（AppBar の補助操作用で、隣接要素と十分な間隔を取って配置する前提）。
+
 ### Line Height
 
 - `1.0` — hero numbers・large display digits
