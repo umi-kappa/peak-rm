@@ -2,11 +2,11 @@
 import type { IconName } from '@/assets/icons'
 import BaseIcon from '@/components/shared/ui/base/BaseIcon.vue'
 
-const { name } = defineProps<{ name: IconName }>()
+const { name, label } = defineProps<{ name: IconName; label: string }>()
 </script>
 
 <template>
-  <button class="button" type="button">
+  <button class="button" type="button" :aria-label="label">
     <BaseIcon :name :size="20" />
   </button>
 </template>
