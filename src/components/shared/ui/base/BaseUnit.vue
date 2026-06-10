@@ -16,4 +16,8 @@ const { size = 'caption' } = defineProps<{ size?: 'caption' | 'body' }>()
 .unit.caption {
   font-size: var(--font-size-caption);
 }
+
+.unit.body {
+  font-size: var(--font-size-body);
+}
 </style>
