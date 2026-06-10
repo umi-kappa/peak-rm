@@ -25,14 +25,15 @@ export type IconName = (typeof iconNames)[number]
 // 同階層の *.svg を ?component でインライン展開し、ファイル名（= IconName）で引けるマップにする。
 // eager: true により同期的に import する。各 SVG はルートに stroke="currentColor" を持つため、
 // 色は親要素の color から継承される（vite.config の svgLoader は svgo: false で属性を保持する）。
-const modules = import.meta.glob<{ default: FunctionalComponent<SVGAttributes> }>(
-  '@/assets/icons/*.svg',
-  { query: '?component', eager: true },
-)
+const modules = import.meta.glob<FunctionalComponent<SVGAttributes>>('@/assets/icons/*.svg', {
+  query: '?component',
+  eager: true,
+  import: 'default',
+})
 
 export const icons = Object.fromEntries(
-  Object.entries(modules).map(([path, mod]) => [
+  Object.entries(modules).map(([path, component]) => [
     path.slice(path.lastIndexOf('/') + 1, -'.svg'.length),
-    mod.default,
+    component,
   ]),
 ) as Record<IconName, FunctionalComponent<SVGAttributes>>
