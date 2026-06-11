@@ -17,7 +17,7 @@ src/
     shared/
       session/         # useSession / useIntervalTimer（実行中セッションの状態系）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
-      inputs/          # useStepper（入力部品のブラウザ glue・長押しリピート等）
+      ui/inputs/       # useStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
     pages/<画面>/        # その画面専用のコンポーネント（例: menu/WeightStepper.vue）
     shared/
@@ -25,7 +25,7 @@ src/
         base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit）
         buttons/       # IconButton（円形アイコン専用ボタン）
         typography/    # BigNumber（複合の文字表示）
-        inputs/        # Stepper
+        inputs/        # NumberStepper
         layout/        # ScreenBody / AppBar / Card / SectionTitle
       *.vue            # 横断のアプリ固有複合（ConfirmDialog.vue / SetEditModal.vue など）
   pages/<画面>/index.vue # 画面エントリ（Nuxt 風の index.vue 命名。ファイルベースルーティングではない）
@@ -38,15 +38,15 @@ src/
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`
 - **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
 - **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/`）に分ける。`base/` は単一の HTML 要素をラップする基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit`）専用で、`Base` プレフィックスで揃える。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
-- **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `Stepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
+- **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `NumberStepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
 - **ステッパーのロジックは 3 層に分離**する。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
   1. `core/stepper.ts` = 純関数（increment / decrement / clamp・0.25 kg 刻みなどのルール。副作用なし）
-  2. `composables/shared/inputs/useStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
-  3. `components/shared/ui/inputs/Stepper.vue` = 見た目（presentational）
+  2. `composables/shared/ui/inputs/useStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
+  3. `components/shared/ui/inputs/NumberStepper.vue` = 見た目（presentational）
 - **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
 - **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`createSession()`）の単一インスタンスを App ルートで `provide` し、子孫が `inject` で共有する。依存リポジトリは composable の引数で注入する。
 
-`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/Stepper.vue`、`@/pages/home/index.vue`。
+`@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/NumberStepper.vue`、`@/pages/home/index.vue`。
 
 ## ファイル命名
 
