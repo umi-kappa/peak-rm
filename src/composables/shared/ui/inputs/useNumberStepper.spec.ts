@@ -17,8 +17,9 @@ afterEach(() => {
 
 // startIncrement / startDecrement は pointerdown ハンドラとして PointerEvent を受け取り capture を取得するため、
 // タイマーロジックの検証では setPointerCapture を持つ最小限のスタブイベントを注入する
-function pointerDown(): PointerEvent {
+function pointerDown(button = 0): PointerEvent {
   return {
+    button,
     currentTarget: { setPointerCapture: () => {} },
     pointerId: 1,
   } as unknown as PointerEvent
@@ -33,8 +34,8 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
   return {
     scope,
     value,
-    startIncrement: () => startIncrement(pointerDown()),
-    startDecrement: () => startDecrement(pointerDown()),
+    startIncrement: (button?: number) => startIncrement(pointerDown(button)),
+    startDecrement: (button?: number) => startDecrement(pointerDown(button)),
     stop,
   }
 }
@@ -90,6 +91,13 @@ describe('useNumberStepper', () => {
     expect(value.value).toBe(2)
     vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_DELAY_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
     expect(value.value).toBe(3)
+  })
+
+  test('主ボタン以外（右クリック等）では増減もリピートもしない', () => {
+    const { value, startIncrement } = setup(8)
+    startIncrement(2)
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_DELAY_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 3)
+    expect(value.value).toBe(8)
   })
 
   test('min に到達したら長押し中も min を下回らない', () => {

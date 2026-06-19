@@ -24,6 +24,10 @@ export function useNumberStepper(value: Ref<number>, options: Ref<StepperOptions
   }
 
   function start(event: PointerEvent, direction: 1 | -1) {
+    // 主ボタン（タッチ / ペン / 左クリック = button 0）以外は無視する。右クリック等で stray step が入るのを防ぐ
+    if (event.button !== 0) {
+      return
+    }
     // pointer capture を取得し、押下後にボタン外で離しても pointerup / pointercancel がこのボタンへ届くようにする
     ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
     // pointerdown 連打による多重リピートを防ぐ
