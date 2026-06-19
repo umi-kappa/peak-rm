@@ -52,6 +52,17 @@ describe('clamp', () => {
     expect(clamp(100, 0)).toBe(100)
     expect(clamp(-100, undefined, 10)).toBe(-100)
   })
+
+  test('NaN は下限（min、無ければ 0）へ寄せる', () => {
+    expect(clamp(NaN, 0, 10)).toBe(0)
+    expect(clamp(NaN, 5)).toBe(5)
+    expect(clamp(NaN)).toBe(0)
+    expect(clamp(NaN, undefined, 10)).toBe(0)
+  })
+
+  test('min > max の矛盾した境界では上限（max）を優先する', () => {
+    expect(clamp(5, 10, 0)).toBe(0)
+  })
 })
 
 describe('0.25 刻みの重量', () => {
