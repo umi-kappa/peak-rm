@@ -114,9 +114,11 @@ describe('oneRm', () => {
 - Story ファイルは対象コンポーネントと同じディレクトリに co-located で置く（`BaseButton.vue` の隣に `BaseButton.stories.ts`）
 - `import { expect, userEvent, within } from 'storybook/test'`（Storybook v10 以降は `@storybook/test` ではなくスコープなしの `storybook/test` から import する）
 - **Story の `export` 識別子は英語 PascalCase**（`IncrementsOnClick`）。Storybook が URL ・内部 ID に使うため日本語にしない。UI 表示名は Storybook が export 識別子から自動整形する（`IncrementsOnClick` → `Increments On Click`）
+- **標準（代表）状態の story は `Default` という名前にする**。`meta.args` のデフォルト値で素直に描画される基準状態を全コンポーネントで `Default` に統一し、そこからの差分を variant 名（`Secondary` / `Large` / `Hero` など）で表す。variant の値そのものを story 名にしない（`primary` variant の代表を `Primary` ではなく `Default` にする）
 - Story の `play` 関数では Storybook の `expect` を使い、Vitest の `describe` / `test` は呼ばない
 - **コンポーネント説明や argTypes を Docs タブに表示するには `meta.tags: ['autodocs']` を必ず付ける**。Storybook v10 はデフォルトで `docs.autodocs: 'tag'` モードで、付けないと Docs ページが生成されない
-- **Chromatic の snapshot を消費しない Playground 系 story には `parameters: { chromatic: { disableSnapshot: true } }` を付ける**。引数を動かして見るだけの探索用 story は視覚差分の対象にせず、実機 UI として価値ある代表状態のみ snapshot を取る（無料枠 5,000/月 を守るため）。viewport（390px）・ブラウザ（Chrome のみ）は `.storybook/preview.ts` でグローバル設定済みなので個別指定は不要
+- **視覚差分として価値のない story には `parameters: { chromatic: { disableSnapshot: true } }` を付ける**。snapshot は実機 UI として意味のある代表状態だけに取り、既存 variant と見た目が重複する story（後述の `Behavior` など）は対象外にする（無料枠 5,000/月 を守るため）。引数を動かして見るためだけの探索用 story は作らない（Controls はどの story でも使えるため `Default` で足りる）。viewport（390px）・ブラウザ（Chrome のみ）は `.storybook/preview.ts` でグローバル設定済みなので個別指定は不要
+- **`play`（インタラクション / スモークテスト）は visual variant story に相乗りさせず、専用の `Behavior` story に分離する**。`Default` / `Large` などの variant story は見た目の提示に専念させ `play` を持たせない。`Behavior` は既存 variant と見た目が重複するため `parameters: { chromatic: { disableSnapshot: true } }` を付ける。同じ振る舞いを variant 違いで何本も検証せず、配線が成立することを 1 本で示すに留め、刻み・clamp などのロジックはロジック層の単体テストに委ねる
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
@@ -132,7 +134,10 @@ export default meta
 
 type Story = StoryObj<typeof IconButton>
 
-export const Default: Story = {
+export const Default: Story = {}
+
+export const Behavior: Story = {
+  parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'セットを追加' })).toBeVisible()
@@ -165,7 +170,8 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 ## スタイル（CSS）
 
 - Vue の **scoped CSS** を使う。Tailwind は使わない（Sass も使わない。プレーン CSS + カスタムプロパティで足り、必要になった時点で後付けする）
-- クラス名は **短く（`.title`、`.list`）**。BEM 記法（`app__title`）は使わない
+- **コンポーネントのルート要素のクラス名はコンポーネント名に揃える**（kebab-case。`BaseButton` → `.base-button`、`NumberStepper` → `.number-stepper`、`BigNumber` → `.big-number`）。scoped CSS で衝突しないので必須ではないが、要素を見たときどのコンポーネントの根かが一目で分かる
+- ルート以外の**子要素のクラス名は短く**（`.title`、`.value`、`.unit`）。BEM 記法（`app__title`）は使わない
 - 値（色・タイポグラフィ・スペーシング）は `docs/design/README.md` のデザイントークンに厳密に従う
 - **`text-transform: uppercase` は使わない**。大文字で見せたいテキストは呼び出し側がラベル文字列そのものを大文字で書く（例: `START SESSION`・`KG`）。表示とソース文字列（コピー・読み上げ内容）を一致させる
 - **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
