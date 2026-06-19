@@ -88,3 +88,14 @@ export const Behavior: Story = {
     await expect(canvas.getByText('8')).toBeVisible()
   },
 }
+
+// 範囲外の初期値が mount 時に max 内へ丸められることを確認する（watchEffect の配線）。
+export const ClampsInitialValue: Story = {
+  args: { step: 1, min: 0, max: 12 },
+  render: renderWithModel(100),
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('12')).toBeVisible()
+  },
+}

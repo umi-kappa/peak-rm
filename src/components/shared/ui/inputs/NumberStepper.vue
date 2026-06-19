@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import BaseIcon from '@/components/shared/ui/base/BaseIcon.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
+import { clamp } from '@/core/stepper'
 import { useNumberStepper } from '@/composables/shared/ui/inputs/useNumberStepper'
 
 const model = defineModel<number>('value', { required: true })
@@ -26,6 +27,12 @@ const options = computed(() => ({ step, min, max }))
 const iconSize = computed(() => (large ? 24 : 16))
 
 const { startIncrement, startDecrement, stop } = useNumberStepper(model, options)
+
+// 範囲外の初期値・外部更新を min / max 内へ丸める
+watchEffect(() => {
+  const clamped = clamp(model.value, min, max)
+  if (clamped !== model.value) model.value = clamped
+})
 </script>
 
 <template>
