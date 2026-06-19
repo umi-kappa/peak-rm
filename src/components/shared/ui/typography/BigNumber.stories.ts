@@ -33,7 +33,7 @@ export default meta
 
 type Story = StoryObj<typeof BigNumber>
 
-export const Stat: Story = {}
+export const Default: Story = {}
 
 export const Hero: Story = {
   args: { value: '0:47.59', size: 'hero' },

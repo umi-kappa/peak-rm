@@ -33,13 +33,16 @@ export default meta
 
 type Story = StoryObj<typeof BaseUnit>
 
-export const Caption: Story = {
+export const Default: Story = {}
+
+export const Body: Story = {
+  args: { size: 'body' },
+}
+
+export const Behavior: Story = {
+  parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('KG')).toBeVisible()
   },
-}
-
-export const Body: Story = {
-  args: { size: 'body' },
 }
