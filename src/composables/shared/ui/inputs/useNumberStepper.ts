@@ -41,7 +41,7 @@ export function useNumberStepper(value: Ref<number>, options: Ref<StepperOptions
     intervalId = undefined
   }
 
-  onScopeDispose(stop, true)
+  onScopeDispose(stop)
 
   return {
     startIncrement: (event: PointerEvent) => start(event, 1),
