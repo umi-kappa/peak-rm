@@ -123,4 +123,14 @@ describe('useNumberStepper', () => {
     vi.advanceTimersByTime(10_000)
     expect(value.value).toBe(1)
   })
+
+  test('リピート中にスコープ破棄するとリピートが止まる', () => {
+    const { scope, value, startIncrement } = setup(0)
+    startIncrement()
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_DELAY_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 2)
+    expect(value.value).toBe(3)
+    scope.stop()
+    vi.advanceTimersByTime(10_000)
+    expect(value.value).toBe(3)
+  })
 })
