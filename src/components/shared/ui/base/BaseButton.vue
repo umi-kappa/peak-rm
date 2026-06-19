@@ -3,13 +3,13 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
 </script>
 
 <template>
-  <button class="button" :class="variant" type="button">
+  <button class="base-button" :class="variant" type="button">
     <slot />
   </button>
 </template>
 
 <style scoped>
-.button {
+.base-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +26,7 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
 }
 
 /* primary: アクセント色の塗りで主アクションを担う */
-.button.primary {
+.base-button.primary {
   background: var(--color-accent);
   border: 1px solid var(--color-accent);
   color: var(--color-bg);
@@ -34,7 +34,7 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
 }
 
 /* secondary: 塗りを持たず細い境界線で控えめに見せる */
-.button.secondary {
+.base-button.secondary {
   background: transparent;
   border: 1px solid var(--color-line);
   color: var(--color-text-secondary);
@@ -43,23 +43,23 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
 
 /* hover はポインタ環境のみ */
 @media (hover: hover) {
-  .button.primary:hover {
+  .base-button.primary:hover {
     background: var(--color-bg-light);
     color: var(--color-accent);
   }
 
-  .button.secondary:hover {
+  .base-button.secondary:hover {
     border-color: var(--color-text);
   }
 }
 
 /* active はタッチ・ポインタ共通 */
-.button.primary:active {
+.base-button.primary:active {
   background: var(--color-bg-light);
   color: var(--color-accent);
 }
 
-.button.secondary:active {
+.base-button.secondary:active {
   border-color: var(--color-text);
 }
 </style>

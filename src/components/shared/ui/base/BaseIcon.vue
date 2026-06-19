@@ -7,7 +7,7 @@ const { name, size = 16 } = defineProps<{ name: IconName; size?: number }>()
 <template>
   <component
     :is="icons[name]"
-    class="icon"
+    class="base-icon"
     :style="{ width: `${size}px`, height: `${size}px` }"
     aria-hidden="true"
   />
@@ -15,7 +15,7 @@ const { name, size = 16 } = defineProps<{ name: IconName; size?: number }>()
 
 <style scoped>
 /* アイコンは固定サイズの部品。窮屈な flex 行でも潰さない */
-.icon {
+.base-icon {
   flex-shrink: 0;
 }
 </style>

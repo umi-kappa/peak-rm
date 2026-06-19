@@ -1,9 +1,9 @@
 <template>
-  <span class="label"><slot /></span>
+  <span class="base-label"><slot /></span>
 </template>
 
 <style scoped>
-.label {
+.base-label {
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-caption);
