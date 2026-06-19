@@ -13,11 +13,11 @@ const {
 </script>
 
 <template>
-  <span class="number" :class="[size, { accent }]">{{ value }}</span>
+  <span class="big-number" :class="[size, { accent }]">{{ value }}</span>
 </template>
 
 <style scoped>
-.number {
+.big-number {
   color: var(--color-text);
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
@@ -25,19 +25,19 @@ const {
   line-height: var(--line-height-tight);
 }
 
-.number.stat {
+.big-number.stat {
   font-size: var(--font-size-stat);
 }
 
-.number.hero {
+.big-number.hero {
   font-size: var(--font-size-hero);
 }
 
-.number.display {
+.big-number.display {
   font-size: var(--font-size-display);
 }
 
-.number.accent {
+.big-number.accent {
   color: var(--color-accent);
   text-shadow: var(--shadow-glow);
 }

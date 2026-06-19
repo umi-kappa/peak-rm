@@ -6,13 +6,13 @@ const { name, label } = defineProps<{ name: IconName; label: string }>()
 </script>
 
 <template>
-  <button class="button" type="button" :aria-label="label">
+  <button class="icon-button" type="button" :aria-label="label">
     <BaseIcon :name :size="20" />
   </button>
 </template>
 
 <style scoped>
-.button {
+.icon-button {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
@@ -30,14 +30,14 @@ const { name, label } = defineProps<{ name: IconName; label: string }>()
 
 /* hover はポインタ環境のみ */
 @media (hover: hover) {
-  .button:hover {
+  .icon-button:hover {
     background: var(--color-line);
     color: var(--color-text);
   }
 }
 
 /* active はタッチ・ポインタ共通 */
-.button:active {
+.icon-button:active {
   background: var(--color-line);
   color: var(--color-text);
 }

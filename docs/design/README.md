@@ -170,7 +170,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - ヒーロー数値: `82.5` (mono display bold, accent, glow) + `kg` unit
 - 副情報: `× 8` (mono title semibold) + `reps` unit
 - 中央ラベル: `Reps done` (sans body regular)
-- Stepper (lg): 実績回数を 0 以上で調整可能
+- Stepper (large): 実績回数を 0 以上で調整可能
 - Primary CTA: `COMPLETE SET` (caps mono bold, fill accent)
 
 **注意:** この画面に中断ボタンは無い (`spec.md` §3)。中断はインターバル画面から。
@@ -226,7 +226,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - 背景は `M_Interval` の薄表示 (opacity 0.18)
 - モーダル内容:
   - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `kg` + Set 番号 (mono stat bold)
-  - 実績回数 Stepper (lg)
+  - 実績回数 Stepper (large)
   - メモテキストエリア (min-height 64 px, sans body regular)
   - 下部: `SAVE` (primary, fill accent)
 - 閉じるための × は無い (保存のみで閉じる)

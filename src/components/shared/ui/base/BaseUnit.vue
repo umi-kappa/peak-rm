@@ -3,21 +3,21 @@ const { size = 'caption' } = defineProps<{ size?: 'caption' | 'body' }>()
 </script>
 
 <template>
-  <span class="unit" :class="size"><slot /></span>
+  <span class="base-unit" :class="size"><slot /></span>
 </template>
 
 <style scoped>
-.unit {
+.base-unit {
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-regular);
 }
 
-.unit.caption {
+.base-unit.caption {
   font-size: var(--font-size-caption);
 }
 
-.unit.body {
+.base-unit.body {
   font-size: var(--font-size-body);
 }
 </style>

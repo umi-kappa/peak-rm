@@ -32,7 +32,10 @@ export default meta
 
 type Story = StoryObj<typeof IconButton>
 
-export const Default: Story = {
+export const Default: Story = {}
+
+export const Behavior: Story = {
+  parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'セットを追加' })).toBeVisible()

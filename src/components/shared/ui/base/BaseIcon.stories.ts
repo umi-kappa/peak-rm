@@ -32,7 +32,8 @@ export default meta
 
 type Story = StoryObj<typeof BaseIcon>
 
-export const Playground: Story = {
+// 単一アイコンの代表表示。視覚差分は全アイコンを並べる Gallery が担うため snapshot は取らない
+export const Default: Story = {
   parameters: { chromatic: { disableSnapshot: true } },
 }
 

@@ -32,7 +32,7 @@ export default meta
 
 type Story = StoryObj<typeof BaseButton>
 
-export const Primary: Story = {}
+export const Default: Story = {}
 
 export const Secondary: Story = {
   args: { variant: 'secondary' },

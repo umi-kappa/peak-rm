@@ -486,7 +486,7 @@ Chromatic の snapshot は「story 数 × viewport 数 × ブラウザ数 × ビ
 1. **TurboSnap を有効化**: 変更があった story（依存ファイル経由で影響を受けた story を含む）のみ snapshot 対象とする Chromatic の機能を使う
 2. **viewport は 1 つだけ**: モバイル前提、例: 390px width
 3. **ブラウザは 1 つだけ**: Chrome のみ（Chromatic デフォルト）
-4. **Playground 系 story は snapshot 対象外**: `parameters: { chromatic: { disableSnapshot: true } }` を付け、実機 UI として価値ある代表状態のみ snapshot 取得
+4. **視覚差分として価値のない story は snapshot 対象外**: 既存 variant と見た目が重複する story（`play` 検証用の `Behavior` story など）に `parameters: { chromatic: { disableSnapshot: true } }` を付け、実機 UI として価値ある代表状態のみ snapshot 取得。引数を動かすだけの探索用 story は作らない（Controls はどの story でも使えるため `Default` で足りる）
 5. **CI トリガーは `main` push のみ**: PR や feature ブランチでは Chromatic を起動しない
 6. **緊急レバー**: 想定を超えて消費が早ければ、main push 毎 → 週次バッチ / リリースタグ時のみ実行に切り替える
 

@@ -3,14 +3,14 @@ const version = import.meta.env.VITE_APP_VERSION
 </script>
 
 <template>
-  <main class="root">
+  <main class="app">
     <h1 class="title">PeakRM</h1>
     <p class="version">v{{ version }}</p>
   </main>
 </template>
 
 <style scoped>
-.root {
+.app {
   min-height: 100dvh;
   padding: 24px;
   display: flex;
