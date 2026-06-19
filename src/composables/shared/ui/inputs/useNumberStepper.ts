@@ -35,14 +35,10 @@ export function useNumberStepper(
   }
 
   function stop() {
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-      timeoutId = undefined
-    }
-    if (intervalId !== undefined) {
-      clearInterval(intervalId)
-      intervalId = undefined
-    }
+    clearTimeout(timeoutId)
+    clearInterval(intervalId)
+    timeoutId = undefined
+    intervalId = undefined
   }
 
   onScopeDispose(stop, true)
