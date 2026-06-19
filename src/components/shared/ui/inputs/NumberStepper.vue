@@ -41,7 +41,7 @@ const { startIncrement, startDecrement, stop } = useNumberStepper(model, options
       <BaseIcon name="minus" :size="iconSize" />
     </button>
     <div class="value" :class="{ accent }">
-      {{ model }}<BaseUnit v-if="unit" class="unit">{{ unit }}</BaseUnit>
+      {{ model }}<BaseUnit v-if="unit">{{ unit }}</BaseUnit>
     </div>
     <button
       class="button"
@@ -99,12 +99,15 @@ const { startIncrement, startDecrement, stop } = useNumberStepper(model, options
 }
 
 .value {
-  text-align: center;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-8);
+  color: var(--color-text);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-title);
-  font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
-  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
 }
 
 .number-stepper.large .value {
@@ -113,9 +116,5 @@ const { startIncrement, startDecrement, stop } = useNumberStepper(model, options
 
 .value.accent {
   color: var(--color-accent);
-}
-
-.unit {
-  margin-inline-start: var(--space-8);
 }
 </style>
