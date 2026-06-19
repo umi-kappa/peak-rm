@@ -12,7 +12,7 @@ const meta: Meta<typeof NumberStepper> = {
     docs: {
       description: {
         component:
-          '汎用ステッパー（reps / sets / interval 用）。± ボタンで `step` 刻みに増減し、長押しで加速リピートする。`min` / `max` 到達時はボタンを無効化せず no-op（clamp）で受け流す。',
+          '汎用ステッパー（reps / sets / interval 用）。± ボタンで `step` 刻みに増減し、長押しでリピートする。`min` / `max` 到達時はボタンを無効化せず no-op（clamp）で受け流す。',
       },
     },
   },
