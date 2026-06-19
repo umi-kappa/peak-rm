@@ -28,9 +28,9 @@ function pointerDown(button = 0): PointerEvent {
 function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]) {
   const scope = effectScope()
   const value = ref(initial)
-  const { startIncrement, startDecrement, stop } = scope.run(() =>
-    useNumberStepper(value, options),
-  )!
+  const stepper = scope.run(() => useNumberStepper(value, options))
+  if (!stepper) throw new Error('effectScope.run が undefined を返しました')
+  const { startIncrement, startDecrement, stop } = stepper
   return {
     scope,
     value,
