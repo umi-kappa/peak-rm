@@ -37,7 +37,6 @@ const { startIncrement, startDecrement, stop } = useNumberStepper(model, options
       @pointerdown="startDecrement"
       @pointerup="stop"
       @pointercancel="stop"
-      @pointerleave="stop"
     >
       <BaseIcon name="minus" :size="iconSize" />
     </button>
@@ -51,7 +50,6 @@ const { startIncrement, startDecrement, stop } = useNumberStepper(model, options
       @pointerdown="startIncrement"
       @pointerup="stop"
       @pointercancel="stop"
-      @pointerleave="stop"
     >
       <BaseIcon name="plus" :size="iconSize" />
     </button>

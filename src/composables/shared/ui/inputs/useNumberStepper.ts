@@ -7,8 +7,10 @@ export const NUMBER_STEPPER_REPEAT_DELAY_MS = 500
 export const NUMBER_STEPPER_REPEAT_INTERVAL_MS = 100
 
 /**
- * ステッパーの増減操作と長押し加速リピートを提供する。
- * start 系は即 1 step 適用し、NUMBER_STEPPER_REPEAT_DELAY_MS 経過後から NUMBER_STEPPER_REPEAT_INTERVAL_MS 間隔でリピートする。
+ * ステッパーの増減操作と長押しリピートを提供する。
+ * startIncrement / startDecrement は pointerdown ハンドラとして使い、即 1 step 適用したうえで
+ * NUMBER_STEPPER_REPEAT_DELAY_MS 経過後から NUMBER_STEPPER_REPEAT_INTERVAL_MS 間隔でリピートする。
+ * pointerdown 時に pointer capture を取得するため、ボタン外で離しても pointerup / pointercancel がボタンへ届き確実に stop できる。
  * min / max 到達後はタイマーを止めず clamp による no-op を続ける。
  * options は step / min / max を持つ ref（computed）で渡す。apply ごとに .value を読むため、props 変更が次の操作に反映される。
  */
@@ -25,7 +27,9 @@ export function useNumberStepper(
       direction === 1 ? stepper.increment(value.value, opts) : stepper.decrement(value.value, opts)
   }
 
-  function start(direction: 1 | -1) {
+  function start(event: PointerEvent, direction: 1 | -1) {
+    // pointer capture を取得し、押下後にボタン外で離しても pointerup / pointercancel がこのボタンへ届くようにする
+    ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
     // pointerdown 連打による多重リピートを防ぐ
     stop()
     apply(direction)
@@ -44,8 +48,8 @@ export function useNumberStepper(
   onScopeDispose(stop, true)
 
   return {
-    startIncrement: () => start(1),
-    startDecrement: () => start(-1),
+    startIncrement: (event: PointerEvent) => start(event, 1),
+    startDecrement: (event: PointerEvent) => start(event, -1),
     stop,
   }
 }

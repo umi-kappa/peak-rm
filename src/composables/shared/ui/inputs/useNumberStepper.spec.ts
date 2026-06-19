@@ -15,11 +15,28 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+// startIncrement / startDecrement は pointerdown ハンドラとして PointerEvent を受け取り capture を取得するため、
+// タイマーロジックの検証では setPointerCapture を持つ最小限のスタブイベントを注入する
+function pointerDown(): PointerEvent {
+  return {
+    currentTarget: { setPointerCapture: () => {} },
+    pointerId: 1,
+  } as unknown as PointerEvent
+}
+
 function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]) {
   const scope = effectScope()
   const value = ref(initial)
-  const stepperControls = scope.run(() => useNumberStepper(value, options))!
-  return { scope, value, ...stepperControls }
+  const { startIncrement, startDecrement, stop } = scope.run(() =>
+    useNumberStepper(value, options),
+  )!
+  return {
+    scope,
+    value,
+    startIncrement: () => startIncrement(pointerDown()),
+    startDecrement: () => startDecrement(pointerDown()),
+    stop,
+  }
 }
 
 describe('useNumberStepper', () => {
