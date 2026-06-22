@@ -22,11 +22,11 @@ src/
     pages/<画面>/        # その画面専用のコンポーネント（例: menu/WeightStepper.vue）
     shared/
       ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
-        base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit）
-        buttons/       # IconButton（円形アイコン専用ボタン）
-        typography/    # BigNumber（複合の文字表示）
+        base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit / BaseCard）
+        buttons/       # IconButton（円形アイコン専用ボタン）/ CardButton（押せる面）
+        typography/    # 文字 / 数値の複合提示（BigNumber / SectionTitle）
         inputs/        # NumberStepper
-        layout/        # ScreenBody / AppBar / Card / SectionTitle
+        layout/        # ScreenBody / AppBar
       *.vue            # 横断のアプリ固有複合（ConfirmDialog.vue / SetEditModal.vue など）
   pages/<画面>/index.vue # 画面エントリ（Nuxt 風の index.vue 命名。ファイルベースルーティングではない）
   router/index.ts        # vue-router のルート定義
@@ -37,7 +37,7 @@ src/
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`
 - **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
-- **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/`）に分ける。`base/` は単一の HTML 要素をラップする基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit`）専用で、`Base` プレフィックスで揃える。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。
+- **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/`）に分ける。`base/` は単一要素にトークンで見た目を着せるだけの基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit` / `BaseCard`）専用で、`Base` プレフィックスで揃える。子要素の配置や画面領域の構造は与えず（見た目を着せるだけ）、面の土台 `BaseCard`（padding を持つだけで子の並びは制御しない）もここに含む。子要素の配置・画面領域の構造を担うもの（`ScreenBody` の縦 flex + gap、`AppBar` の領域分割）は `layout/`、base の文字プリミティブを組み合わせて意味を持つ文字 / 数値を提示する複合（`BigNumber` の数値提示、`SectionTitle` の見出し）は `typography/` に置く。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。プリミティブを組み合わせた横断複合コンポーネントは `components/shared/` 直下に置く。`BaseCard`（presentational な面・`base/`）と `CardButton`（`to` で `<router-link>` / `<button>` を切り替える押せる面・`buttons/`）は同じ面レシピを共有するが、静的な面か押せる面かという役割で配置を分ける。`ui/` のプリミティブは presentational に保ち、インタラクションは affordance + イベント発火まで（クリック emit・`@back` など）に留める。ナビゲーションや業務ロジック（遷移先の判断・状態更新・router 参照）は持たせず呼び出し側に委ねる（例: `AppBar` の `back` は押下で `@back` を emit するだけで、遷移先は画面側が決める）。
 - **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `NumberStepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
 - **ステッパーのロジックは 3 層に分離**する。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
   1. `core/stepper.ts` = 純関数（increment / decrement / clamp・0.25 kg 刻みなどのルール。副作用なし）
@@ -50,7 +50,7 @@ src/
 
 ## ファイル命名
 
-- **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠。`components/shared/ui/` 配下の基底プリミティブで名前が 1 語になるもの（`BaseIcon` / `BaseLabel` / `BaseUnit`）は、Vue 公式の base component 規約に従い `Base` プレフィックスを付けて 2 語にする（`vue/multi-word-component-names` を満たすため）。修飾子を持つものはその機能名 2 語でよい（`IconButton` / `BigNumber`）
+- **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠。`components/shared/ui/` 配下の基底プリミティブで名前が 1 語になるもの（`BaseIcon` / `BaseLabel` / `BaseUnit` / `BaseCard`）は、Vue 公式の base component 規約に従い `Base` プレフィックスを付けて 2 語にする（`vue/multi-word-component-names` を満たすため）。修飾子を持つものはその機能名 2 語でよい（`IconButton` / `BigNumber`）
 - **TypeScript ロジック・composable**: camelCase（`oneRm.ts`、`useSession.ts`）
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
 - **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`BaseButton.vue` → `BaseButton.stories.ts`）
@@ -173,6 +173,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **コンポーネントのルート要素のクラス名はコンポーネント名に揃える**（kebab-case。`BaseButton` → `.base-button`、`NumberStepper` → `.number-stepper`、`BigNumber` → `.big-number`）。scoped CSS で衝突しないので必須ではないが、要素を見たときどのコンポーネントの根かが一目で分かる
 - ルート以外の**子要素のクラス名は短く**（`.title`、`.value`、`.unit`）。BEM 記法（`app__title`）は使わない
 - 値（色・タイポグラフィ・スペーシング）は `docs/design/README.md` のデザイントークンに厳密に従う
+- **余白（`padding` / `margin` / `gap`）は `--space-*` トークンを `var()` で参照する**。生の px を直書きしない。同じ役割の余白は同じトークンに揃える（例: 画面外周は `--space-24`、カード内側は `--space-20`（x）/ `--space-16`（y）、見出し inset は `--space-4`）。余白の値は外側ほど大きい入れ子の階層（画面 ⊃ カード ⊃ バー ⊃ 見出し）として意図的に段階を持たせており、段数を減らすかは実画面の実装の中で判断する
 - **`text-transform: uppercase` は使わない**。大文字で見せたいテキストは呼び出し側がラベル文字列そのものを大文字で書く（例: `START SESSION`・`KG`）。表示とソース文字列（コピー・読み上げ内容）を一致させる
 - **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
 - **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない
