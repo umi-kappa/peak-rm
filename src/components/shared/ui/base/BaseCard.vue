@@ -19,7 +19,6 @@ const { border = 'soft' } = defineProps<{
   border: 1px solid var(--color-line-dark);
   border-radius: var(--radius);
   color: var(--color-text);
-  text-align: left;
 }
 
 .base-card.line {
