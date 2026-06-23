@@ -357,7 +357,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
     <PhoneFrame label={fromHistory ? '05a History detail' : aborted ? '04 Result (中断)' : perfect ? '04 Result (完走)' : '04 Result'} h={860}>
     {fromHistory ?
       <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} /></IconButton>} /> :
-      <AppBar caps title="Bench Press" />}
+      <AppBar caps title="Bench Press" back={false} />}
     <ScreenBody gap={20} p={24}>
       {/* date · history only */}
       {fromHistory &&
