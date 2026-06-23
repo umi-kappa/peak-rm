@@ -1,0 +1,63 @@
+<script setup lang="ts">
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
+import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
+import type { CardBorder } from '@/components/shared/ui/base/BaseCard.type'
+
+const { to, border = 'soft' } = defineProps<{
+  /** 指定すると <router-link> として描画する。無ければ <button> */
+  to?: RouteLocationRaw
+  border?: CardBorder
+}>()
+
+const emit = defineEmits<{
+  click: []
+}>()
+
+// button 版のみ emit する。to 版は RouterLink が遷移を担うため発火しない
+function onClick() {
+  if (!to) emit('click')
+}
+</script>
+
+<template>
+  <component
+    :is="to ? RouterLink : 'button'"
+    :to="to"
+    :type="to ? undefined : 'button'"
+    class="card-button"
+    @click="onClick"
+  >
+    <BaseCard :border class="card"><slot /></BaseCard>
+  </component>
+</template>
+
+<style scoped>
+.card-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.card-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.card {
+  transition: background-color var(--transition);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    background-color: var(--color-line-dark);
+  }
+}
+
+.card-button:active {
+  background-color: var(--color-line-dark);
+}
+</style>

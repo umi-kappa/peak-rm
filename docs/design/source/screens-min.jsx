@@ -37,7 +37,7 @@ const M_Home = ({ empty = false }) =>
         {exercises.map((e, i) =>
       <div key={e.name} style={{
         background: C.surface, border: `1px solid ${C.lineSoft}`,
-        borderRadius: 4, padding: '16px 20px 16px',
+        borderRadius: 4, padding: '16px',
         display: 'flex', flexDirection: 'column', gap: 8
       }}>
             {/* TITLE row */}
@@ -106,7 +106,7 @@ const M_Menu = () =>
         <div style={{
         marginTop: 16,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-        padding: '24px 20px', background: C.surface, borderRadius: 4,
+        padding: '24px 16px', background: C.surface, borderRadius: 4,
         border: `1px solid ${C.lineSoft}`
       }}>
           <div style={{
@@ -157,19 +157,15 @@ const M_Menu = () =>
 
       <div>
         <SectionTitle>Plan</SectionTitle>
-        <div style={{
-        marginTop: 12,
-        background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}`,
-        overflow: 'hidden'
-      }}>
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
         ['Reps', '8', 'reps'],
         ['Sets', '3', 'sets'],
         ['Interval', '90', 'sec']].
-        map(([k, v, u], i) =>
+        map(([k, v, u]) =>
         <div key={k} style={{
-          padding: '16px 20px',
-          borderBottom: i < 2 ? `1px solid ${C.lineSoft}` : 'none',
+          background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}`,
+          padding: '16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
               <span style={{ fontSize: T.body, color: C.fg, fontWeight: W.regular, textTransform: 'uppercase' }}>{k}</span>
@@ -226,7 +222,7 @@ const M_TrainingSet = ({ final = false }) => {
       {/* reps stepper */}
       <div style={{
           background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4,
-          padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
+          padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
         }}>
         <span style={{ fontSize: T.body, color: C.fg2, textTransform: 'uppercase' }}>Reps done</span>
         <Stepper value="8" unit="reps" size="lg" />
@@ -259,7 +255,7 @@ const M_Interval = () => {
 
       {/* Timer hero */}
       <div style={{
-          marginTop: 4, padding: '28px 20px', borderRadius: 4,
+          marginTop: 4, padding: '28px 16px', borderRadius: 4,
           background: C.surface, border: `1px solid ${C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
         }}>
@@ -380,7 +376,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
 
       {/* Est 1RM hero — also the completion celebration moment */}
       <div style={{
-          padding: '28px 20px 24px', borderRadius: 4,
+          padding: '28px 16px 24px', borderRadius: 4,
           background: C.surface, border: `1px solid ${aborted ? C.line : C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16
         }}>
@@ -615,16 +611,13 @@ const M_Settings = () =>
           Back up all sessions and menu presets to a single file, or restore from one.
         </div>
       </div>
-      <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4, overflow: 'hidden' }}>
-        <SettingRow
-        title="Export"
-        right={<Ic.Download color={C.fg2} />} />
-      
-        <div style={{ height: 1, background: C.lineSoft }} />
-        <SettingRow
-        title="Import"
-        right={<Ic.Upload color={C.fg2} />} />
-      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
+          <SettingRow title="Export" right={<Ic.Download color={C.fg2} />} />
+        </div>
+        <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
+          <SettingRow title="Import" right={<Ic.Upload color={C.fg2} />} />
+        </div>
       </div>
 
       <SectionTitle>About</SectionTitle>
@@ -639,7 +632,7 @@ const M_Settings = () =>
 
 const SettingRow = ({ title, sub, right }) =>
 <div style={{
-  padding: '16px 20px',
+  padding: '16px',
   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12
 }}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: sub ? 4 : 0 }}>
