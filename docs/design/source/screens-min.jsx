@@ -156,7 +156,7 @@ const M_Menu = () =>
       </div>
 
       <div>
-        <SectionTitle>Plan</SectionTitle>
+        <Label>Plan</Label>
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
         ['Reps', '8', 'reps'],
@@ -273,7 +273,7 @@ const M_Interval = () => {
         </div>
       </div>
 
-      <SectionTitle>Sets</SectionTitle>
+      <Label>Sets</Label>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* set 1 — done with memo */}
@@ -451,7 +451,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
         }
 
       {/* Set list */}
-      <SectionTitle>Sets</SectionTitle>
+      <Label>Sets</Label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {aborted ?
           <>
@@ -551,7 +551,7 @@ const M_History = () => {
         </div>
       </div>
 
-      <SectionTitle>Sessions</SectionTitle>
+      <Label>Sessions</Label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[
           ['05/12', '82.5', '8/8/7', '99.0', 'executed'],
@@ -604,7 +604,7 @@ const M_Settings = () =>
     <AppBar caps title="Settings" />
     <ScreenBody p={24}>
       <div>
-        <SectionTitle>Data</SectionTitle>
+        <Label>Data</Label>
         <div style={{
         padding: '6px 4px 0', fontSize: T.caption, color: C.fg3, lineHeight: 1.5
       }}>
@@ -620,7 +620,7 @@ const M_Settings = () =>
         </div>
       </div>
 
-      <SectionTitle>About</SectionTitle>
+      <Label>About</Label>
       <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
         <SettingRow title="Version" right={<span style={{ ...NumStyle, fontSize: T.body, color: C.fg2 }}>1.0.0</span>} />
       </div>

@@ -121,17 +121,6 @@ const Card = ({ children, raised, accent, style, onClickHint }) => (
   }}>{children}</div>
 );
 
-// Section label · caps mono
-const SectionTitle = ({ children, right, style }) => (
-  <div style={{
-    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-    padding: '0px 4px', ...style,
-  }}>
-    <Label>{children}</Label>
-    {right}
-  </div>
-);
-
 // Big number display · used for hero weight, timer.
 // `size` must be one of T.display / T.hero / T.stat; unit is always T.caption.
 // `style` is applied ONLY to the number, so callers can pass neon glow / shadow
@@ -159,5 +148,5 @@ const ScreenBody = ({ children, p = 24, style }) => (
 
 Object.assign(window, {
   PrimaryButton, SecondaryButton, IconButton, AppBar, Stepper, Card,
-  SectionTitle, BigNumber, ScreenBody, Unit,
+  BigNumber, ScreenBody, Unit,
 });
