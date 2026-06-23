@@ -176,7 +176,7 @@ const DesignTokens = () => {
         <Label style={{ marginBottom: 4, marginTop: 16 }}>Card & Row</Label>
         <SpaceRow value={12} label="card row gap · grid gap" />
         <SpaceRow value={16} label="card padding · section gap" />
-        <SpaceRow value={20} label="ScreenBody gap" />
+        <SpaceRow value={20} label="ScreenBody gap · 本文 padding-y" />
         <SpaceRow value={24} label="screen pad · stage gap" />
 
         <Label style={{ marginBottom: 4, marginTop: 16 }}>Hero</Label>

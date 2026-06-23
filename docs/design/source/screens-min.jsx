@@ -22,9 +22,9 @@ const exercises = [
 // ---------- 01 HOME ----------
 const M_Home = ({ empty = false }) =>
 <PhoneFrame label={empty ? '01 Home (記録なし)' : '01 Home'}>
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       {/* brand row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingTop: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.bold, color: C.fg }}>PeakRM</div>
           <span style={{ fontSize: T.caption, color: C.fg3 }}>Train the plan. Track your peak.</span>
@@ -100,8 +100,8 @@ const M_Home = ({ empty = false }) =>
 const M_Menu = () =>
 <PhoneFrame label="02 Menu" h={840}>
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={24} p={24}>
-      <div style={{ paddingTop: 8 }}>
+    <ScreenBody p={24}>
+      <div>
         <Label>Weight</Label>
         <div style={{
         marginTop: 16,
@@ -189,7 +189,7 @@ const M_TrainingSet = ({ final = false }) => {
   return (
     <PhoneFrame label="03a Training">
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       {/* hero — prescription for this set */}
       <div style={{
           flex: 1, minHeight: 0,
@@ -240,9 +240,9 @@ const M_Interval = () => {
   return (
     <PhoneFrame label="03b Interval" h={920}>
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={16} p={24}>
+    <ScreenBody p={24}>
       {/* prescription summary */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>82.5</span>
         <Unit>kg</Unit>
         <span style={{ color: C.fg3 }}>·</span>
@@ -354,16 +354,16 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
     {fromHistory ?
       <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} /></IconButton>} /> :
       <AppBar caps title="Bench Press" back={false} />}
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       {/* date · history only */}
       {fromHistory &&
         <div style={{
-          paddingTop: 4, fontFamily: FONT_MONO, fontSize: T.body, fontWeight: W.bold,
+          fontFamily: FONT_MONO, fontSize: T.body, fontWeight: W.bold,
           color: C.fg2
         }}>2025/05/12</div>
         }
       {/* prescription summary */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>82.5</span>
         <Unit>kg</Unit>
         <span style={{ color: C.fg3 }}>·</span>
@@ -487,7 +487,7 @@ const M_History = () => {
   return (
     <PhoneFrame label="05 History" h={860}>
     <AppBar caps title="History" />
-    <ScreenBody gap={16} p={24}>
+    <ScreenBody p={24}>
       {/* tabs */}
       <div style={{ display: 'flex', gap: 4, padding: 4, background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}` }}>
         {['Bench Press', 'Squat', 'Deadlift'].map((t, i) =>
@@ -602,7 +602,7 @@ const M_History = () => {
 const M_Settings = () =>
 <PhoneFrame label="06 Settings">
     <AppBar caps title="Settings" />
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       <div>
         <SectionTitle>Data</SectionTitle>
         <div style={{
