@@ -29,7 +29,8 @@
   flex-direction: column;
   gap: var(--space-20);
   min-height: 0;
-  padding: var(--space-20) var(--space-24);
+  padding-block: var(--space-20);
+  padding-inline: var(--space-24);
   overflow-y: auto;
 }
 </style>
