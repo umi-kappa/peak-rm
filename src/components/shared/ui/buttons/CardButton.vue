@@ -60,7 +60,8 @@ function onClick() {
   }
 }
 
-.card-button:active {
+/* 押下面は内側の不透明な BaseCard。外側ラッパーは透明なため :active を内側へ当てる */
+.card-button:active .card {
   background-color: var(--color-line-dark);
 }
 </style>
