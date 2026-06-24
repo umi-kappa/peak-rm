@@ -31,7 +31,6 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
     color: var(--color-bg);
     font-weight: var(--font-weight-bold);
 
-    /* hover はポインタ環境のみ */
     @media (hover: hover) {
       &:hover {
         background: var(--color-bg-light);
@@ -39,7 +38,6 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
       }
     }
 
-    /* active はタッチ・ポインタ共通 */
     &:active {
       background: var(--color-bg-light);
       color: var(--color-accent);

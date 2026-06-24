@@ -27,7 +27,6 @@ const { name, label } = defineProps<{ name: IconName; label: string }>()
     background-color var(--transition),
     color var(--transition);
 
-  /* hover はポインタ環境のみ */
   @media (hover: hover) {
     &:hover {
       background: var(--color-line);
@@ -35,7 +34,6 @@ const { name, label } = defineProps<{ name: IconName; label: string }>()
     }
   }
 
-  /* active はタッチ・ポインタ共通 */
   &:active {
     background: var(--color-line);
     color: var(--color-text);
