@@ -43,25 +43,25 @@ function onClick() {
   text-decoration: none;
   /* <button> 版の UA 既定（text-align: center）を打ち消し、内側 BaseCard を左寄せに保つ */
   text-align: left;
-}
 
-.card-button:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 
-.card {
-  transition: background-color var(--transition);
-}
-
-@media (hover: hover) {
-  .card:hover {
+  /* 押下面は内側の不透明な BaseCard。外側ラッパーは透明なため :active を内側へ当てる */
+  &:active .card {
     background-color: var(--color-line-dark);
   }
 }
 
-/* 押下面は内側の不透明な BaseCard。外側ラッパーは透明なため :active を内側へ当てる */
-.card-button:active .card {
-  background-color: var(--color-line-dark);
+.card {
+  transition: background-color var(--transition);
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--color-line-dark);
+    }
+  }
 }
 </style>

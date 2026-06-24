@@ -26,19 +26,19 @@ const { name, label } = defineProps<{ name: IconName; label: string }>()
   transition:
     background-color var(--transition),
     color var(--transition);
-}
 
-/* hover はポインタ環境のみ */
-@media (hover: hover) {
-  .icon-button:hover {
+  /* hover はポインタ環境のみ */
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-line);
+      color: var(--color-text);
+    }
+  }
+
+  /* active はタッチ・ポインタ共通 */
+  &:active {
     background: var(--color-line);
     color: var(--color-text);
   }
-}
-
-/* active はタッチ・ポインタ共通 */
-.icon-button:active {
-  background: var(--color-line);
-  color: var(--color-text);
 }
 </style>

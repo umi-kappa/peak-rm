@@ -178,6 +178,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
 - **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない
 - **`transition` は対象プロパティを明示する**（`transition: background-color var(--transition), color var(--transition)`）。プロパティ省略（= `all`）は全プロパティが変更監視され、意図しない変化（レイアウト系含む）までアニメーションされるため使わない
+- **state・variant はその要素のセレクタ内に `&` でネストする**。`.base-button:hover` や `.base-button.primary` を別のトップレベルルールに並べず、`.base-button { &.primary { … } &:active { … } }` のように入れ子にして同じ要素のルールを一箇所に集約する。`@media (hover: hover)` の `:hover` も対象セレクタ内に置く（`.icon-button { @media (hover: hover) { &:hover { … } } }`）。一方で**別要素を指すセレクタ（子要素の `.card` / `.button` / `.value` など）はネストせずトップレベルに置く**（その要素自身の state・variant のみ、その要素のルール内にネストする）。子要素をルート要素に入れ子にすると詳細度が不必要に上がり、scoped CSS では各要素が独立クラスを持つため入れ子にする利点がない
 
 ### デザイントークン
 

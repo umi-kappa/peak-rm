@@ -19,13 +19,13 @@ const { border = 'soft' } = defineProps<{
   border: 1px solid var(--color-line-dark);
   border-radius: var(--radius);
   color: var(--color-text);
-}
 
-.base-card.line {
-  border-color: var(--color-line);
-}
+  &.line {
+    border-color: var(--color-line);
+  }
 
-.base-card.accent {
-  border-color: var(--color-accent);
+  &.accent {
+    border-color: var(--color-accent);
+  }
 }
 </style>

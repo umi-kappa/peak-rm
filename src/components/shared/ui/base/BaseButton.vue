@@ -23,43 +23,45 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
     background-color var(--transition),
     border-color var(--transition),
     color var(--transition);
-}
 
-/* primary: アクセント色の塗りで主アクションを担う */
-.base-button.primary {
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  color: var(--color-bg);
-  font-weight: var(--font-weight-bold);
-}
+  /* primary: アクセント色の塗りで主アクションを担う */
+  &.primary {
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    color: var(--color-bg);
+    font-weight: var(--font-weight-bold);
 
-/* secondary: 塗りを持たず細い境界線で控えめに見せる */
-.base-button.secondary {
-  background: transparent;
-  border: 1px solid var(--color-line);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-semibold);
-}
+    /* hover はポインタ環境のみ */
+    @media (hover: hover) {
+      &:hover {
+        background: var(--color-bg-light);
+        color: var(--color-accent);
+      }
+    }
 
-/* hover はポインタ環境のみ */
-@media (hover: hover) {
-  .base-button.primary:hover {
-    background: var(--color-bg-light);
-    color: var(--color-accent);
+    /* active はタッチ・ポインタ共通 */
+    &:active {
+      background: var(--color-bg-light);
+      color: var(--color-accent);
+    }
   }
 
-  .base-button.secondary:hover {
-    border-color: var(--color-text);
+  /* secondary: 塗りを持たず細い境界線で控えめに見せる */
+  &.secondary {
+    background: transparent;
+    border: 1px solid var(--color-line);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-semibold);
+
+    @media (hover: hover) {
+      &:hover {
+        border-color: var(--color-text);
+      }
+    }
+
+    &:active {
+      border-color: var(--color-text);
+    }
   }
-}
-
-/* active はタッチ・ポインタ共通 */
-.base-button.primary:active {
-  background: var(--color-bg-light);
-  color: var(--color-accent);
-}
-
-.base-button.secondary:active {
-  border-color: var(--color-text);
 }
 </style>

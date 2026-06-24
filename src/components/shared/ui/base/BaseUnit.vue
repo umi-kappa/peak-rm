@@ -11,13 +11,13 @@ const { size = 'caption' } = defineProps<{ size?: 'caption' | 'body' }>()
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-regular);
-}
 
-.base-unit.caption {
-  font-size: var(--font-size-caption);
-}
+  &.caption {
+    font-size: var(--font-size-caption);
+  }
 
-.base-unit.body {
-  font-size: var(--font-size-body);
+  &.body {
+    font-size: var(--font-size-body);
+  }
 }
 </style>

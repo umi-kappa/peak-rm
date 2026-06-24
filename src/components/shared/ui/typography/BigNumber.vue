@@ -23,22 +23,22 @@ const {
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
-}
 
-.big-number.stat {
-  font-size: var(--font-size-stat);
-}
+  &.stat {
+    font-size: var(--font-size-stat);
+  }
 
-.big-number.hero {
-  font-size: var(--font-size-hero);
-}
+  &.hero {
+    font-size: var(--font-size-hero);
+  }
 
-.big-number.display {
-  font-size: var(--font-size-display);
-}
+  &.display {
+    font-size: var(--font-size-display);
+  }
 
-.big-number.accent {
-  color: var(--color-accent);
-  text-shadow: var(--shadow-glow);
+  &.accent {
+    color: var(--color-accent);
+    text-shadow: var(--shadow-glow);
+  }
 }
 </style>
