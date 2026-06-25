@@ -8,6 +8,7 @@
   --color-text-secondary: #a8a59e; /* 2次テキスト */
   --color-text: #f4f1ea; /* 主要テキスト */
   --color-accent: #22e8ff; /* シアン: 1RM・active・CTA・glow */
+  --color-backdrop: rgba(0, 0, 0, 0.6); /* モーダル背後を覆う暗幕（dialog ::backdrop） */
 
   /* ===== shadow（accent から color-mix で導出＝色の重複を避ける） ===== */
   --shadow-glow:
