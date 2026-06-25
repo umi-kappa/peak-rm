@@ -71,10 +71,14 @@ watchEffect(() => {
   justify-content: space-between;
   width: 100%;
   gap: var(--space-12);
-}
 
-.number-stepper.large {
-  gap: var(--space-16);
+  &.large {
+    gap: var(--space-16);
+
+    .value {
+      font-size: var(--font-size-stat);
+    }
+  }
 }
 
 .button {
@@ -93,16 +97,16 @@ watchEffect(() => {
   user-select: none;
   -webkit-touch-callout: none;
   transition: background-color var(--transition);
-}
 
-@media (hover: hover) {
-  .button:hover {
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-line);
+    }
+  }
+
+  &:active {
     background: var(--color-line);
   }
-}
-
-.button:active {
-  background: var(--color-line);
 }
 
 .value {
@@ -115,13 +119,9 @@ watchEffect(() => {
   font-size: var(--font-size-title);
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-bold);
-}
 
-.number-stepper.large .value {
-  font-size: var(--font-size-stat);
-}
-
-.value.accent {
-  color: var(--color-accent);
+  &.accent {
+    color: var(--color-accent);
+  }
 }
 </style>

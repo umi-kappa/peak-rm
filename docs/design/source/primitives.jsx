@@ -55,7 +55,7 @@ const AppBar = ({ title, action, back = true, caps }) => (
   <div style={{
     height: 48, padding: '0px 16px',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    flexShrink: 0,
+    flexShrink: 0, borderBottom: `1px solid ${C.lineSoft}`,
   }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {back && (
@@ -121,17 +121,6 @@ const Card = ({ children, raised, accent, style, onClickHint }) => (
   }}>{children}</div>
 );
 
-// Section label · caps mono
-const SectionTitle = ({ children, right, style }) => (
-  <div style={{
-    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-    padding: '0px 4px', ...style,
-  }}>
-    <Label>{children}</Label>
-    {right}
-  </div>
-);
-
 // Big number display · used for hero weight, timer.
 // `size` must be one of T.display / T.hero / T.stat; unit is always T.caption.
 // `style` is applied ONLY to the number, so callers can pass neon glow / shadow
@@ -148,16 +137,16 @@ const BigNumber = ({ value, unit, size = T.stat, color, style }) => (
 );
 
 // Screen body
-const ScreenBody = ({ children, p = 24, gap = 16, style }) => (
+const ScreenBody = ({ children, p = 24, style }) => (
   <div style={{
-    padding: `0 ${p}px`, flex: 1, minHeight: 0,
-    display: 'flex', flexDirection: 'column', gap,
-    overflow: 'hidden',
+    padding: `20px ${p}px`, flex: 1, minHeight: 0,
+    display: 'flex', flexDirection: 'column', gap: 20,
+    overflowY: 'auto',
     ...style,
   }}>{children}</div>
 );
 
 Object.assign(window, {
   PrimaryButton, SecondaryButton, IconButton, AppBar, Stepper, Card,
-  SectionTitle, BigNumber, ScreenBody, Unit,
+  BigNumber, ScreenBody, Unit,
 });

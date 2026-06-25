@@ -22,9 +22,9 @@ const exercises = [
 // ---------- 01 HOME ----------
 const M_Home = ({ empty = false }) =>
 <PhoneFrame label={empty ? '01 Home (記録なし)' : '01 Home'}>
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       {/* brand row */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingTop: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.bold, color: C.fg }}>PeakRM</div>
           <span style={{ fontSize: T.caption, color: C.fg3 }}>Train the plan. Track your peak.</span>
@@ -37,7 +37,7 @@ const M_Home = ({ empty = false }) =>
         {exercises.map((e, i) =>
       <div key={e.name} style={{
         background: C.surface, border: `1px solid ${C.lineSoft}`,
-        borderRadius: 4, padding: '16px 20px 16px',
+        borderRadius: 4, padding: '16px',
         display: 'flex', flexDirection: 'column', gap: 8
       }}>
             {/* TITLE row */}
@@ -100,13 +100,13 @@ const M_Home = ({ empty = false }) =>
 const M_Menu = () =>
 <PhoneFrame label="02 Menu" h={840}>
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={24} p={24}>
-      <div style={{ paddingTop: 8 }}>
+    <ScreenBody p={24}>
+      <div>
         <Label>Weight</Label>
         <div style={{
         marginTop: 16,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-        padding: '24px 20px', background: C.surface, borderRadius: 4,
+        padding: '24px 16px', background: C.surface, borderRadius: 4,
         border: `1px solid ${C.lineSoft}`
       }}>
           <div style={{
@@ -156,20 +156,16 @@ const M_Menu = () =>
       </div>
 
       <div>
-        <SectionTitle>Plan</SectionTitle>
-        <div style={{
-        marginTop: 12,
-        background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}`,
-        overflow: 'hidden'
-      }}>
+        <Label>Plan</Label>
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
         ['Reps', '8', 'reps'],
         ['Sets', '3', 'sets'],
         ['Interval', '90', 'sec']].
-        map(([k, v, u], i) =>
+        map(([k, v, u]) =>
         <div key={k} style={{
-          padding: '16px 20px',
-          borderBottom: i < 2 ? `1px solid ${C.lineSoft}` : 'none',
+          background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}`,
+          padding: '16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
               <span style={{ fontSize: T.body, color: C.fg, fontWeight: W.regular, textTransform: 'uppercase' }}>{k}</span>
@@ -193,7 +189,7 @@ const M_TrainingSet = ({ final = false }) => {
   return (
     <PhoneFrame label="03a Training">
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       {/* hero — prescription for this set */}
       <div style={{
           flex: 1, minHeight: 0,
@@ -226,7 +222,7 @@ const M_TrainingSet = ({ final = false }) => {
       {/* reps stepper */}
       <div style={{
           background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4,
-          padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
+          padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
         }}>
         <span style={{ fontSize: T.body, color: C.fg2, textTransform: 'uppercase' }}>Reps done</span>
         <Stepper value="8" unit="reps" size="lg" />
@@ -244,9 +240,9 @@ const M_Interval = () => {
   return (
     <PhoneFrame label="03b Interval" h={920}>
     <AppBar caps title="Bench Press" />
-    <ScreenBody gap={16} p={24}>
+    <ScreenBody p={24}>
       {/* prescription summary */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>82.5</span>
         <Unit>kg</Unit>
         <span style={{ color: C.fg3 }}>·</span>
@@ -259,7 +255,7 @@ const M_Interval = () => {
 
       {/* Timer hero */}
       <div style={{
-          marginTop: 4, padding: '28px 20px', borderRadius: 4,
+          marginTop: 4, padding: '28px 16px', borderRadius: 4,
           background: C.surface, border: `1px solid ${C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
         }}>
@@ -277,7 +273,7 @@ const M_Interval = () => {
         </div>
       </div>
 
-      <SectionTitle>Sets</SectionTitle>
+      <Label>Sets</Label>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* set 1 — done with memo */}
@@ -357,17 +353,17 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
     <PhoneFrame label={fromHistory ? '05a History detail' : aborted ? '04 Result (中断)' : perfect ? '04 Result (完走)' : '04 Result'} h={860}>
     {fromHistory ?
       <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} /></IconButton>} /> :
-      <AppBar caps title="Bench Press" />}
-    <ScreenBody gap={20} p={24}>
+      <AppBar caps title="Bench Press" back={false} />}
+    <ScreenBody p={24}>
       {/* date · history only */}
       {fromHistory &&
         <div style={{
-          paddingTop: 4, fontFamily: FONT_MONO, fontSize: T.body, fontWeight: W.bold,
+          fontFamily: FONT_MONO, fontSize: T.body, fontWeight: W.bold,
           color: C.fg2
         }}>2025/05/12</div>
         }
       {/* prescription summary */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>82.5</span>
         <Unit>kg</Unit>
         <span style={{ color: C.fg3 }}>·</span>
@@ -380,7 +376,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
 
       {/* Est 1RM hero — also the completion celebration moment */}
       <div style={{
-          padding: '28px 20px 24px', borderRadius: 4,
+          padding: '28px 16px 24px', borderRadius: 4,
           background: C.surface, border: `1px solid ${aborted ? C.line : C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16
         }}>
@@ -455,7 +451,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
         }
 
       {/* Set list */}
-      <SectionTitle>Sets</SectionTitle>
+      <Label>Sets</Label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {aborted ?
           <>
@@ -491,7 +487,7 @@ const M_History = () => {
   return (
     <PhoneFrame label="05 History" h={860}>
     <AppBar caps title="History" />
-    <ScreenBody gap={16} p={24}>
+    <ScreenBody p={24}>
       {/* tabs */}
       <div style={{ display: 'flex', gap: 4, padding: 4, background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}` }}>
         {['Bench Press', 'Squat', 'Deadlift'].map((t, i) =>
@@ -555,7 +551,7 @@ const M_History = () => {
         </div>
       </div>
 
-      <SectionTitle>Sessions</SectionTitle>
+      <Label>Sessions</Label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[
           ['05/12', '82.5', '8/8/7', '99.0', 'executed'],
@@ -606,28 +602,25 @@ const M_History = () => {
 const M_Settings = () =>
 <PhoneFrame label="06 Settings">
     <AppBar caps title="Settings" />
-    <ScreenBody gap={20} p={24}>
+    <ScreenBody p={24}>
       <div>
-        <SectionTitle>Data</SectionTitle>
+        <Label>Data</Label>
         <div style={{
         padding: '6px 4px 0', fontSize: T.caption, color: C.fg3, lineHeight: 1.5
       }}>
           Back up all sessions and menu presets to a single file, or restore from one.
         </div>
       </div>
-      <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4, overflow: 'hidden' }}>
-        <SettingRow
-        title="Export"
-        right={<Ic.Download color={C.fg2} />} />
-      
-        <div style={{ height: 1, background: C.lineSoft }} />
-        <SettingRow
-        title="Import"
-        right={<Ic.Upload color={C.fg2} />} />
-      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
+          <SettingRow title="Export" right={<Ic.Download color={C.fg2} />} />
+        </div>
+        <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
+          <SettingRow title="Import" right={<Ic.Upload color={C.fg2} />} />
+        </div>
       </div>
 
-      <SectionTitle>About</SectionTitle>
+      <Label>About</Label>
       <div style={{ background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4 }}>
         <SettingRow title="Version" right={<span style={{ ...NumStyle, fontSize: T.body, color: C.fg2 }}>1.0.0</span>} />
       </div>
@@ -639,7 +632,7 @@ const M_Settings = () =>
 
 const SettingRow = ({ title, sub, right }) =>
 <div style={{
-  padding: '16px 20px',
+  padding: '16px',
   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12
 }}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: sub ? 4 : 0 }}>

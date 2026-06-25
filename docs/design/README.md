@@ -100,8 +100,8 @@ text-shadow:
 | 4 | inline label/value gap |
 | 8 | default chip・sub-row gap |
 | 12 | card row gap・grid gap |
-| 16 | card padding y・section gap |
-| 20 | card padding x・ScreenBody gap |
+| 16 | card padding・section gap |
+| 20 | ScreenBody gap・本文 padding-y |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
 | (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |
