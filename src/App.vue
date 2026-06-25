@@ -1,30 +1,20 @@
 <script setup lang="ts">
-const version = import.meta.env.VITE_APP_VERSION
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <main class="app">
-    <h1 class="title">PeakRM</h1>
-    <p class="version">v{{ version }}</p>
-  </main>
+  <div class="app">
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
+/* RouterView を載せるアプリ外殻。各画面の全高は ScreenFrame（100dvh）が持つため、
+   ここでは高さを取り合わず、背景面と safe-area インセットだけを敷く
+   （viewport-fit=cover + translucent ステータスバーのため、ノッチ・ホームインジケータを避ける）。 */
 .app {
-  min-height: 100dvh;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: center;
-}
-.title {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-}
-.version {
-  font-size: 14px;
-  margin: 0;
+  background: var(--color-bg);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 </style>
