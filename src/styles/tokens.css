@@ -41,7 +41,7 @@
   --space-8: 8px; /* default chip・sub-row gap */
   --space-12: 12px; /* card row gap・grid gap */
   --space-16: 16px; /* card padding・section gap */
-  --space-20: 20px; /* ScreenBody gap・本文 padding-y */
+  --space-20: 20px; /* ScreenBody gap・本文 padding-y・BaseButton 左右 padding */
   --space-24: 24px; /* 画面外周・stage gap */
   --space-28: 28px; /* result hero padding y top */
 
