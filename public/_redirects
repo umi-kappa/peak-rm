@@ -1,0 +1,4 @@
+# Cloudflare Pages: SPA フォールバック。
+# createWebHistory のディープリンク / リロードでも index.html を返し（200）、
+# vue-router にルーティングを委ねる（サーバ側 404 を防ぐ）。
+/*    /index.html   200
