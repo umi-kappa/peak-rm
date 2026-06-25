@@ -56,7 +56,7 @@ export const Accent: Story = {
 
 // to を渡すと <router-link> として描画される
 export const Link: Story = {
-  args: { to: '/menu/bench' },
+  args: { to: '/benchPress/menu' },
 }
 
 // button 版が click を emit する配線だけを確認する
@@ -72,13 +72,13 @@ export const Behavior: Story = {
 
 // to 版はクリックで router が遷移し、click は emit しない（to 時の onClick ガード）
 export const LinkBehavior: Story = {
-  args: { to: '/menu/bench', onClick: fn() },
+  args: { to: '/benchPress/menu', onClick: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, args }) => {
     await router.push('/')
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('link'))
-    await waitFor(() => expect(router.currentRoute.value.path).toBe('/menu/bench'))
+    await waitFor(() => expect(router.currentRoute.value.path).toBe('/benchPress/menu'))
     await expect(args.onClick).not.toHaveBeenCalled()
   },
 }
