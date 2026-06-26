@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, useTemplateRef, watch } from 'vue'
+import { useTemplateRef, watch } from 'vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 
 const {
@@ -24,18 +24,14 @@ const emit = defineEmits<{
 const dialogEl = useTemplateRef<HTMLDialogElement>('dialogEl')
 
 watch(
-  () => open,
-  (newOpen) => {
-    const el = dialogEl.value
-    if (!el) return
-    if (newOpen && !el.open) el.showModal()
-    else if (!newOpen && el.open) el.close()
+  [dialogEl, () => open],
+  ([newDialogEl, newOpen]) => {
+    if (!newDialogEl) return
+    if (newOpen && !newDialogEl.open) newDialogEl.showModal()
+    else if (!newOpen && newDialogEl.open) newDialogEl.close()
   },
+  { immediate: true },
 )
-
-onMounted(() => {
-  if (open) dialogEl.value?.showModal()
-})
 
 function onCancel() {
   emit('cancel')
