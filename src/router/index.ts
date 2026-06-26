@@ -6,17 +6,6 @@ import {
   type RouterHistory,
 } from 'vue-router'
 
-// 全ルート名の一覧。テストが全ルートの到達性を検査するために列挙する。
-export const routeNames = [
-  'home',
-  'menu',
-  'training',
-  'interval',
-  'result',
-  'history',
-  'settings',
-] as const
-
 // 結果確認画面の遷移元。戻り導線をこれで動的に切り替える（spec「結果確認画面」）。
 // session = トレーニング完了・中断経由 / history = 履歴一覧から開いた。
 export type ResultOrigin = 'session' | 'history'
@@ -25,7 +14,7 @@ export type ResultOrigin = 'session' | 'history'
 // その下にぶら下げる。1 セッション = 1 種目という不変条件と一致し、各画面が route から種目を取れる。
 // :exercise は Exercise union 値（benchPress / squat / deadlift）をそのまま使う。
 // home / history / settings は種目に属さないグローバル画面なので top-level に置く。
-const routes: RouteRecordRaw[] = [
+export const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: () => import('@/pages/home/index.vue') },
   {
     path: '/:exercise/menu',

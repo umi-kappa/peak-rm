@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { createMemoryHistory } from 'vue-router'
 import type { Router } from 'vue-router'
-import { createAppRouter, routeNames } from '@/router'
+import { createAppRouter, routes } from '@/router'
 
 // back() は awaitable でないため、次の afterEach（遷移完了）を待つ。
 function waitForNavigation(router: Router): Promise<void> {
@@ -13,14 +13,15 @@ function waitForNavigation(router: Router): Promise<void> {
   })
 }
 
-test('7 つの全ルートに名前で遷移できる', async () => {
+test('全ルートに名前で遷移できる', async () => {
   const router = createAppRouter(createMemoryHistory())
   await router.push({ name: 'home' }) // memory history は初回 push で初期遷移を起こす（START_LOCATION → home）
 
-  // menu / training / interval / result は :exercise 配下のため種目 param が要る
-  const sessionFlow = new Set(['menu', 'training', 'interval', 'result'])
-  for (const name of routeNames) {
-    const params = sessionFlow.has(name) ? { exercise: 'benchPress' } : {}
+  for (const route of routes) {
+    const name = route.name
+    if (typeof name !== 'string') continue
+    // :exercise 配下のルート（menu / training / interval / result）は種目 param が要る
+    const params = route.path.includes(':exercise') ? { exercise: 'benchPress' } : {}
     await router.push({ name, params })
     expect(router.currentRoute.value.name).toBe(name)
   }
