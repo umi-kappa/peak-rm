@@ -24,5 +24,12 @@ export default defineConfigWithVueTs(
     // 値の不在は null ではなく undefined で統一する（Dexie / Array.at() / ?? の自然な返り値に揃える）。
     rules: { 'unicorn/no-null': 'error' },
   },
+  {
+    name: 'app/page-entry-names',
+    // 画面エントリは規約上 pages/<画面>/index.vue（Nuxt 風命名）。ファイル名がルートで一意なので
+    // multi-word 強制の対象外にする（命名規約は docs/conventions.md「ファイル命名」を参照）。
+    files: ['src/pages/**/index.vue'],
+    rules: { 'vue/multi-word-component-names': 'off' },
+  },
   skipFormatting,
 )

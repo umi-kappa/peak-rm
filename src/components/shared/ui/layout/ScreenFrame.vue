@@ -15,6 +15,11 @@
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
+  /* viewport-fit=cover + translucent ステータスバーのため、ノッチ・ホームインジケータを避ける
+     safe-area インセットを全高（100dvh）の内側に取り込む（box-sizing: border-box）。
+     高さを持つこの要素が safe-area も一元的に持つことで、外殻側の padding と二重計上にならない。 */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
 /* 固定ヘッダー領域。本文との境界に区切り線を引く（header slot がある画面のみ描画） */

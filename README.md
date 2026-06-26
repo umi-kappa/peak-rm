@@ -15,10 +15,10 @@ src/
 │  ├─ shared/platform/   useWakeLock / useAudioCue
 │  └─ pages/<画面>/       画面専用ロジック
 ├─ components/    Vue コンポーネント
-│  ├─ shared/ui/         デザインプリミティブ（汎用・ドメイン非依存）
-│  ├─ shared/*.vue       横断の複合（ConfirmDialog / SetEditModal）
+│  ├─ shared/ui/         デザインプリミティブ（汎用・ドメイン非依存。dialog/ に ConfirmDialog）
+│  ├─ shared/*.vue       横断のアプリ固有複合（SetEditDialog など）
 │  └─ pages/<画面>/       画面専用コンポーネント
-├─ pages/         画面エントリ（<画面>/index.vue）
+├─ pages/         画面エントリ（<画面>/index.vue。セッションフローは [exercise]/ 配下にネスト）
 ├─ router/        vue-router のルート定義
 └─ styles/        デザイントークン・グローバル CSS
 ```
