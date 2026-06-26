@@ -22,6 +22,12 @@ function finish() {
     query: { origin: 'session' },
   })
 }
+
+// 中断確定: ダイアログを閉じてから遷移する（開いたまま画面を破棄しない）。
+function confirmAbort() {
+  abortConfirmOpen.value = false
+  finish()
+}
 </script>
 
 <template>
@@ -36,7 +42,7 @@ function finish() {
       title="トレーニングを中断しますか？"
       message="ここまでの記録を保存して結果確認画面へ進みます。"
       confirm-label="中断する"
-      @confirm="finish"
+      @confirm="confirmAbort"
       @cancel="abortConfirmOpen = false"
     />
   </ScreenFrame>
