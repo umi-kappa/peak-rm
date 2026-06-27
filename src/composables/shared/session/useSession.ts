@@ -65,18 +65,18 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const results = [...current.results, { actualReps: draftReps.value, memo: '' }]
     const isLastSet = results.length === current.menu.sets
     if (!isLastSet) {
-      session.value = { ...current, results }
       await repo.patchResults(current.id, results)
+      session.value = { ...current, results }
       phase.value = 'interval'
       return
     }
     // 最終セット完了。全セット目標達成のときだけ executed 確定、それ以外（未達含む）は aborted 据え置き
     if (isExecuted({ ...current, results })) {
-      session.value = { ...current, results, status: 'executed' }
       await repo.finalize(current.id, results)
+      session.value = { ...current, results, status: 'executed' }
     } else {
-      session.value = { ...current, results }
       await repo.patchResults(current.id, results)
+      session.value = { ...current, results }
     }
     phase.value = 'done'
   }
@@ -100,8 +100,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     // 実績編集で完遂条件の充足が変わりうるため status を再導出し、results と同時に確定する。
     // executed セッションを未達へ編集すれば aborted へ降格、その逆も追従し status×results の整合を保つ
     const status = isExecuted({ ...current, results }) ? 'executed' : 'aborted'
-    session.value = { ...current, results, status }
     await repo.patchResultsAndStatus(current.id, results, status)
+    session.value = { ...current, results, status }
   }
 
   function editReps(index: number, value: number) {
