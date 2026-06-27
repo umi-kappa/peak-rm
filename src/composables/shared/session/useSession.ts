@@ -48,7 +48,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const next: Session = {
       id: createId(),
       exercise: menu.exercise,
-      status: 'aborted', // 保守的デフォルト。完遂時のみ executed へ更新する
+      // 保守的デフォルト。完遂時のみ executed へ更新する
+      status: 'aborted',
       startedAt: now(),
       menu: frozenMenu,
       results: [],
