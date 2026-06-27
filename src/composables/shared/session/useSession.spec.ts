@@ -184,4 +184,36 @@ describe('useSession', () => {
     expect(session.currentReps.value).toBe(5)
     expect(repo.calls).toHaveLength(callsBefore)
   })
+
+  test('maxOneRm は start 前は 0', () => {
+    const { session } = setup()
+    expect(session.maxOneRm.value).toBe(0)
+  })
+
+  test('maxOneRm は実績 0 回（skip）を除外し実施セットの最大値を返す', async () => {
+    const { session } = setup()
+    // benchPress 100kg・8 回 → 100×(1+8/40)=120。skip（実績 0 回）は 1RM 計算から除外する
+    await session.start(menu({ exercise: 'benchPress', weight: 100, reps: 8, sets: 2 }))
+    await session.completeSet() // set1: 実績 8
+    session.nextSet()
+    session.editCurrentReps(0) // set2: skip
+    await session.completeSet()
+    expect(session.maxOneRm.value).toBe(120)
+  })
+
+  test('nextSet は interval 以外（setActive）では何もしない', async () => {
+    const { session } = setup()
+    await session.start(menu())
+    session.nextSet()
+    expect(session.phase.value).toBe('setActive')
+  })
+
+  test('start 前は completeSet / editReps を呼んでも永続化せず状態も変えない', async () => {
+    const { repo, session } = setup()
+    await session.completeSet()
+    await session.editReps(0, 5)
+    expect(repo.calls).toHaveLength(0)
+    expect(session.session.value).toBeUndefined()
+    expect(session.phase.value).toBe('done')
+  })
 })
