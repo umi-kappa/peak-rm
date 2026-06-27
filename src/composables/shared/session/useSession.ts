@@ -12,7 +12,10 @@ export type TrainingPhase = 'setActive' | 'interval' | 'done'
 // start() には確定済みの MenuPreset を渡す（useSession は menuPresetRepo を参照しない）。
 // now / createId はテストで決定的にするため差し替え可能にする。
 export type SessionDeps = {
-  sessionRepo: Pick<typeof sessionRepo, 'insert' | 'patchResults' | 'finalize'>
+  sessionRepo: Pick<
+    typeof sessionRepo,
+    'insert' | 'patchResults' | 'patchResultsAndStatus' | 'finalize'
+  >
   now?: () => number
   createId?: () => string
 }
@@ -92,8 +95,11 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const current = session.value
     if (current === undefined) return
     const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
-    session.value = { ...current, results }
-    await repo.patchResults(current.id, results)
+    // 実績編集で完遂条件の充足が変わりうるため status を再導出し、results と同時に確定する。
+    // executed セッションを未達へ編集すれば aborted へ降格、その逆も追従し status×results の整合を保つ
+    const status = isExecuted({ ...current, results }) ? 'executed' : 'aborted'
+    session.value = { ...current, results, status }
+    await repo.patchResultsAndStatus(current.id, results, status)
   }
 
   function editReps(index: number, value: number) {

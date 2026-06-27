@@ -7,6 +7,7 @@ import type { MenuPreset, SetResult, Session } from '@/core/types'
 type RepoCall =
   | { method: 'insert'; session: Session }
   | { method: 'patchResults'; id: string; results: SetResult[] }
+  | { method: 'patchResultsAndStatus'; id: string; results: SetResult[]; status: Session['status'] }
   | { method: 'finalize'; id: string; results: SetResult[] }
 
 function createFakeRepo() {
@@ -18,6 +19,9 @@ function createFakeRepo() {
     },
     patchResults: async (id: string, results: SetResult[]) => {
       calls.push({ method: 'patchResults', id, results })
+    },
+    patchResultsAndStatus: async (id: string, results: SetResult[], status: Session['status']) => {
+      calls.push({ method: 'patchResultsAndStatus', id, results, status })
     },
     finalize: async (id: string, results: SetResult[]) => {
       calls.push({ method: 'finalize', id, results })
@@ -123,25 +127,43 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('done')
   })
 
-  test('editReps は完了済みセットの実績を更新し patchResults する', async () => {
+  test('editReps は完了済みセットの実績を更新し patchResultsAndStatus する', async () => {
     const { repo, session } = setup()
     await session.start(menu({ sets: 2 }))
     await session.completeSet()
     await session.editReps(0, 3)
     expect(session.session.value?.results.at(0)?.actualReps).toBe(3)
     expect(repo.calls.at(-1)).toMatchObject({
-      method: 'patchResults',
+      method: 'patchResultsAndStatus',
       results: [{ actualReps: 3, memo: '' }],
     })
   })
 
-  test('editMemo は完了済みセットのメモを更新し patchResults する', async () => {
+  test('結果確認画面での実績編集は status を再導出し executed↔aborted を追従する', async () => {
+    const { repo, session } = setup()
+    await session.start(menu({ sets: 1, reps: 8 }))
+    await session.completeSet()
+    expect(session.session.value?.status).toBe('executed')
+
+    // 目標未満へ編集 → aborted へ降格
+    await session.editReps(0, 5)
+    expect(session.session.value?.status).toBe('aborted')
+    expect(session.isExecutedNow.value).toBe(false)
+    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'aborted' })
+
+    // 目標達成へ戻す → executed へ復帰
+    await session.editReps(0, 8)
+    expect(session.session.value?.status).toBe('executed')
+    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'executed' })
+  })
+
+  test('editMemo は完了済みセットのメモを更新し patchResultsAndStatus する', async () => {
     const { repo, session } = setup()
     await session.start(menu({ sets: 2 }))
     await session.completeSet()
     await session.editMemo(0, 'フォームを意識した')
     expect(session.session.value?.results.at(0)?.memo).toBe('フォームを意識した')
-    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResults' })
+    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus' })
   })
 
   test('editCurrentReps は現セットの実績のみ変え、永続化しない', async () => {
