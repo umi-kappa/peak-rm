@@ -525,6 +525,8 @@ Chromatic の snapshot は「story 数 × viewport 数 × ブラウザ数 × ビ
 
 履歴を読み専用にする意図: 過去のセッションにはすでに 1RM グラフや linear progression のトリガー判定が適用されており、遡及的な変更を許すとトレーニング史全体の一貫性が崩れるため。
 
+**編集に伴う `status` の再導出**: 実績回数を編集した場合、`Session.status` は編集後の `results` に対する `isExecuted` 判定から再導出する（全セット目標達成⇄未達の変更が `executed` / `aborted` に追従する）。これにより「`status` は `executed` だが `results` は未達」という不整合を防ぐ。増量トリガーは `isExecuted` で再判定されるため安全だが、同日集約（`executed` 優先）が `status` を参照するため整合を保つ必要がある。
+
 **実装記**: TypeScript 型上、`Session.results: SetResult[]` はトレーニング中・結果確認中は可変、履歴詳細表示中は `Readonly<SetResult>[]` として扱う（画面コンテクストで読み専用を採用し、入力 UI も表示しない）。
 
 ---
