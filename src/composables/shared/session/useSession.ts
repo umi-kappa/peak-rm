@@ -40,6 +40,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   const draftReps = ref(0)
 
   async function start(menu: MenuPreset) {
+    if (menu.sets < 1) throw new Error(`menu.sets must be >= 1: ${menu.sets}`)
     // 開始時点のメニューを deep copy で焼き込み、Readonly で以後の変更を型レベルに封じる。
     // 呼び出し側が reactive / ref の MenuPreset を渡しても壊れないよう toRaw で proxy を剥がす
     // （structuredClone は Vue の proxy を複製できず DataCloneError を投げるため）。

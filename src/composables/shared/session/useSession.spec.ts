@@ -107,6 +107,12 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(callsBefore)
   })
 
+  test('start は sets < 1 のメニューを拒否する', async () => {
+    const { repo, session } = setup()
+    await expect(session.start(menu({ sets: 0 }))).rejects.toThrow()
+    expect(repo.calls).toHaveLength(0)
+  })
+
   test('abort は setActive（インターバル外）では何もしない', async () => {
     const { session } = setup()
     await session.start(menu())
