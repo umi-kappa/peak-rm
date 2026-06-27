@@ -88,6 +88,9 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   }
 
   function abort() {
+    // 中断はインターバル中のみ（spec: 中断ボタンはインターバル画面にのみ配置。setActive には置かない）。
+    // nextSet / completeSet と対称にガードする
+    if (phase.value !== 'interval') return
     // DB は開始時から aborted で保存済み・results も都度反映済みのため追加書き込みは不要
     phase.value = 'done'
   }

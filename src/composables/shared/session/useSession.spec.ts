@@ -107,6 +107,13 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(callsBefore)
   })
 
+  test('abort は setActive（インターバル外）では何もしない', async () => {
+    const { session } = setup()
+    await session.start(menu())
+    session.abort()
+    expect(session.phase.value).toBe('setActive')
+  })
+
   test('開始後に元の MenuPreset を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })
