@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { describe, expect, test } from 'vitest'
 
 import { useSession, type SessionDeps } from '@/composables/shared/session/useSession'
@@ -112,6 +113,15 @@ describe('useSession', () => {
     await session.start(original)
     original.weight = 999
     expect(session.session.value?.menu.weight).toBe(100)
+  })
+
+  test('reactive な MenuPreset を渡しても structuredClone が壊れず開始できる', async () => {
+    const { session } = setup()
+    // メニュー画面のフォーム状態は reactive proxy になりうる。toRaw で剥がせていないと
+    // structuredClone が DataCloneError を投げて start が reject する
+    await session.start(reactive(menu({ weight: 100 })))
+    expect(session.session.value?.menu.weight).toBe(100)
+    expect(session.phase.value).toBe('setActive')
   })
 
   test('フェーズは setActive → interval → setActive → … → done と遷移する', async () => {

@@ -1,4 +1,4 @@
-import { computed, readonly, ref, shallowRef, type InjectionKey } from 'vue'
+import { computed, readonly, ref, shallowRef, toRaw, type InjectionKey } from 'vue'
 
 import { isExecuted, sessionMaxOneRm } from '@/core/session'
 import { sessionRepo } from '@/storage/sessionRepo'
@@ -40,8 +40,10 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   const draftReps = ref(0)
 
   async function start(menu: MenuPreset) {
-    // 開始時点のメニューを deep copy で焼き込み、Readonly で以後の変更を型レベルに封じる
-    const frozenMenu: Readonly<MenuPreset> = structuredClone(menu)
+    // 開始時点のメニューを deep copy で焼き込み、Readonly で以後の変更を型レベルに封じる。
+    // 呼び出し側が reactive / ref の MenuPreset を渡しても壊れないよう toRaw で proxy を剥がす
+    // （structuredClone は Vue の proxy を複製できず DataCloneError を投げるため）。
+    const frozenMenu: Readonly<MenuPreset> = structuredClone(toRaw(menu))
     const next: Session = {
       id: createId(),
       exercise: menu.exercise,
