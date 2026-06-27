@@ -99,6 +99,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     const current = session.value
     if (current === undefined) return
+    if (index < 0 || index >= current.results.length) return
     const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
     // 実績編集で完遂条件の充足が変わりうるため status を再導出し、results と同時に確定する。
     // executed セッションを未達へ編集すれば aborted へ降格、その逆も追従し status×results の整合を保つ

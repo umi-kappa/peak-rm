@@ -183,6 +183,16 @@ describe('useSession', () => {
     expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus' })
   })
 
+  test('editReps は範囲外 index では何もせず永続化もしない', async () => {
+    const { repo, session } = setup()
+    await session.start(menu({ sets: 2 }))
+    await session.completeSet()
+    const callsBefore = repo.calls.length
+    await session.editReps(5, 3)
+    expect(repo.calls).toHaveLength(callsBefore)
+    expect(session.session.value?.results).toHaveLength(1)
+  })
+
   test('editCurrentReps は現セットの実績のみ変え、永続化しない', async () => {
     const { repo, session } = setup()
     await session.start(menu())
