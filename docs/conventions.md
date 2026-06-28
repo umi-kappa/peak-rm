@@ -23,7 +23,7 @@ src/
     shared/
       ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
         base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit / BaseCard）
-        buttons/       # IconButton（円形アイコン専用ボタン）/ CardButton（押せる面）
+        buttons/       # IconButton（円形アイコン専用ボタン）/ CardButton（押せる面）。どちらも to で router-link / button を切り替える
         typography/    # 文字 / 数値の複合提示（BigNumber）
         inputs/        # NumberStepper
         layout/        # ScreenFrame / AppBar
