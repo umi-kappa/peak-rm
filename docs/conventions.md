@@ -194,6 +194,8 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **`--font-size-*` の値は rem で定義する**。`global.css` の `html { font-size: 62.5% }` により 1rem = 10px なので、値はデザインの px ÷ 10（例: 14px → `1.4rem`）。% 基準のためブラウザのフォントサイズ設定（アクセシビリティ）にも追従する。スペーシング・radius など寸法系は px のままでよい
 - **既定値は接尾辞なし（bare）・変種のみ接尾辞**を付ける（例: `--line-height` / `--line-height-tight`、`--radius` / `--radius-pill`、`--color-text` / `--color-text-secondary`）
 - README の抽象名は用途が湧く名前に改名してよい（`fg`→`--color-text`、`line`→`--color-line` 等）。ただし**値は実デザイン（`docs/design/source/*.jsx`）に一致**させる。`font-size` の役割名（display/hero/stat…）は標準語なので維持しコメントで補足する
+- **`body`（`global.css`）が既定の `font-family: sans` / `font-size: body` / `line-height` を設定済み**。scoped CSS では**既定を上書きするときだけ**指定する（数字・ラベルの `mono`、別サイズなど）。sans 本文への `font-family` 再指定はしない（body から継承させる）。`font-size: --font-size-body` も、祖先が別サイズを設定していない普通の要素では省略してよい（body から継承）
+- **ただし `color: --color-text` は一律省略しない**。`<button>` / `<a>`（`CardButton` など）は UA スタイルで color を継承せず、明示が実働する（例: `BaseCard` の color は CardButton の `<a>` のリンク色を打ち消している）。プリミティブは自己完結のため明示してよい。省略してよいのは「継承で `--color-text` に解決し、かつ祖先が color を変えていない」普通の要素に限る
 
 ## PWA・静的アセット
 

@@ -144,13 +144,13 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### 1. Home (`M_Home`)
 
-- ブランド `PeakRM` (sans title bold) + タグライン "Train the plan. Track your peak." (caption fg3)
+- ブランド行: 左に `PeakRM` (sans title bold) + タグライン "Train the plan. Track your peak." (caption fg3)、右端に Settings (Gear) の IconButton
 - 3 つの種目カード (Bench Press / Squat / Deadlift) を縦に配置。各カード:
   - 種目名 (sans title semibold, uppercase)
   - 左: `EST. 1RM` Label + 推定1RM 数値 (mono stat bold, アクセント色 + glow)。未記録時は `—` (fg3)
   - 右: `LAST` Label + 重量 (mono body bold) + reps (mono caption regular, `× 82.5/8/7` 形式)
   - 未記録時は Label 行のみ ("No record yet")
-- 下部: History 行 (アイコン + ラベル) と Settings 行を縦に並べる
+- 下部: History 行 (アイコン + ラベル + 右シェブロン) を 1 行
 - カードタップでメニュー設定画面へ
 
 ### 2. Menu (`M_Menu`)
