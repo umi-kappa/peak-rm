@@ -1,16 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { setup } from '@storybook/vue3-vite'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
-import { createMemoryHistory, createRouter } from 'vue-router'
 import { iconNames } from '@/assets/icons'
 import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
-
-// `to` 指定の Story は <router-link> を描画するため、最小の router を全 Story に提供する。
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes: [{ path: '/:pathMatch(.*)*', component: { template: '<div />' } }],
-})
-setup((app) => app.use(router))
+import { storybookRouter as router } from '@/stories/router'
 
 const meta: Meta<typeof IconButton> = {
   component: IconButton,

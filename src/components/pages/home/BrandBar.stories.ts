@@ -1,18 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { setup } from '@storybook/vue3-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { createMemoryHistory, createRouter } from 'vue-router'
 import BrandBar from '@/components/pages/home/BrandBar.vue'
-
-// Settings の IconButton は to で name: 'settings' へ遷移するため、最小の router を全 Story に提供する。
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes: [
-    { path: '/', name: 'home', component: { template: '<div />' } },
-    { path: '/settings', name: 'settings', component: { template: '<div />' } },
-  ],
-})
-setup((app) => app.use(router))
+import { storybookRouter as router } from '@/stories/router'
 
 const meta: Meta<typeof BrandBar> = {
   component: BrandBar,
