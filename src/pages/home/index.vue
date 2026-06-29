@@ -1,36 +1,64 @@
 <script setup lang="ts">
-import type { Exercise } from '@/core/types'
+import { onMounted, ref } from 'vue'
+import type { Exercise, Session } from '@/core/types'
+import { EXERCISE_ORDER } from '@/core/constants'
+import { sessionRepo } from '@/storage/sessionRepo'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
-import CardButton from '@/components/shared/ui/buttons/CardButton.vue'
+import BrandBar from '@/components/pages/home/BrandBar.vue'
+import ExerciseCard from '@/components/pages/home/ExerciseCard.vue'
+import NavLink from '@/components/pages/home/NavLink.vue'
 
-// 足場用の最小スタブ。種目カードの中身（推定 1RM・前回値など）は後続 Issue が肉付けする。
-const exercises: { exercise: Exercise; label: string }[] = [
-  { exercise: 'benchPress', label: 'Bench Press' },
-  { exercise: 'squat', label: 'Squat' },
-  { exercise: 'deadlift', label: 'Deadlift' },
-]
+const sessions = ref<Partial<Record<Exercise, Session>>>({})
+
+async function loadSessions() {
+  const next: Partial<Record<Exercise, Session>> = {}
+  await Promise.all(
+    EXERCISE_ORDER.map(async (exercise) => {
+      const session = await sessionRepo.latestByExercise(exercise)
+      if (session) next[exercise] = session
+    }),
+  )
+  sessions.value = next
+}
+
+onMounted(loadSessions)
 </script>
 
 <template>
-  <ScreenFrame>
-    <h1 class="brand">PeakRM</h1>
-    <CardButton
-      v-for="e in exercises"
-      :key="e.exercise"
-      :to="{ name: 'menu', params: { exercise: e.exercise } }"
-    >
-      {{ e.label }}
-    </CardButton>
-    <CardButton :to="{ name: 'history' }" border="line">History</CardButton>
-    <CardButton :to="{ name: 'settings' }" border="line">Settings</CardButton>
+  <ScreenFrame flush-bottom>
+    <template #header>
+      <BrandBar />
+    </template>
+
+    <div class="exercises">
+      <ExerciseCard
+        v-for="exercise in EXERCISE_ORDER"
+        :key="exercise"
+        :exercise
+        :session="sessions[exercise]"
+      />
+    </div>
+
+    <nav class="nav">
+      <NavLink :to="{ name: 'history' }" icon="history" label="HISTORY" />
+    </nav>
   </ScreenFrame>
 </template>
 
 <style scoped>
-.brand {
-  margin: 0;
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-bold);
+.exercises {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-line-dark);
 }
 </style>
