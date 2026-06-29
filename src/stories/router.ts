@@ -10,6 +10,7 @@ export const storybookRouter = createRouter({
   routes: [
     { path: '/', name: 'home', component: { template: '<div />' } },
     { path: '/settings', name: 'settings', component: { template: '<div />' } },
+    { path: '/history', name: 'history', component: { template: '<div />' } },
     { path: '/:exercise/menu', name: 'menu', component: { template: '<div />' } },
     // 汎用ボタン（CardButton / IconButton）の任意の遷移先を受ける catch-all
     { path: '/:pathMatch(.*)*', component: { template: '<div />' } },
