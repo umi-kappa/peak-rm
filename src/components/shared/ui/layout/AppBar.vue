@@ -33,6 +33,7 @@ function onBack() {
   flex-shrink: 0;
   padding-block: var(--space-8);
   padding-inline: var(--space-24);
+  line-height: var(--line-height-tight);
 }
 
 .lead {

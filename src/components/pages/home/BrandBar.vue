@@ -19,6 +19,7 @@ import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
   justify-content: space-between;
   padding-block: var(--space-8);
   padding-inline: var(--space-24);
+  line-height: var(--line-height-tight);
 }
 
 .text {
@@ -26,6 +27,7 @@ import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
   align-items: baseline;
   column-gap: var(--space-8);
   flex-wrap: wrap;
+  row-gap: var(--space-4);
 }
 
 .name {
