@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { isExecuted, sessionMaxOneRm } from '@/core/session'
+import { formatSetReps, isExecuted, sessionMaxOneRm } from '@/core/session'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function makeSession(
@@ -49,6 +49,28 @@ describe('sessionMaxOneRm', () => {
   test('results が空なら 0 を返す', () => {
     const session = makeSession('benchPress', 100, 8, 3, [])
     expect(sessionMaxOneRm(session)).toBe(0)
+  })
+})
+
+describe('formatSetReps', () => {
+  test('各セットの実績回数を / 連結する', () => {
+    const session = makeSession('benchPress', 82.5, 8, 3, [reps(8), reps(8), reps(7)])
+    expect(formatSetReps(session)).toBe('8/8/7')
+  })
+
+  test('スキップ（0 回）も除外せずそのまま出す', () => {
+    const session = makeSession('benchPress', 82.5, 8, 3, [reps(8), reps(8), reps(0)])
+    expect(formatSetReps(session)).toBe('8/8/0')
+  })
+
+  test('1 セットなら区切りなしで返す', () => {
+    const session = makeSession('squat', 100, 5, 1, [reps(5)])
+    expect(formatSetReps(session)).toBe('5')
+  })
+
+  test('results が空なら空文字を返す', () => {
+    const session = makeSession('deadlift', 120, 5, 3, [])
+    expect(formatSetReps(session)).toBe('')
   })
 })
 
