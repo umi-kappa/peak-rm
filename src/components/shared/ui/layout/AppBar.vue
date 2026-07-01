@@ -31,8 +31,9 @@ function onBack() {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  height: 48px;
-  padding-inline: var(--space-8);
+  padding-block: var(--space-8);
+  padding-inline: var(--space-24);
+  line-height: var(--line-height-tight);
 }
 
 .lead {

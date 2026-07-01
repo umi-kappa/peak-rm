@@ -9,7 +9,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
-    types.ts  oneRm.ts  linearProgression.ts  stepper.ts  session.ts  sessionHistory.ts  chartData.ts
+    types.ts  constants.ts  oneRm.ts  linearProgression.ts  stepper.ts  session.ts  sessionHistory.ts  chartData.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  menuPresetRepo.ts  backup.ts
   composables/
@@ -23,7 +23,7 @@ src/
     shared/
       ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
         base/          # 基底プリミティブ（BaseButton / BaseIcon / BaseLabel / BaseUnit / BaseCard）
-        buttons/       # IconButton（円形アイコン専用ボタン）/ CardButton（押せる面）
+        buttons/       # IconButton（円形アイコン専用ボタン）/ CardButton（押せる面）。どちらも to で router-link / button を切り替える
         typography/    # 文字 / 数値の複合提示（BigNumber）
         inputs/        # NumberStepper
         layout/        # ScreenFrame / AppBar
@@ -38,10 +38,15 @@ src/
   assets/
     icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
+  stories/  router.ts    # Storybook 補助（全 story で 1 度だけ install する共有 router など）
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`。うち `menu` / `training` / `interval` / `result` はセッションフローとして `[exercise]/` 配下にネストし、ディレクトリ構成を URL（`/:exercise/…`）と一致させる（`[exercise]` は動的セグメント `:exercise` を表すディレクトリ名。ファイルベースルーティングではなく実際のルートは `router/index.ts` で定義する）。種目に属さない `home` / `history` / `settings` は `pages/` 直下に置く
-- **`core/` と `storage/` の分離**: `core/` は副作用を持たない純関数（純粋ユニットテストで完結）。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
+- **`core/` と `storage/` の分離**: `core/` は副作用を持たないドメインの中核（型・定数・純関数）。純関数（`oneRm` / `session` / `linearProgression` など）に加え、それらが共通語彙として使うドメインモデル（`types.ts`）と静的なドメインデータ（`constants.ts` の `EXERCISE_ORDER` / `EXERCISE_LABELS` など）も含む。型・定数は副作用ゼロで `storage → core`・`components・pages → core` の依存方向の規律にそのまま乗る最基底であり、`src/` 直下や別層に散らさず `core/` に集約する。`storage/` は IndexedDB という外部世界に触る層。依存方向は **`storage → core` の一方向**で、`core/` から `storage/` を import しない。これにより業務ルール（1RM 計算・progression）が永続化技術から独立する。
+- **静的なドメインデータ定数は `readonly` を型で保証する**: `const` は再代入しか防がず、要素・プロパティは書き換え可能なため明示的に `readonly` 化する。手段は配列とオブジェクトで非対称:
+  - **配列**は型注釈 `: readonly T[]` だけで readonly 配列型になる（再代入・`push` をコンパイル時に弾く）。`as const` は要素リテラル付きの readonly タプルを作るが、反復用途ではオーバーキルなので使わない（例: `EXERCISE_ORDER: readonly Exercise[]`）。
+  - **オブジェクト**は型注釈（`: Record<Exercise, string>`）では readonly にならないため `as const`（プロパティを `readonly` 化し書き換え・キー追加を弾く）+ `satisfies <型>`（`Record<Exercise, string>` などで網羅・値の型を保証）を併用する（例: `EXERCISE_LABELS = { … } as const satisfies Record<Exercise, string>`）。
+  - 実行時の `Object.freeze` は使わない（外部入力ではないアプリ内定数のため過剰）。
 - **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/` / `dialog/`）に分ける。`base/` は単一要素にトークンで見た目を着せるだけの基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit` / `BaseCard`）専用で、`Base` プレフィックスで揃える。子要素の配置や画面領域の構造は与えず（見た目を着せるだけ）、面の土台 `BaseCard`（padding を持つだけで子の並びは制御しない）もここに含む。子要素の配置・画面領域の構造を担うもの（`ScreenFrame` の全高縦 flex 外殻 + 本文領域（左右 padding + 縦 gap、デザインの ScreenBody 相当を内包）、`AppBar` の領域分割）は `layout/`、base の文字プリミティブを組み合わせて意味を持つ文字 / 数値を提示する複合（`BigNumber` の数値提示）は `typography/` に置く。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。確認・通知系のオーバーレイは `dialog/` に置く（`ConfirmDialog` は破壊的操作の確認に使う presentational なモーダルで、`open` / `title` などを prop で受け取り `confirm` / `cancel` を emit するだけ。遷移先や実処理は呼び出し側が担い、router・業務ロジックを持たないため `ui/` プリミティブに属する）。これに対し、実行中セッションなどドメイン状態を内側に持つアプリ固有の複合コンポーネントは `components/shared/` 直下に置く。`CardButton`（`to` で `<router-link>` / `<button>` を切り替える押せる面・`buttons/`）は `BaseCard`（presentational な面・`base/`）を内包して面レシピを再利用し、押せる affordance（focus / hover / press・クリック emit）だけを足す。面の単一ソースは `BaseCard` に置き、静的な面か押せる面かという役割で配置を分ける。`ui/` のプリミティブは presentational に保ち、インタラクションは affordance + イベント発火まで（クリック emit・`@back` など）に留める。ナビゲーションや業務ロジック（遷移先の判断・状態更新・router 参照）は持たせず呼び出し側に委ねる（例: `AppBar` の `back` は押下で `@back` を emit するだけで、遷移先は画面側が決める）。
 - **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper は Menu 設定画面でのみ使う重量入力（汎用 `NumberStepper` を 0.25 kg 刻み・linear progression のベースライン表示など Menu 固有の振る舞いで包む）ため、`ui/inputs/` ではなく `components/pages/menu/WeightStepper.vue` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
 - **ステッパーのロジックは 3 層に分離**する。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
@@ -180,6 +185,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - ルート以外の**子要素のクラス名は短く**（`.title`、`.value`、`.unit`）。BEM 記法（`app__title`）は使わない
 - 値（色・タイポグラフィ・スペーシング）は `docs/design/README.md` のデザイントークンに厳密に従う
 - **余白（`padding` / `margin` / `gap`）は `--space-*` トークンを `var()` で参照する**。生の px を直書きしない。同じ役割の余白は同じトークンに揃える（例: 画面外周は `--space-24`、カード内側は `--space-16`）。余白の値は外側ほど大きい入れ子の階層（画面 ⊃ カード ⊃ バー）として意図的に段階を持たせており、段数を減らすかは実画面の実装の中で判断する
+- **ヘッダーバー（`AppBar` / `BrandBar` など）は `ScreenFrame` の `#header` スロットに入れる**。高さは固定せず `padding-block`（`--space-8`）で作り、`padding-inline` は画面外周（`--space-24`）に揃えて本文（ScreenBody）と左右の縦ラインを合わせる
 - **`text-transform: uppercase` は使わない**。大文字で見せたいテキストは呼び出し側がラベル文字列そのものを大文字で書く（例: `START SESSION`・`KG`）。表示とソース文字列（コピー・読み上げ内容）を一致させる
 - **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
 - **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない
@@ -194,6 +200,9 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **`--font-size-*` の値は rem で定義する**。`global.css` の `html { font-size: 62.5% }` により 1rem = 10px なので、値はデザインの px ÷ 10（例: 14px → `1.4rem`）。% 基準のためブラウザのフォントサイズ設定（アクセシビリティ）にも追従する。スペーシング・radius など寸法系は px のままでよい
 - **既定値は接尾辞なし（bare）・変種のみ接尾辞**を付ける（例: `--line-height` / `--line-height-tight`、`--radius` / `--radius-pill`、`--color-text` / `--color-text-secondary`）
 - README の抽象名は用途が湧く名前に改名してよい（`fg`→`--color-text`、`line`→`--color-line` 等）。ただし**値は実デザイン（`docs/design/source/*.jsx`）に一致**させる。`font-size` の役割名（display/hero/stat…）は標準語なので維持しコメントで補足する
+- **`body`（`global.css`）が既定の `font-family: sans` / `font-size: body` / `line-height` を設定済み**。scoped CSS では**既定を上書きするときだけ**指定する（数字・ラベルの `mono`、別サイズなど）。sans 本文への `font-family` 再指定はしない（body から継承させる）。`font-size: --font-size-body` も、祖先が別サイズを設定していない普通の要素では省略してよい（body から継承）
+- **`line-height` の使い分け**: 本文・折り返しうる箇所は既定の `--line-height`（1.4・body 継承で無指定）。1 行で収まる見出し・ラベル・数字（`AppBar` / `BrandBar` のヘッダー、`ExerciseCard` の種目名、`BigNumber` の数字など）は `--line-height-tight`（1）で行ボックスを詰める
+- **ただし `color: --color-text` は一律省略しない**。`<button>` / `<a>`（`CardButton` など）は UA スタイルで color を継承せず、明示が実働する（例: `BaseCard` の color は CardButton の `<a>` のリンク色を打ち消している）。プリミティブは自己完結のため明示してよい。省略してよいのは「継承で `--color-text` に解決し、かつ祖先が color を変えていない」普通の要素に限る
 
 ## PWA・静的アセット
 

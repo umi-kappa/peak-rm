@@ -92,7 +92,7 @@ const Label = ({ children, style, color }) => (
 const formatLast = (weight, sets) => {
   const w = weight.toString();
   if (!sets || sets.length === 0) return { weight: `${w} kg`, reps: '' };
-  return { weight: `${w} kg`, reps: `× ${sets.join('/')}` };
+  return { weight: `${w} kg`, reps: sets.join('/') };
 };
 
 // expose globally so other babel files can use
