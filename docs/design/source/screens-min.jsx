@@ -58,7 +58,7 @@ const M_Home = ({ empty = false }) =>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                 <Label color={C.fg3}>Last</Label>
                 {empty ?
-            <Unit size={12}>No log</Unit> :
+            <Unit size={12}>NO LOG</Unit> :
             (() => {
               const f = formatLast(e.weight, e.sets);
               return (
@@ -67,10 +67,13 @@ const M_Home = ({ empty = false }) =>
                         <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, fontWeight: W.bold }}>{e.weight}</span>
                         <Unit size={12}>kg</Unit>
                       </div>
-                      <span style={{
-                    ...NumStyle, fontSize: T.caption, color: C.fg3,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200
-                  }}>{f.reps}</span>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{
+                      ...NumStyle, fontSize: T.caption, color: C.fg3,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200
+                    }}>{f.reps}</span>
+                        <Unit size={12}>reps</Unit>
+                      </div>
                     </React.Fragment>);
 
             })()}
