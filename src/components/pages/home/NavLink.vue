@@ -27,7 +27,8 @@ const { to, icon, label } = defineProps<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-16) var(--space-4);
+  padding-block: var(--space-16);
+  padding-inline: var(--space-4);
   color: var(--color-text-secondary);
   text-decoration: none;
 
