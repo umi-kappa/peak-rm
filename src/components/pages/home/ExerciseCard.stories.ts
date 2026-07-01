@@ -55,7 +55,7 @@ export const NoRecord: Story = {
   },
 }
 
-// reps が多セットで長いとき、値だけ省略（…）され REPS は残ることを確認する
+// reps が多セットで長いとき、省略せず折り返して全セットが表示されることを確認する
 export const LongReps: Story = {
   args: {
     exercise: 'squat',

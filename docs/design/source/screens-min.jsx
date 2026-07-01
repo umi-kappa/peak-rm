@@ -70,7 +70,7 @@ const M_Home = ({ empty = false }) =>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                         <span style={{
                       ...NumStyle, fontSize: T.caption, color: C.fg3,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200
+                      textAlign: 'right', wordBreak: 'break-word'
                     }}>{f.reps}</span>
                         <Unit size={12}>reps</Unit>
                       </div>
