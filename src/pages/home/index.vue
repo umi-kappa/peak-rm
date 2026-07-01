@@ -21,7 +21,11 @@ async function loadSessions() {
   sessions.value = next
 }
 
-onMounted(loadSessions)
+onMounted(() => {
+  loadSessions().catch((error) => {
+    console.error('Failed to load latest sessions', error)
+  })
+})
 </script>
 
 <template>
