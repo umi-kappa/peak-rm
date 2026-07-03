@@ -60,7 +60,7 @@ const AppBar = ({ title, action, back = true, caps }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {back && (
         <div style={{ width: 32, height: 32, marginLeft: -8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Ic.Chevron dir="left" size={22} color={C.fg} />
+          <Ic.Chevron dir="left" size={24} color={C.fg} />
         </div>
       )}
       <div style={caps ? {
@@ -76,6 +76,9 @@ const AppBar = ({ title, action, back = true, caps }) => (
 // Stepper — used in menu (small, in list rows) and in modal/training (large, hero).
 // Both sizes use a 44pt tap target (iOS HIG minimum); lg keeps the larger value/icon scale.
 // variant: 'sm' | 'lg'. 'compact' kept as alias for back-compat.
+// Width is the consumer's concern: content-sized by default. Pass width / minWidth
+// (+ justifyContent: 'space-between') via style to stretch, or to pin button positions
+// against digit-count changes.
 const Stepper = ({ value, unit, size = 'sm', accent, style }) => {
   const lg = size === 'lg';
   const btnSize = 44;
@@ -94,7 +97,6 @@ const Stepper = ({ value, unit, size = 'sm', accent, style }) => {
       <div style={{
         ...NumStyle, fontSize: valSize, fontWeight: W.bold,
         color: accent || C.fg,
-        minWidth: lg ? 72 : 56, textAlign: 'center',
         fontVariantNumeric: 'tabular-nums',
       }}>
         {value}{unit && <span style={{ fontFamily: FONT_MONO, fontSize: T.caption, color: C.fg3, marginLeft: 8, fontWeight: W.regular, textTransform: 'uppercase' }}>{unit}</span>}

@@ -275,7 +275,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ## Assets
 
-このデザインでは画像アセットは使用しない。アイコンは SVG inline (24 px stroke based, `currentColor`)。`source/icons.jsx` にすべて含まれる:
+このデザインでは画像アセットは使用しない。アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行の先頭アイコン / 24 = 大型コントロール = stepper 大・AppBar 戻る)。`source/icons.jsx` にすべて含まれる:
 
 - `Chevron` (right/left/up/down)
 - `Plus` / `Minus` (Stepper)

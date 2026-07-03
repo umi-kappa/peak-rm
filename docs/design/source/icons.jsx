@@ -1,9 +1,9 @@
 // PeakRM Hi-Fi · icons (24px stroke-based, currentColor)
 const Ic = {
-  Chevron: ({ size = 16, dir = 'right', color = 'currentColor', strokeWidth = 2 }) => {
+  Chevron: ({ size = 16, dir = 'right', color = 'currentColor', strokeWidth = 2, style }) => {
     const r = { right: 0, left: 180, up: -90, down: 90 }[dir];
     return (
-      <svg width={size} height={size} viewBox="0 0 24 24" style={{ transform: `rotate(${r}deg)` }}>
+      <svg width={size} height={size} viewBox="0 0 24 24" style={{ transform: `rotate(${r}deg)`, ...style }}>
         <path d="M9 6 l6 6 l-6 6" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
@@ -18,13 +18,13 @@ const Ic = {
       <path d="M5 12 h14" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
     </svg>
   ),
-  Gear: ({ size = 20, color = 'currentColor' }) => (
+  Gear: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09c0 .66.39 1.26 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.25.61.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
-  History: ({ size = 20, color = 'currentColor' }) => (
+  History: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 12a9 9 0 1 0 3-6.7" />
       <path d="M3 4 v5 h5" />
@@ -37,13 +37,13 @@ const Ic = {
       <path d="M16.5 3.5 a2.12 2.12 0 0 1 3 3 L7 19l-4 1 1-4 12.5-12.5z" />
     </svg>
   ),
-  Trend: ({ size = 18, color = 'currentColor' }) => (
+  Trend: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 17 l6-6 l4 4 l8-8" />
       <path d="M14 7 h7 v7" />
     </svg>
   ),
-  Arrow: ({ size = 14, dir = 'up', color = 'currentColor' }) => {
+  Arrow: ({ size = 16, dir = 'up', color = 'currentColor' }) => {
     const r = { up: 0, right: 90, down: 180, left: 270 }[dir];
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" style={{ transform: `rotate(${r}deg)` }}>
@@ -51,7 +51,7 @@ const Ic = {
       </svg>
     );
   },
-  Download: ({ size = 18, color = 'currentColor' }) => (
+  Download: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {/* tray */}
       <path d="M4 14 v5 a1 1 0 0 0 1 1 h14 a1 1 0 0 0 1 -1 v-5" />
@@ -60,7 +60,7 @@ const Ic = {
       <path d="M7 9 l5 5 l5 -5" />
     </svg>
   ),
-  Upload: ({ size = 18, color = 'currentColor' }) => (
+  Upload: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {/* tray */}
       <path d="M4 14 v5 a1 1 0 0 0 1 1 h14 a1 1 0 0 0 1 -1 v-5" />
@@ -77,7 +77,7 @@ const Ic = {
   Dot: ({ size = 6, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill={color} /></svg>
   ),
-  Note: ({ size = 14, color = 'currentColor' }) => (
+  Note: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 3 H6 a2 2 0 0 0 -2 2 v14 a2 2 0 0 0 2 2 h12 a2 2 0 0 0 2 -2 V9 z" />
       <path d="M14 3 v6 h6" />

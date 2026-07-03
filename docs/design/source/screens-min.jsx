@@ -29,7 +29,7 @@ const M_Home = ({ empty = false }) =>
           <div style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.bold, color: C.fg }}>PeakRM</div>
           <span style={{ fontSize: T.caption, color: C.fg3 }}>Train the plan. Track your peak.</span>
         </div>
-        <IconButton><Ic.Gear color={C.fg2} /></IconButton>
+        <IconButton><Ic.Gear color={C.fg2} size={24} /></IconButton>
       </div>
 
       {/* exercise cards */}
@@ -90,10 +90,10 @@ const M_Home = ({ empty = false }) =>
       padding: '16px 4px', borderTop: `1px solid ${C.lineSoft}`
     }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Ic.History color={C.fg2} size={18} />
+          <Ic.History color={C.fg2} size={16} />
           <span style={{ fontSize: T.body, color: C.fg, fontWeight: W.regular, textTransform: 'uppercase' }}>History</span>
         </div>
-        <Ic.Chevron dir="right" color={C.fg3} size={18} />
+        <Ic.Chevron dir="right" color={C.fg3} size={16} />
       </div>
     </ScreenBody>
   </PhoneFrame>;
@@ -117,7 +117,7 @@ const M_Menu = () =>
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0
         }}>
-            <Ic.Minus size={20} color={C.fg} />
+            <Ic.Minus size={24} color={C.fg} />
           </div>
           <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
             <BigNumber value="150.25" unit="kg" size={T.stat} color={MA} style={minGlow()} />
@@ -128,7 +128,7 @@ const M_Menu = () =>
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0
         }}>
-            <Ic.Plus size={20} color={C.fg} />
+            <Ic.Plus size={24} color={C.fg} />
           </div>
         </div>
 
@@ -139,7 +139,7 @@ const M_Menu = () =>
         padding: '14px 16px', borderRadius: 4,
         background: C.surface, border: `1px solid ${C.line}`
       }}>
-          <Ic.Trend color={C.fg} size={18} />
+          <Ic.Trend color={C.fg} size={16} />
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Label color={C.fg2}>Linear Progression</Label>
             <div style={{
@@ -151,7 +151,7 @@ const M_Menu = () =>
           </div>
           <div style={{ ...NumStyle, display: 'flex', alignItems: 'baseline', gap: 8, flexShrink: 0, whiteSpace: 'nowrap' }}>
             <span style={{ fontSize: T.body, color: C.fg3 }}>147.75</span>
-            <Ic.Chevron dir="right" size={12} color={C.fg3} />
+            <Ic.Chevron dir="right" size={12} color={C.fg3} style={{ alignSelf: 'center' }} />
             <span style={{ fontSize: T.body, color: MA, fontWeight: W.bold }}>150.25</span>
             <Unit size={12}>kg</Unit>
           </div>
@@ -172,7 +172,8 @@ const M_Menu = () =>
           display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
               <span style={{ fontSize: T.body, color: C.fg, fontWeight: W.regular, textTransform: 'uppercase' }}>{k}</span>
-              <Stepper value={v} unit={u} />
+              {/* 44px buttons ×2 + 12px gaps + 56px value column — keeps buttons pinned as digits change */}
+              <Stepper value={v} unit={u} style={{ minWidth: 168, justifyContent: 'space-between' }} />
             </div>
         )}
         </div>
@@ -228,7 +229,8 @@ const M_TrainingSet = ({ final = false }) => {
           padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16
         }}>
         <span style={{ fontSize: T.body, color: C.fg2, textTransform: 'uppercase' }}>Reps done</span>
-        <Stepper value="8" unit="reps" size="lg" />
+        {/* 44px buttons ×2 + 16px gaps + 72px value column — keeps buttons pinned as digits change */}
+        <Stepper value="8" unit="reps" size="lg" style={{ minWidth: 192, justifyContent: 'space-between' }} />
       </div>
 
       <PrimaryButton caps accent={MA} dark="#0a0a0b" style={{ marginTop: 16 }}>{final ? 'Finish session' : 'Complete set'}</PrimaryButton>
@@ -331,7 +333,7 @@ const SetRow_M = ({ n, state, reps, target, memo, memoPrompt, highlight, readOnl
           </>
       }
       </div>
-      {state !== 'pending' && state !== 'next' && !readOnly && <Ic.Edit color={C.fg3} size={14} />}
+      {state !== 'pending' && state !== 'next' && !readOnly && <Ic.Edit color={C.fg3} size={12} />}
     </div>
     {memo &&
   <div style={{ marginTop: 8, paddingLeft: 32, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -355,7 +357,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
   return (
     <PhoneFrame label={fromHistory ? '05a History detail' : aborted ? '04 Result (中断)' : perfect ? '04 Result (完走)' : '04 Result'} h={860}>
     {fromHistory ?
-      <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} /></IconButton>} /> :
+      <AppBar caps title="Bench Press" action={<IconButton><Ic.Trash color={C.fg2} size={24} /></IconButton>} /> :
       <AppBar caps title="Bench Press" back={false} />}
     <ScreenBody p={24}>
       {/* date · history only */}
@@ -389,7 +391,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
             const markerColor = celebratory ? MA : C.fg2;
             const lineColor = celebratory ? MA : C.line;
             const label = aborted ? 'Session aborted' : perfect ? 'Session complete' : 'Session executed';
-            const icon = perfect ? <Ic.Check size={14} color={MA} /> : null;
+            const icon = perfect ? <Ic.Check size={12} color={MA} /> : null;
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 24, height: 1, background: lineColor }} />
@@ -434,7 +436,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
           padding: '14px 16px', borderRadius: 4,
           background: C.surface, border: `1px solid ${C.line}`
         }}>
-          <Ic.Trend color={C.fg} size={18} />
+          <Ic.Trend color={C.fg} size={16} />
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Label color={C.fg2}>Linear Progression</Label>
             <div style={{
@@ -446,7 +448,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
           </div>
           <div style={{ ...NumStyle, display: 'flex', alignItems: 'baseline', gap: 8, flexShrink: 0, whiteSpace: 'nowrap' }}>
             <span style={{ fontSize: T.body, color: C.fg3 }}>82.5</span>
-            <Ic.Chevron dir="right" size={12} color={C.fg3} />
+            <Ic.Chevron dir="right" size={12} color={C.fg3} style={{ alignSelf: 'center' }} />
             <span style={{ fontSize: T.body, color: MA, fontWeight: W.bold }}>85.0</span>
             <Unit size={12}>kg</Unit>
           </div>
@@ -733,7 +735,7 @@ const M_InputStepper = () =>
       width: 44, height: 44, borderRadius: 4, border: `1px solid ${C.line}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
     }}>
-        <Ic.Minus size={20} color={C.fg} />
+        <Ic.Minus size={24} color={C.fg} />
         {/* long press ripple */}
         <div style={{
         position: 'absolute', inset: -8, borderRadius: 4,
@@ -747,7 +749,7 @@ const M_InputStepper = () =>
       width: 44, height: 44, borderRadius: 4, border: `1px solid ${C.line}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center'
     }}>
-        <Ic.Plus size={20} color={C.fg} />
+        <Ic.Plus size={24} color={C.fg} />
       </div>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
