@@ -15,10 +15,10 @@ const { to, icon, label } = defineProps<{
 <template>
   <RouterLink :to class="nav-link">
     <span class="label">
-      <BaseIcon :name="icon" :size="18" />
+      <BaseIcon :name="icon" />
       <span class="text">{{ label }}</span>
     </span>
-    <span class="chevron"><BaseIcon name="chevron-right" :size="18" /></span>
+    <span class="chevron"><BaseIcon name="chevron-right" /></span>
   </RouterLink>
 </template>
 
