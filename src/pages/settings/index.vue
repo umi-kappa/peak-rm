@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 
-const router = useRouter()
+const { goBack } = useBackNavigation()
 
 // 足場用の仮表示。設定本体（Export / Import）は後続 Issue が肉付けする。
 const version = import.meta.env.VITE_APP_VERSION
@@ -12,7 +12,7 @@ const version = import.meta.env.VITE_APP_VERSION
 <template>
   <ScreenFrame>
     <template #header>
-      <AppBar title="SETTINGS" @back="router.push({ name: 'home' })" />
+      <AppBar title="SETTINGS" @back="goBack" />
     </template>
     <p class="placeholder">settings</p>
     <p class="version">v{{ version }}</p>
