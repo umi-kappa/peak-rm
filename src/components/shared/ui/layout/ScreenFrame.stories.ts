@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
+import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 
 const meta: Meta<typeof ScreenFrame> = {
@@ -11,7 +12,7 @@ const meta: Meta<typeof ScreenFrame> = {
     docs: {
       description: {
         component:
-          '画面の外殻。ビューポート全高（`100dvh`）の縦 flex 列で、`header` slot に AppBar（任意）を固定し、default slot の本文が残りを占めてスクロールする。本文は左右 padding と縦 gap（標準 20）を固定で持つ（旧 ScreenBody を内包）。Home のようにヘッダーを持たない画面は `header` slot を省略する。`flushBottom` で本文下端の padding を落とし、下部固定の要素（Home のナビ行など）を画面下端まで詰められる。',
+          '画面の外殻。ビューポート全高（`100dvh`）の縦 flex 列で、`header` slot に AppBar（任意）を固定し、default slot の本文が残りを占めてスクロールする。本文は左右 padding と縦 gap（標準 20）を固定で持つ（旧 ScreenBody を内包）。`footer` slot は本文のスクロール領域の外に置かれ、下部アクション（Menu の開始ボタンなど）をスクロール時も画面下端に固定する。Home のようにヘッダーを持たない画面は `header` slot を省略する。`flushBottom` で footer 下端の padding を落とし、ナビ行（Home）などを画面下端まで詰められる。',
       },
     },
   },
@@ -48,16 +49,31 @@ export const NoHeader: Story = {
   }),
 }
 
-// flushBottom: 本文下端の padding を落とし、下部固定の要素を画面下端まで詰める
+// footer slot: 下部アクションをスクロール領域の外に固定する（Menu の開始ボタンなど）
+export const WithFooter: Story = {
+  render: () => ({
+    components: { ScreenFrame, AppBar, BaseButton, BaseCard },
+    template: `
+      <ScreenFrame>
+        <template #header><AppBar title="BENCH PRESS" /></template>
+        <BaseCard v-for="n in 12" :key="n">Card {{ n }}</BaseCard>
+        <template #footer><BaseButton>START SESSION</BaseButton></template>
+      </ScreenFrame>`,
+  }),
+}
+
+// flushBottom: footer 下端の padding を落とし、ナビ行などを画面下端まで詰める
 export const FlushBottom: Story = {
   render: () => ({
     components: { ScreenFrame, BaseCard },
     template: `
       <ScreenFrame flush-bottom>
         <BaseCard>Bench Press</BaseCard>
-        <div style="margin-top: auto; border-top: 1px solid var(--color-line-dark); padding: 16px 4px;">
-          HISTORY
-        </div>
+        <template #footer>
+          <div style="border-top: 1px solid var(--color-line-dark); padding: 16px 4px;">
+            HISTORY
+          </div>
+        </template>
       </ScreenFrame>`,
   }),
 }

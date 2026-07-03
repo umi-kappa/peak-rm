@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { flushBottom = false } = defineProps<{
-  /** 本文下端の padding を落とす。下部固定の要素（Home のナビ行など）を画面下端まで詰める用 */
+  /** footer 下端の padding を落とす。ナビ行（Home）など画面下端まで詰める footer 用 */
   flushBottom?: boolean
 }>()
 </script>
@@ -10,8 +10,11 @@ const { flushBottom = false } = defineProps<{
     <div v-if="$slots.header" class="header">
       <slot name="header" />
     </div>
-    <div class="body" :class="{ 'flush-bottom': flushBottom }">
+    <div class="body">
       <slot />
+    </div>
+    <div v-if="$slots.footer" class="footer" :class="{ 'flush-bottom': flushBottom }">
+      <slot name="footer" />
     </div>
   </div>
 </template>
@@ -44,6 +47,16 @@ const { flushBottom = false } = defineProps<{
   padding-block: var(--space-20);
   padding-inline: var(--space-24);
   overflow-y: auto;
+}
+
+/* 下部固定のアクション領域（footer slot がある画面のみ描画）。
+   本文と同じ左右 padding を持ち、本文がスクロールしても画面下端に残る */
+.footer {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-block-end: var(--space-20);
+  padding-inline: var(--space-24);
 
   &.flush-bottom {
     padding-block-end: 0;
