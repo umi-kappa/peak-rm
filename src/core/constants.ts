@@ -9,3 +9,8 @@ export const EXERCISE_LABELS = {
 
 // 表示順は EXERCISE_LABELS のキー定義順から導出（ベンチ → スクワット → デッドリフト）
 export const EXERCISE_ORDER: readonly Exercise[] = Object.keys(EXERCISE_LABELS) as Exercise[]
+
+// route param など外部由来の文字列を Exercise へ絞り込む
+export function isExercise(value: string): value is Exercise {
+  return (EXERCISE_ORDER as readonly string[]).includes(value)
+}

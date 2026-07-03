@@ -172,8 +172,8 @@ const M_Menu = () =>
           display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
               <span style={{ fontSize: T.body, color: C.fg, fontWeight: W.regular, textTransform: 'uppercase' }}>{k}</span>
-              {/* 44px buttons ×2 + 12px gaps + 56px value column — keeps buttons pinned as digits change */}
-              <Stepper value={v} unit={u} style={{ minWidth: 168, justifyContent: 'space-between' }} />
+              {/* 44px buttons ×2 + 12px gaps + value column up to "100 sec" (3 digits + unit) — keeps buttons pinned as digits change */}
+              <Stepper value={v} unit={u} style={{ minWidth: 184, justifyContent: 'space-between' }} />
             </div>
         )}
         </div>
