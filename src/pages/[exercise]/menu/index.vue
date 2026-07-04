@@ -37,6 +37,8 @@ const exercise =
 const menu = ref<MenuPreset>()
 // 増量プレビューは初期解決時の値を固定表示する（増量提案の記録のため、手動編集には追従させない）
 const lpPreview = ref<{ from: number; to: number }>()
+// 遷移までに await を挟むため、二重タップで start() が並走するとセッションが重複 insert される
+const starting = ref(false)
 
 async function loadMenu(exercise: Exercise) {
   const [preset, prevSession] = await Promise.all([
@@ -52,13 +54,16 @@ async function loadMenu(exercise: Exercise) {
 // メニューへ戻れないようにする（重量・メニューはトレーニング中変更不可）。
 // 種目はフロー全体で URL に引き継ぐ。
 async function start() {
-  if (!menu.value || !exercise) return
+  if (starting.value || !menu.value || !exercise) return
+  starting.value = true
   // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
   // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）
   try {
     await session.start(menu.value)
   } catch (error) {
     console.error('Failed to start session', error)
+    // 開始に失敗したときだけ解除して再試行を許す（成功時は遷移して破棄される）
+    starting.value = false
     return
   }
   try {
