@@ -59,8 +59,6 @@ onMounted(() => {
 }
 
 .nav {
-  display: flex;
-  flex-direction: column;
   border-top: 1px solid var(--color-line-dark);
 }
 </style>
