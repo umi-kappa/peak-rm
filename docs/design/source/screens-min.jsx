@@ -107,7 +107,7 @@ const M_Menu = () =>
       <div>
         <Label>Weight</Label>
         <div style={{
-        marginTop: 16,
+        marginTop: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
         padding: '24px 16px', background: C.surface, borderRadius: 4,
         border: `1px solid ${C.lineSoft}`
