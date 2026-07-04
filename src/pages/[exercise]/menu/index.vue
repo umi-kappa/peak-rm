@@ -56,12 +56,18 @@ async function start() {
   // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
   // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）
   try {
-    // 開始時の値を保存し、次回の初期表示・linear progression のベースラインにする（編集は累積）
-    await menuPresetRepo.put(toRaw(menu.value))
     await session.start(menu.value)
   } catch (error) {
     console.error('Failed to start session', error)
     return
+  }
+  try {
+    // 開始時の値を保存し、次回の初期表示・linear progression のベースラインにする（編集は累積）。
+    // セッション insert より後に置く: 先に保存すると insert 失敗時にベースラインだけ前進し、
+    // 次回の LP 適用で増量が二重にかかる。ここで失敗しても増量が保存されないだけ（据え置き）なので遷移は続行する
+    await menuPresetRepo.put(toRaw(menu.value))
+  } catch (error) {
+    console.error('Failed to save menu preset', error)
   }
   router.replace({ name: 'training', params: { exercise } })
 }
