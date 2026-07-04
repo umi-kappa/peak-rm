@@ -43,9 +43,11 @@ onMounted(() => {
       />
     </div>
 
-    <nav class="nav">
-      <NavLink :to="{ name: 'history' }" icon="history" label="HISTORY" />
-    </nav>
+    <template #footer>
+      <nav class="nav">
+        <NavLink :to="{ name: 'history' }" icon="history" label="HISTORY" />
+      </nav>
+    </template>
   </ScreenFrame>
 </template>
 
@@ -57,12 +59,6 @@ onMounted(() => {
 }
 
 .nav {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  margin-top: auto;
-  background-color: var(--color-bg);
   border-top: 1px solid var(--color-line-dark);
 }
 </style>

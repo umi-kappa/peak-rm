@@ -5,7 +5,7 @@ import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import { clamp } from '@/core/stepper'
 import { useNumberStepper } from '@/composables/shared/ui/inputs/useNumberStepper'
 
-const model = defineModel<number>('value', { required: true })
+const model = defineModel<number>({ required: true })
 
 const {
   large = false,

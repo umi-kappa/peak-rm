@@ -29,7 +29,7 @@ function onClick() {
     :aria-label="label"
     @click="onClick"
   >
-    <BaseIcon :name :size="20" />
+    <BaseIcon :name :size="24" />
   </component>
 </template>
 

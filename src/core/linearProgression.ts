@@ -10,7 +10,7 @@ const PROGRESSION_STEP_KG: Record<Exercise, number> = {
 /**
  * Linear progression による次回メニューの重量を算出する。
  * 同一種目の直前セッションが executed なら baselineWeight に種目別増量幅を加算。
- * prev 無し（初回・データクリア・Import 直後）・失敗・中断は据え置き。
+ * prev 無し（初回起動・データクリア直後。Import 後は復元されたセッション次第）・失敗・中断は据え置き。
  *
  * 増量幅は prevSession.exercise から導出する（同一種目の直前セッションを渡す前提。
  * 種目を別引数で受けると prevSession.exercise と食い違うため受けない）。

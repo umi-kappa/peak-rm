@@ -17,6 +17,11 @@ const meta: Meta<typeof NumberStepper> = {
     },
   },
   argTypes: {
+    modelValue: {
+      description: '現在値。`v-model` でバインドする',
+      // Story では操作を確認できるよう args ではなく内部 ref に配線しているため control は効かない
+      control: false,
+    },
     large: {
       control: 'boolean',
       description: '大きいサイズ（ヒーロー表示）で表示。省略時はリスト行向けの通常サイズ',
@@ -51,7 +56,7 @@ const renderWithModel =
       const value = ref(initial)
       return { args, value }
     },
-    template: '<NumberStepper v-bind="args" v-model:value="value" />',
+    template: '<NumberStepper v-bind="args" v-model="value" />',
   })
 
 export const Default: Story = {
