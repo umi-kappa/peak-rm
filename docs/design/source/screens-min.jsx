@@ -180,7 +180,7 @@ const M_Menu = () =>
       </div>
 
       <div style={{ flex: 1 }} />
-      <PrimaryButton caps accent={MA} dark="#0a0a0b">Start</PrimaryButton>
+      <PrimaryButton caps accent={MA} dark="#0a0a0b">Start Session</PrimaryButton>
     </ScreenBody>
   </PhoneFrame>;
 
