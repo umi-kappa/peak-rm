@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { inject, onMounted, ref, toRaw } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, MenuPreset } from '@/core/types'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
 import { resolveInitialMenu } from '@/core/menuPreset'
-import { menuPresetRepo } from '@/storage/menuPresetRepo'
 import { sessionRepo } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
@@ -26,8 +25,8 @@ const injected = inject(sessionInjectionKey)
 if (!injected) throw new Error('session store is not provided')
 const session = injected
 
-// route param を Exercise へ絞り込む。この画面は param を DB キー（menuPresets.put）として
-// 使うため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす
+// route param を Exercise へ絞り込む。この画面は param を Session.exercise として
+// 保存するため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす
 const rawExercise = route.params.exercise
 const exercise =
   typeof rawExercise === 'string' && isExercise(rawExercise) ? rawExercise : undefined
@@ -41,11 +40,8 @@ const lpPreview = ref<{ from: number; to: number }>()
 const starting = ref(false)
 
 async function loadMenu(exercise: Exercise) {
-  const [preset, prevSession] = await Promise.all([
-    menuPresetRepo.get(exercise),
-    sessionRepo.latestByExercise(exercise),
-  ])
-  const initial = resolveInitialMenu(exercise, preset, prevSession)
+  const prevSession = await sessionRepo.latestByExercise(exercise)
+  const initial = resolveInitialMenu(exercise, prevSession)
   menu.value = initial.menu
   lpPreview.value = initial.lpPreview
 }
@@ -66,14 +62,6 @@ async function start() {
     starting.value = false
     return
   }
-  try {
-    // 開始時の値を保存し、次回の初期表示・linear progression のベースラインにする（編集は累積）。
-    // セッション insert より後に置く: 先に保存すると insert 失敗時にベースラインだけ前進し、
-    // 次回の LP 適用で増量が二重にかかる。ここで失敗しても増量が保存されないだけ（据え置き）なので遷移は続行する
-    await menuPresetRepo.put(toRaw(menu.value))
-  } catch (error) {
-    console.error('Failed to save menu preset', error)
-  }
   router.replace({ name: 'training', params: { exercise } })
 }
 
@@ -83,7 +71,7 @@ onMounted(() => {
     return
   }
   loadMenu(exercise).catch((error) => {
-    console.error('Failed to load menu preset', error)
+    console.error('Failed to load menu', error)
   })
 })
 </script>

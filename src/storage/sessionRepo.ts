@@ -48,7 +48,7 @@ async function finalize(id: string, results: SetResult[]): Promise<void> {
 }
 
 /**
- * 当該 1 件のみ削除する（menuPresets には影響しない）。
+ * 当該 1 件のみ削除する。
  * 意図的に冪等: 不在 id でも Dexie の delete は no-op で例外を投げない
  * （patchResults/finalize の「実績喪失を防ぐ throw」とは非対称だが、削除は
  * 「最終的に存在しない」が目的のため不在を成功扱いにするのが正しい）。

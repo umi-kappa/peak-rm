@@ -79,9 +79,9 @@
 - セット数: **3 セット**
 - インターバル: **90 秒**
 
-2 回目以降は **種目ごとに最後の値を保持** し、その値を初期表示する。
+2 回目以降は **同一種目の直前セッション（中断含む）の `menu`** を初期表示する（種目ごとに最後の値を保持する挙動を、専用テーブルではなくセッション履歴からの導出で実現する）。
 
-**「初回起動時」の判定**: `menuPresets` テーブルに該当種目の行が存在しないこと。ブラウザデータ / IndexedDB をクリアした場合も「初回扱い」に戻る。
+**「初回起動時」の判定**: 同一種目のセッションが `sessions` テーブルに 1 件も存在しないこと。ブラウザデータ / IndexedDB をクリアした場合、および該当種目のセッションをすべて削除した場合も「初回扱い」に戻る。
 
 #### Linear progression（常時有効）
 
@@ -90,10 +90,10 @@
 - **`executed` の定義**: 全セットで `actualReps ≥ menu.reps`（= 目標回数）を満たした状態でセッションが終了したとき、ステータスは `executed` となる。すなわち `executed` は常に linear progression のトリガー条件を満たす。`aborted` セッションは（その中の完了セット内訳によらず）増量トリガーの対象外
 - **トリガー**: **同一種目の** 直前セッションが `executed` であること
 - **増量幅**: ベンチプレス `+2.5 kg`、スクワット・デッドリフト `+5 kg`
-- **ベースライン**: 増量計算は `menuPresets[exercise].weight`（直前セッションが実際に使用した重量）に対して行う。ユーザーが手動編集した値が次の `menuPresets` に保存され、それが次回のベースラインになる（編集は累積する）
+- **ベースライン**: 増量計算は直前セッションの `menu.weight`（直前セッションが実際に使用した重量）に対して行う。ユーザーが手動編集した値は次のセッションの `menu` に焼き込まれ、それが次回のベースラインになる（編集は累積する）
 - **挙動**: トリガー成立時、次回メニュー設定画面の重量初期値を上記分だけ加算して表示。ユーザーは画面上でさらに編集可能
 - 失敗（target を下回るセットがあった） / 中断された場合は重量を据え置く
-- **初回起動・データクリア・Import 直後**: 同一種目の直前セッションが存在しなければ増量は適用しない（初期値またはインポート値をそのまま使用）
+- **初回起動・データクリア・Import 直後**: 同一種目の直前セッションが存在しなければ増量は適用しない（共通初期値をそのまま使用。Import でセッションが復元されればその menu がベース）
 - **プラトー対応**: 連続して据え置きが続いた場合の自動デロード提案は本仕様では実装しない。ユーザーが手動で重量を下げて再開する
 
 #### 操作
@@ -133,10 +133,9 @@
 
 「変更不可」は UI 制御ではなく状態モデルで担保する。具体的には:
 
-- セッション開始時に `menuPresets` の該当種目レコードを **deep copy** して `Session.menu` に焼き込む
-- トレーニング画面は **`Session.menu` のみを参照** し、`menuPresets` を直接参照しない
+- セッション開始時にメニュー設定画面で確定した menu を **deep copy** して `Session.menu` に焼き込む
+- トレーニング画面は **`Session.menu` のみを参照** する
 - TypeScript 型では `Session.menu: Readonly<MenuPreset>` とし、コンパイラレベルで変更を禁止する
-- セッション中に `menuPresets` を編集しても、現在の Session には影響しない（次のセッションから反映）
 
 ---
 
@@ -196,8 +195,7 @@
   - ブラウザ / OS の戻る操作も同じ遷移先に揃える
 - **セッション削除（履歴詳細経由でのみ）**: 履歴一覧から開いた場合のみ、ヘッダー右上に削除（ゴミ箱）アクションを表示する。完了・中断直後の結果確認画面には**表示しない**（やり終えた直後に「なかったことにする」導線を出さないため）
   - **破壊的操作のため確認ダイアログを振る**。承認時に当該セッションを `sessions` テーブルから `id` で 1 件削除し、履歴一覧へ戻る
-  - 削除対象は当該 `Session` のみ。`menuPresets` には影響しない
-  - **副作用**: 削除したセッションは 1RM グラフのデータ点から外れる。linear progression が参照する「同一種目の直前セッション」も変わりうる（直近を削除すると 1 つ前が直前セッションになる）。増量ベースライン自体は `menuPresets[exercise].weight` に保持されるため失われない
+  - **副作用**: 削除したセッションは 1RM グラフのデータ点から外れる。メニュー設定画面の初期表示値・linear progression のベースラインは「同一種目の直前セッション」の `menu` から導出するため、直近を削除すると 1 つ前のセッションの値へ巻き戻る（削除＝そのセッションのメニュー値も不要、と扱う）。同一種目のセッションをすべて削除した場合は初回扱い（共通初期値）に戻る
 
 ---
 
@@ -251,14 +249,14 @@
 
 **設定画面のスコープ**: データ操作（Export / Import）のみを置く。インターバル既定値・linear progression on/off・増量幅などのトレーニング挙動を変える設定は、ここに追加しない（コア体験「意思決定排除」を守るため）。
 
-- **Export**: 設定画面の「Export」ボタンで、`sessions` と `menuPresets` の全データを 1 つの JSON ファイルとしてダウンロード
-  - フォーマット: `{ schemaVersion: 1, exportedAt: <unix ms>, sessions: [...], menuPresets: [...] }`
+- **Export**: 設定画面の「Export」ボタンで、`sessions` の全データを 1 つの JSON ファイルとしてダウンロード
+  - フォーマット: `{ schemaVersion: 1, exportedAt: <unix ms>, sessions: [...] }`
   - ファイル名: `peak-rm-export-YYYY-MM-DD.json`
 - **Import**: 設定画面の「Import」ボタンで JSON ファイルを選択
   - 全データを 1 トランザクションで置換（atomic）。検証失敗時は既存データを変更しない
   - 検証内容: `schemaVersion` 一致、必須フィールドの存在、enum 値の妥当性
   - 検証エラー時はエラー内容を表示して中断、既存データは保持
-  - 検証成功後、確認ダイアログで「X 件のセッション、Y 件のプリセットを置き換えます」と表示。ユーザー確認後に置換実行
+  - 検証成功後、確認ダイアログで「X 件のセッションを置き換えます」と表示。ユーザー確認後に置換実行
 
 > **将来課題（v1 期間中はスコープ外）**: `schemaVersion` が将来 v2 以降に更新された場合の、旧バージョン Export ファイルの取り扱い（自動マイグレーション / 明示的拒否のいずれにするか）は別途仕様化する。v1 期間中は `schemaVersion` 完全一致のみ受け入れ、それ以外は検証エラーとして拒否する。
 
@@ -373,7 +371,7 @@ type Session = {
   exercise: Exercise
   status: 'executed' | 'aborted'
   startedAt: number       // unix ms
-  menu: Readonly<MenuPreset>  // セッション開始時点の deep copy。以降の menuPresets 変更は反映しない
+  menu: Readonly<MenuPreset>  // セッション開始時点の deep copy。以降のメニュー編集は反映しない
   results: SetResult[]
 }
 
@@ -397,7 +395,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 - **実装**: IndexedDB（[Dexie.js](https://dexie.org/) 経由）
 - **テーブル設計**:
   - `sessions`: `Session` をそのまま保存。主キー `id`、`startedAt` 単独インデックス（全件降順一覧用）、`[exercise+startedAt]` 複合インデックス（同種目の直前 1 件を末尾取得用）
-  - `menuPresets`: `Exercise` をキーに最後の `MenuPreset` を保存（次回の初期表示用）
+  - メニュー設定画面の初期表示値・linear progression のベースラインは、同一種目の直前セッションの `menu` から導出する（専用テーブルは持たない）
 - **永続化のタイミング**: セッション開始時に `status = 'aborted'`（保守的なデフォルト）で 1 回 insert する。セット完了ごとに `results` を増分 update。最終セット完了時に `status = 'executed'` へ更新、中断ボタン時はそのまま `aborted` で確定。タブクローズ / クラッシュ / SW autoUpdate 経由のリロードでも、それまでの実績は `aborted` セッションとして履歴に残る
 - **スキーマバージョン**: 初版は v1。スキーマ変更時は Dexie の `version()` チェーンで明示的にマイグレーションを宣言する
 
@@ -451,7 +449,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 
 ### テスト方針
 
-- **ロジック層**（1RM 計算、`menuPresets` / `sessions` の保存・更新、その他 composable のビジネスロジック）は **Vitest**（`unit` project、`happy-dom`）で単体テスト
+- **ロジック層**（1RM 計算、`sessions` の保存・更新、その他 composable のビジネスロジック）は **Vitest**（`unit` project、`happy-dom`）で単体テスト
 - **コンポーネント層**（メニュー設定フォーム、トレーニング画面のセット表示、タイマー UI など）は **Storybook** に Story を書き、`play` 関数でクリック・入力などのインタラクションテストを記述。play 関数は **`@storybook/addon-vitest` + Vitest browser mode（headless Chromium / Playwright）** で実行する（`storybook` project）
 - 実ブラウザ・実描画に依存する視覚検証は **Chromatic**（visual regression）が担う
 - ロジックと Story は役割で分担し、同じ振る舞いを両方では書かない

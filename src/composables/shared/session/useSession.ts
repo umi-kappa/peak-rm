@@ -8,8 +8,7 @@ import type { MenuPreset, SetResult, Session } from '@/core/types'
 // done は「フローが終端に達した」ことのみを表す（成否は Session.status が持つ）。
 export type TrainingPhase = 'setActive' | 'interval' | 'done'
 
-// 依存は sessionRepo のみ注入する。menuPresets の読み書きは menu 画面の責務で、
-// start() には確定済みの MenuPreset を渡す（useSession は menuPresetRepo を参照しない）。
+// 依存は sessionRepo のみ注入する。start() には menu 画面で確定済みの MenuPreset を渡す。
 // now / createId はテストで決定的にするため差し替え可能にする。
 export type SessionDeps = {
   sessionRepo: Pick<
