@@ -27,6 +27,8 @@ export function resolveInitialMenu(
   exercise: Exercise,
   prevSession: Session | undefined,
 ): InitialMenu {
+  // exercise は直前セッションが無いときの共通初期値スタンプ専用。
+  // 直前セッションがあれば prevSession.menu.exercise が支配的で exercise は使われない。
   const base: MenuPreset = prevSession
     ? { ...prevSession.menu }
     : { exercise, ...DEFAULT_MENU_PRESET }
