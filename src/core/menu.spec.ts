@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { resolveInitialMenu } from '@/core/menuPreset'
+import { resolveInitialMenu } from '@/core/menu'
 import type { Exercise, Session } from '@/core/types'
 
 function makeSession(exercise: Exercise, status: Session['status'], weight = 100): Session {

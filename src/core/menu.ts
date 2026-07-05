@@ -1,16 +1,16 @@
 import { computeLinearProgression } from '@/core/linearProgression'
-import type { Exercise, MenuPreset, Session } from '@/core/types'
+import type { Exercise, Menu, Session } from '@/core/types'
 
 // 初回起動時（同一種目のセッションが 1 件も無い）に表示する全種目共通の初期値（spec §2）
-export const DEFAULT_MENU_PRESET = {
+export const DEFAULT_MENU = {
   weight: 40,
   reps: 8,
   sets: 3,
   intervalSec: 90,
-} as const satisfies Omit<MenuPreset, 'exercise'>
+} as const satisfies Omit<Menu, 'exercise'>
 
 export type InitialMenu = {
-  menu: MenuPreset
+  menu: Menu
   /** Linear progression 成立時のみ。from = 前回ベースライン、to = 増量後（= menu.weight） */
   lpPreview?: { from: number; to: number }
 }
@@ -29,9 +29,7 @@ export function resolveInitialMenu(
 ): InitialMenu {
   // exercise は直前セッションが無いときの共通初期値スタンプ専用。
   // 直前セッションがあれば prevSession.menu.exercise が支配的で exercise は使われない。
-  const base: MenuPreset = prevSession
-    ? { ...prevSession.menu }
-    : { exercise, ...DEFAULT_MENU_PRESET }
+  const base: Menu = prevSession ? { ...prevSession.menu } : { exercise, ...DEFAULT_MENU }
   const weight = computeLinearProgression(prevSession)
   if (weight === undefined) return { menu: base }
   return { menu: { ...base, weight }, lpPreview: { from: base.weight, to: weight } }

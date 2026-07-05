@@ -135,7 +135,7 @@
 
 - セッション開始時にメニュー設定画面で確定した menu を **deep copy** して `Session.menu` に焼き込む
 - トレーニング画面は **`Session.menu` のみを参照** する
-- TypeScript 型では `Session.menu: Readonly<MenuPreset>` とし、コンパイラレベルで変更を禁止する
+- TypeScript 型では `Session.menu: Readonly<Menu>` とし、コンパイラレベルで変更を禁止する
 
 ---
 
@@ -352,7 +352,7 @@ stateDiagram-v2
 ```ts
 type Exercise = 'benchPress' | 'squat' | 'deadlift'
 
-type MenuPreset = {
+type Menu = {
   exercise: Exercise
   weight: number      // kg, 0.25 刻み
   reps: number        // 回
@@ -371,7 +371,7 @@ type Session = {
   exercise: Exercise
   status: 'executed' | 'aborted'
   startedAt: number       // unix ms
-  menu: Readonly<MenuPreset>  // セッション開始時点の deep copy。以降のメニュー編集は反映しない
+  menu: Readonly<Menu>  // セッション開始時点の deep copy。以降のメニュー編集は反映しない
   results: SetResult[]
 }
 

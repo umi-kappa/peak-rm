@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { Exercise, MenuPreset } from '@/core/types'
+import type { Exercise, Menu } from '@/core/types'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
-import { resolveInitialMenu } from '@/core/menuPreset'
+import { resolveInitialMenu } from '@/core/menu'
 import { sessionRepo } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
@@ -33,7 +33,7 @@ const exercise =
 
 // undefined 始まりにして読み込み完了まで本体を描画しない
 //（共通初期値 → 増量後の値へ表示が切り替わるフラッシュを防ぐ）
-const menu = ref<MenuPreset>()
+const menu = ref<Menu>()
 // 増量プレビューは初期解決時の値を固定表示する（増量提案の記録のため、手動編集には追従させない）
 const lpPreview = ref<{ from: number; to: number }>()
 // 遷移までに await を挟むため、二重タップで start() が並走するとセッションが重複 insert される
