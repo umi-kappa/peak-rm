@@ -72,16 +72,14 @@ describe('永続化シーケンス', () => {
 })
 
 describe('remove', () => {
-  test('当該 1 件のみ削除し、他セッション・menuPresets に影響しない', async () => {
+  test('当該 1 件のみ削除し、他セッションに影響しない', async () => {
     await sessionRepo.insert(makeSession('keep', 'benchPress', 1000))
     await sessionRepo.insert(makeSession('gone', 'squat', 2000))
-    await db.menuPresets.put({ exercise: 'squat', weight: 60, reps: 5, sets: 3, intervalSec: 90 })
 
     await sessionRepo.remove('gone')
 
     expect(await db.sessions.get('gone')).toBeUndefined()
     expect(await db.sessions.get('keep')).toBeDefined()
-    expect(await db.menuPresets.get('squat')).toBeDefined()
   })
 })
 

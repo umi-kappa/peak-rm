@@ -9,23 +9,18 @@ const PROGRESSION_STEP_KG: Record<Exercise, number> = {
 
 /**
  * Linear progression による次回メニューの重量を算出する。
- * 同一種目の直前セッションが executed なら baselineWeight に種目別増量幅を加算。
- * prev 無し（初回起動・データクリア直後。Import 後は復元されたセッション次第）・失敗・中断は据え置き。
+ * 同一種目の直前セッションが executed なら menu.weight に種目別増量幅を加算した値を返す。
+ * 不成立（prev 無し・失敗・中断）は undefined を返し、呼び出し側が据え置きを決める。
  *
- * 増量幅は prevSession.exercise から導出する（同一種目の直前セッションを渡す前提。
- * 種目を別引数で受けると prevSession.exercise と食い違うため受けない）。
- * baselineWeight は呼び出し側が menuPresets[exercise].weight を渡す
- * （手動編集の累積はその値に反映済み）。本関数はベースライン管理を持たない純関数。
+ * ベースライン・増量幅とも prevSession から導出する（同一種目の直前セッションを渡す前提。
+ * 手動編集はセッションの menu に焼き込まれて累積する）。
  */
-export function computeLinearProgression(
-  prevSession: Session | undefined,
-  baselineWeight: number,
-): number {
-  if (prevSession === undefined) return baselineWeight
+export function computeLinearProgression(prevSession: Session | undefined): number | undefined {
+  if (prevSession === undefined) return undefined
   // status が executed かつ results も条件を満たすときだけ増量する
   if (prevSession.status === 'executed' && isExecuted(prevSession)) {
-    return baselineWeight + PROGRESSION_STEP_KG[prevSession.exercise]
+    return prevSession.menu.weight + PROGRESSION_STEP_KG[prevSession.exercise]
   }
   // aborted、および両者が食い違う異常データは据え置き
-  return baselineWeight
+  return undefined
 }

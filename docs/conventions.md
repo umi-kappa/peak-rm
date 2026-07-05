@@ -11,7 +11,7 @@ src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
     types.ts  constants.ts  oneRm.ts  linearProgression.ts  stepper.ts  session.ts  sessionHistory.ts  chartData.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
-    db.ts  sessionRepo.ts  menuPresetRepo.ts  backup.ts
+    db.ts  sessionRepo.ts  backup.ts
   composables/
     pages/<画面>/       # 画面専用に切り出した composable
     shared/
@@ -72,7 +72,7 @@ src/
 - `src/` 配下のモジュールを参照するときは alias `@/` の絶対パスを使う（`import x from '@/core/oneRm'`）
 - 同階層であっても相対パス（`./`、`../`）は使わない。`vite.config.ts` の `resolve.alias` と `tsconfig.json` の `paths` に `@/* → src/*` を定義済み
 - サードパーティパッケージは通常どおりパッケージ名で import する
-- `storage/` のリポジトリ（`sessionRepo` / `menuPresetRepo`）は **メソッドを束ねた 1 つのオブジェクトを export** する（`export const sessionRepo = { insert, list, ... }`）。個々の関数を named export しないことで、主語が消える `import { get }` を構造的に不可能にする（lint ルールではなく export 形で縛る）。メソッド名は主語を繰り返さず素の動詞にし（`get` / `put` / `list` / `insert` / `remove`）、主語は呼び出し側で `sessionRepo.list()` / `menuPresetRepo.get()` と表現する
+- `storage/` のリポジトリ（`sessionRepo` など）は **メソッドを束ねた 1 つのオブジェクトを export** する（`export const sessionRepo = { insert, list, ... }`）。個々の関数を named export しないことで、主語が消える `import { get }` を構造的に不可能にする（lint ルールではなく export 形で縛る）。メソッド名は主語を繰り返さず素の動詞にし（`get` / `put` / `list` / `insert` / `remove`）、主語は呼び出し側で `sessionRepo.list()` と表現する
   - **内部スタイル**: 各メソッドはモジュールスコープの関数として定義し、末尾の `export const repo = { ... }` で参照を束ねる（オブジェクトリテラル内にメソッドを直書きしない）。関数ごとに JSDoc を持たせられ、末尾の束ねがメソッド一覧（シグネチャの索引）として機能する
 
 ## Vue コンポーネント

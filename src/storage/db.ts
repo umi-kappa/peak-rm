@@ -1,23 +1,22 @@
 import Dexie, { type Table } from 'dexie'
 
-import type { Exercise, MenuPreset, Session } from '@/core/types'
+import type { Session } from '@/core/types'
 
 /**
  * PeakRM の IndexedDB スキーマ定義。
  * sessions: Session を主キー id で保存。startedAt に単独 index（全件降順一覧のため）、
  *   [exercise+startedAt] 複合 index（同種目の直前 1 件を DB 側で末尾取得するため）。
- * menuPresets: MenuPreset を主キー exercise で保存（種目ごと 1 行・行の有無で初回判定）。
+ * メニューの初期表示値・LP ベースラインは直前セッションの menu から導出するため（#61）、
+ * 専用テーブルは持たない。
  */
 class PeakDexie extends Dexie {
   sessions!: Table<Session, string>
-  menuPresets!: Table<MenuPreset, Exercise>
 
   constructor() {
     super('peak-rm')
-    // version().stores() が同名プロパティ（sessions / menuPresets）に Table を自動バインドする。
+    // version().stores() が同名プロパティ（sessions）に Table を自動バインドする。
     this.version(1).stores({
       sessions: 'id, startedAt, [exercise+startedAt]',
-      menuPresets: 'exercise',
     })
   }
 }

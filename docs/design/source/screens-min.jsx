@@ -613,7 +613,7 @@ const M_Settings = () =>
         <div style={{
         padding: '6px 4px 0', fontSize: T.caption, color: C.fg3, lineHeight: 1.5
       }}>
-          Back up all sessions and menu presets to a single file, or restore from one.
+          Back up all sessions to a single file, or restore from one.
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
