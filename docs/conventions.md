@@ -9,7 +9,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
-    types.ts  constants.ts  oneRm.ts  linearProgression.ts  stepper.ts  session.ts  sessionHistory.ts  chartData.ts
+    constants.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  backup.ts
   composables/
