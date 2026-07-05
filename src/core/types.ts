@@ -1,6 +1,6 @@
 export type Exercise = 'benchPress' | 'squat' | 'deadlift'
 
-export type MenuPreset = {
+export type Menu = {
   exercise: Exercise
   weight: number // kg, 0.25 刻み
   reps: number // 回
@@ -18,6 +18,6 @@ export type Session = {
   exercise: Exercise
   status: 'executed' | 'aborted'
   startedAt: number // unix ms
-  menu: Readonly<MenuPreset> // 開始時点の deep copy を焼き込み、Readonly で変更を禁止
+  menu: Readonly<Menu> // 開始時点の deep copy を焼き込み、Readonly で変更を禁止
   results: SetResult[]
 }

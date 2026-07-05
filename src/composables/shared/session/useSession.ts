@@ -2,13 +2,13 @@ import { computed, readonly, ref, shallowRef, toRaw, type InjectionKey } from 'v
 
 import { isExecuted, sessionMaxOneRm } from '@/core/session'
 import { sessionRepo } from '@/storage/sessionRepo'
-import type { MenuPreset, SetResult, Session } from '@/core/types'
+import type { Menu, SetResult, Session } from '@/core/types'
 
 // トレーニングフローの内部フェーズ。Session.status（executed / aborted）とは別軸で、
 // done は「フローが終端に達した」ことのみを表す（成否は Session.status が持つ）。
 export type TrainingPhase = 'setActive' | 'interval' | 'done'
 
-// 依存は sessionRepo のみ注入する。start() には menu 画面で確定済みの MenuPreset を渡す。
+// 依存は sessionRepo のみ注入する。start() には menu 画面で確定済みの Menu を渡す。
 // now / createId はテストで決定的にするため差し替え可能にする。
 export type SessionDeps = {
   sessionRepo: Pick<
@@ -38,12 +38,12 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   // setActive 中の現セットの実績回数。results には completeSet で初めて積む。
   const draftReps = ref(0)
 
-  async function start(menu: MenuPreset) {
+  async function start(menu: Menu) {
     if (menu.sets < 1) throw new Error(`menu.sets must be >= 1: ${menu.sets}`)
     // 開始時点のメニューを deep copy で焼き込み、Readonly で以後の変更を型レベルに封じる。
-    // 呼び出し側が reactive / ref の MenuPreset を渡しても壊れないよう toRaw で proxy を剥がす
+    // 呼び出し側が reactive / ref の Menu を渡しても壊れないよう toRaw で proxy を剥がす
     // （structuredClone は Vue の proxy を複製できず DataCloneError を投げるため）。
-    const frozenMenu: Readonly<MenuPreset> = structuredClone(toRaw(menu))
+    const frozenMenu: Readonly<Menu> = structuredClone(toRaw(menu))
     const next: Session = {
       id: createId(),
       exercise: menu.exercise,

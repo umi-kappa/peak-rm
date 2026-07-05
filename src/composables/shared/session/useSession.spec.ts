@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 import { describe, expect, test } from 'vitest'
 
 import { useSession, type SessionDeps } from '@/composables/shared/session/useSession'
-import type { MenuPreset, SetResult, Session } from '@/core/types'
+import type { Menu, SetResult, Session } from '@/core/types'
 
 // fake sessionRepo が記録する呼び出し履歴。永続化タイミングの検証に使う。
 type RepoCall =
@@ -30,7 +30,7 @@ function createFakeRepo() {
   }
 }
 
-function menu(overrides: Partial<MenuPreset> = {}): MenuPreset {
+function menu(overrides: Partial<Menu> = {}): Menu {
   return { exercise: 'benchPress', weight: 100, reps: 8, sets: 3, intervalSec: 90, ...overrides }
 }
 
@@ -120,7 +120,7 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('setActive')
   })
 
-  test('開始後に元の MenuPreset を書き換えても Session.menu は変わらない（deep copy）', async () => {
+  test('開始後に元の Menu を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })
     await session.start(original)
@@ -128,7 +128,7 @@ describe('useSession', () => {
     expect(session.session.value?.menu.weight).toBe(100)
   })
 
-  test('reactive な MenuPreset を渡しても structuredClone が壊れず開始できる', async () => {
+  test('reactive な Menu を渡しても structuredClone が壊れず開始できる', async () => {
     const { session } = setup()
     // メニュー画面のフォーム状態は reactive proxy になりうる。toRaw で剥がせていないと
     // structuredClone が DataCloneError を投げて start が reject する
