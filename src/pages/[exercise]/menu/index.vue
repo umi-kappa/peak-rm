@@ -54,25 +54,16 @@ async function start() {
   starting.value = true
   // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
   // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）
-  try {
-    await session.start(menu.value)
-  } catch (error) {
-    console.error('Failed to start session', error)
-    // 開始に失敗したときだけ解除して再試行を許す（成功時は遷移して破棄される）
-    starting.value = false
-    return
-  }
+  await session.start(menu.value)
   router.replace({ name: 'training', params: { exercise } })
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!exercise) {
     router.replace({ name: 'home' })
     return
   }
-  loadMenu(exercise).catch((error) => {
-    console.error('Failed to load menu', error)
-  })
+  await loadMenu(exercise)
 })
 </script>
 

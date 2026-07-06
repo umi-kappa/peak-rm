@@ -401,6 +401,22 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 
 ---
 
+## ⚠️ エラーハンドリング
+
+**判断基準**: 「この失敗は根幹（トレーニングを実行して実績を記録し、それを正しく見せること）を壊すか？」
+
+- **壊さない（周辺の縮退）**: Wake Lock 取得失敗 / タイマー音の再生失敗 / `navigator.storage.persist()` の拒否など、本仕様が**最善努力**と定めるもの。失敗しても該当機能を諦めるだけでアプリは継続する
+- **壊す・不明（想定外）**: IndexedDB の読み書き失敗・実装バグ・未知の例外。全画面のエラー画面に切り替え、事実と違う表示や記録の続行をさせない
+
+### エラー境界とエラー画面
+
+- 想定外のエラーは画面ごとに処理せず、**境界 1 箇所**で捕捉して全画面のエラー画面に切り替える（Vue の `app.config.errorHandler` / vue-router の `onError` / `unhandledrejection` / `window` の `error` の 4 経路）
+- エラー画面はトーンガイドに従い、**エラーメッセージと RELOAD ボタンのみ**の中立な事実提示とする（賞賛・装飾なし）
+- RELOAD はページ全体を再読み込みし、起動時の遷移ルール（新規ロードは常にホーム起動）によりホームへ復帰する
+- 「読み取り失敗を『未記録』と同じ空表示にする」ような見せ方はしない（記録が事実と違って見えるのは根幹の破壊であり、縮退として扱わない）
+
+---
+
 ## 🎨 デザイン
 
 - 画面のビジュアルデザインは **Claude Design** で作成する
@@ -430,6 +446,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 | 結果確認 | 実行 / 中断後のサマリ + 1RM 差分 |
 | 履歴 | セッション一覧・1RM 推移グラフ |
 | 設定 | データ Export / Import |
+| エラー | 想定外エラー時の全画面表示（route を持たない）。エラーメッセージ + RELOAD |
 
 ---
 

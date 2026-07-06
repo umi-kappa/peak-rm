@@ -25,7 +25,8 @@ export const db = new PeakDexie()
 
 /**
  * IndexedDB の永続化（ITP による自動退避の抑止）を最善努力で要求する。
- * navigator.storage.persist が無い環境・拒否・例外いずれも false を返して機能継続する。
+ * navigator.storage.persist が無い環境・拒否・例外いずれも false を返して機能継続する
+ * （周辺の縮退。spec「💾 ストレージ」: 許可は最善努力で、拒否された場合もアプリ機能には影響しない）。
  */
 export async function requestPersistentStorage(): Promise<boolean> {
   if (!navigator.storage?.persist) return false
