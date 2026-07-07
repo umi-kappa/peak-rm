@@ -30,6 +30,8 @@ router.onError((err) => {
   report(err)
 })
 // 3) Vue 管理外に漏れた floating promise の reject
+// NOTE(#68): SW 登録（自動注入の registerSW.js）が catch せず捨てた reject もここに漏れ、
+//            非致命の登録失敗を fatal 化しうる。PWA 実装側で onRegisterError を握って解消する
 window.addEventListener('unhandledrejection', (event) => {
   report(event.reason)
 })
