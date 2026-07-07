@@ -413,6 +413,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 - 想定外のエラーは画面ごとに処理せず、**境界 1 箇所**で捕捉して全画面のエラー画面に切り替える（Vue の `app.config.errorHandler` / vue-router の `onError` / `unhandledrejection` / `window` の `error` の 4 経路）
 - エラー画面はトーンガイドに従い、**エラーメッセージと RELOAD ボタンのみ**の中立な事実提示とする（賞賛・装飾なし）
 - RELOAD はページ全体を再読み込みし、起動時の遷移ルール（新規ロードは常にホーム起動）によりホームへ復帰する
+- RELOAD は一過性の失敗からの復帰を意図する。恒久的なストレージ故障（quota 超過・プライベートブラウジング制限・object store 破損など）は RELOAD では回復せず、その場合の復旧はブラウザのサイトデータ削除等に委ねる（恒久故障向けの復旧 UI は設けない）
 - 「読み取り失敗を『未記録』と同じ空表示にする」ような見せ方はしない（記録が事実と違って見えるのは根幹の破壊であり、縮退として扱わない）
 
 ---
