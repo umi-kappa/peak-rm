@@ -100,7 +100,7 @@ src/
 - **壊さない（周辺の縮退）**: Wake Lock / タイマー音 / `requestPersistentStorage` など、spec が最善努力と定めるもの。呼び出し元で catch して継続し、**spec の根拠をコメントに書く**（明示的なオプトイン）
 - **壊す・不明（想定外）**: IndexedDB 読み書き失敗・配線バグ・未知の例外。**画面では catch せず境界へ流す**。分類に迷ったら catch しない（分類漏れは自動的にエラー画面側へ落ちるため安全側）
 - `console.error` だけの catch（握りつぶし）は書かない。「動いているが中身が事実と違う」状態（例: 読み取り失敗を「未記録」と同じ空表示にする）は縮退ではなく根幹の破壊として扱う
-- 境界の実装は `src/main.ts` の 4 配線（`app.config.errorHandler` / `router.onError` / `unhandledrejection` / `window` の `error`）→ `useFatalError` へ集約 → `App.vue` が `ErrorScreen` に切り替える。Vue は async イベントハンドラ・async ライフサイクルフックの reject も `errorHandler` へ流すため、画面側は catch を書かなければ自動で境界に落ちる
+- 境界の実装は `main.ts` が `installErrorBoundary`（`composables/shared/error/`）で 4 配線（`app.config.errorHandler` / `router.onError` / `unhandledrejection` / `window` の `error`）を張り、`useFatalError` へ集約 → `App.vue` が `ErrorScreen` に切り替える。Vue は async イベントハンドラ・async ライフサイクルフックの reject も `errorHandler` へ流すため、画面側は catch を書かなければ自動で境界に落ちる
 - `useFatalError`（`composables/shared/error/`）の共有も「状態管理」の provide/inject 方式に乗せる。配線元の `main.ts` が component tree の外にあるため、App ルートの `provide()` ではなく **`app.provide()`** で供給する（main.ts が生成したインスタンスの `report` を 4 配線へ直接渡し、読み手の `App.vue` は inject で受ける）
 
 ## テスト
