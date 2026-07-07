@@ -25,8 +25,19 @@ test('Error 以外の値の report は Error に正規化して保持する', ()
   expect(error.value?.message).toBe('boom')
 })
 
-test('値なし（undefined）の report も「エラーなし」と区別して保持する', () => {
+test('値なし（undefined）の report は「エラーなし」と区別して Unknown error に正規化する', () => {
   const { error, report } = useFatalError()
   report(undefined)
   expect(error.value).toBeInstanceOf(Error)
+  expect(error.value?.message).toBe('Unknown error')
+})
+
+test('空文字・無情報なオブジェクトの report は Unknown error に落とす', () => {
+  const empty = useFatalError()
+  empty.report('')
+  expect(empty.error.value?.message).toBe('Unknown error')
+
+  const object = useFatalError()
+  object.report({ code: 500 })
+  expect(object.error.value?.message).toBe('Unknown error')
 })

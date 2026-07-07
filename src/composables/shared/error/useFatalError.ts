@@ -13,8 +13,14 @@ export function useFatalError() {
    */
   function report(e: unknown) {
     if (error.value !== undefined) return
-    // 文字列 reason や値なしの reject も画面に出せるよう、常に Error へ正規化して保持する
-    error.value = e instanceof Error ? e : new Error(String(e ?? 'Unknown error'))
+    if (e instanceof Error) {
+      error.value = e
+      return
+    }
+    // 文字列 reason や値なしの reject も画面に出せるよう、常に Error へ正規化して保持する。
+    // 空文字や [object Object] のような無情報な文字列化は 'Unknown error' に落とす
+    const message = String(e ?? '').trim()
+    error.value = new Error(message && message !== '[object Object]' ? message : 'Unknown error')
   }
 
   return { error: readonly(error), report }
