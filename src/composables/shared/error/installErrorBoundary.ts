@@ -17,8 +17,8 @@ export function installErrorBoundary(app: App, router: Router, report: (e: unkno
   //    Vue の errorHandler に流れない。全ルートが lazy import + PWA autoUpdate のため、
   //    デプロイ後に旧 chunk への参照が 404 になるケースがここに落ちる
   router.onError((err) => {
-    // onError を登録すると vue-router 既定の console 出力が消えるため、ここでも補償する
-    // （3・4 の window 経路はブラウザのネイティブ出力が残るので足さない）
+    // vue-router 既定の console 出力が出ないケースに備え、補償として出力する（二重ログには
+    // ならない）。3・4 の window 経路はブラウザのネイティブ出力が残るので足さない
     console.error(err)
     report(err)
   })
