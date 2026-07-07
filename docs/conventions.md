@@ -15,7 +15,7 @@ src/
   composables/
     pages/<画面>/       # 画面専用に切り出した composable
     shared/
-      error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）
+      error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       session/         # useSession / useIntervalTimer（実行中セッションの状態系）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）

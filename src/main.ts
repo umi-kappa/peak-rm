@@ -1,8 +1,11 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from '@/router'
-import { installErrorBoundary } from '@/composables/shared/error/installErrorBoundary'
-import { fatalErrorInjectionKey, useFatalError } from '@/composables/shared/error/useFatalError'
+import {
+  fatalErrorInjectionKey,
+  installErrorBoundary,
+  useFatalError,
+} from '@/composables/shared/error/useFatalError'
 import './styles/tokens.css'
 import './styles/global.css'
 
