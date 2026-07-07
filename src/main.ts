@@ -35,7 +35,9 @@ window.addEventListener('unhandledrejection', (event) => {
 })
 // 4) Vue 管理外の同期例外（setTimeout / setInterval・生の addEventListener のコールバック内 throw）
 window.addEventListener('error', (event) => {
-  report(event.error ?? event.message)
+  // 自オリジンの未捕捉例外だけを致命扱いにする。クロスオリジンの "Script error."（error === null）や
+  // 拡張機能起因のノイズは根幹を壊さないため報告しない（console にはブラウザ既定の出力が残る）
+  if (event.error instanceof Error) report(event.error)
 })
 
 app.mount('#app')
