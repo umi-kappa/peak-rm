@@ -20,7 +20,7 @@ const { error } = injected
 
 // 再読み込み後は router の起動時ガード（新規ロードは常にホーム起動）でホームへ復帰する
 function reload() {
-  location.reload()
+  window.location.reload()
 }
 </script>
 
