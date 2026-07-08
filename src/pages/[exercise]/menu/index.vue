@@ -51,6 +51,8 @@ async function loadMenu(exercise: Exercise) {
 // 種目はフロー全体で URL に引き継ぐ。
 async function start() {
   if (starting.value || !menu.value || !exercise) return
+  // 二重起動防止。session.start 失敗時は境界へ流れページごと unmount されるため、
+  // 成功時（遷移で破棄）同様このフラグは戻さない
   starting.value = true
   // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
   // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）。
