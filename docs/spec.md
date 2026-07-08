@@ -31,6 +31,7 @@
 - **想定環境**: モダンモバイルブラウザ（iOS Safari / Android Chrome 等）。デスクトップブラウザでも動作する
 - **オフライン動作**: 対応（Service Worker による静的アセットキャッシュ）
 - **Service Worker 更新戦略**: `vite-plugin-pwa` の `registerType: 'autoUpdate'`。新バージョンは次回ロード時にバックグラウンドで適用され、ユーザーへの確認ダイアログは振らない（コンセプト「意思決定排除」と整合）
+- **Service Worker 登録失敗**: `virtual:pwa-register` を自前 import し `onRegisterError` で握って `console` に留める。登録失敗はオフラインキャッシュが効かないだけの縮退（最善努力）でありアプリ機能は継続する。エラー境界へは流さない（自動注入コードの未処理 reject が境界で fatal 化するのを防ぐ）
 - **ストレージ**: IndexedDB（端末ローカル）
 
 ログイン / クラウド同期は実装しない。データは端末内に閉じる。
