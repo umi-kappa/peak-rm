@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import type { App } from 'vue'
+import type { AppConfig } from 'vue'
 import type { Router } from 'vue-router'
 
 import { installErrorBoundary, useFatalError } from '@/composables/shared/error/useFatalError'
@@ -62,7 +62,7 @@ describe('installErrorBoundary', () => {
 
   function install() {
     const report = vi.fn()
-    const app: Pick<App, 'config'> = { config: {} as App['config'] }
+    const app: { config: Pick<AppConfig, 'errorHandler'> } = { config: {} }
     // vue-router の onError は 3 引数（err / to / from）のハンドラを受け unsubscribe 関数を返す。
     // テストは err だけ渡して発火を確認するので、捕捉時に err のみ受ける形へ絞って保持する
     let routerOnError: ((err: unknown) => void) | undefined

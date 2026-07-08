@@ -1,4 +1,4 @@
-import { readonly, shallowRef, type App, type InjectionKey } from 'vue'
+import { readonly, shallowRef, type AppConfig, type InjectionKey } from 'vue'
 import type { Router } from 'vue-router'
 
 /**
@@ -38,7 +38,7 @@ export const fatalErrorInjectionKey: InjectionKey<FatalErrorStore> = Symbol('fat
  * （docs/conventions.md「エラーハンドリング」）。main.ts が useFatalError の report を渡して呼ぶ。
  */
 export function installErrorBoundary(
-  app: Pick<App, 'config'>,
+  app: { config: Pick<AppConfig, 'errorHandler'> },
   router: Pick<Router, 'onError'>,
   report: (e: unknown) => void,
 ) {
