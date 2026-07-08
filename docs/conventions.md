@@ -4,7 +4,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 
 ## ディレクトリ構成
 
-`src/` 配下は **責務で分割** する。各レイヤを共通ルールで分岐させる: **画面専用のものは各レイヤの `pages/<画面名>/` に置く**、**複数画面で使う横断的なものは各レイヤの共有バケツ（`shared/` など）に置く**。
+`src/` 配下は **責務で分割** する。各レイヤを共通ルールで分岐させる: **画面専用のものは各レイヤの `pages/<画面名>/` に置く**、**複数画面で使う横断的なものは各レイヤの共有バケツ（`shared/` など）に置く**（`components/` のみ App ルート専用の `app/` を加えた 3 分類。後述）。
 
 ```
 src/
@@ -15,10 +15,12 @@ src/
   composables/
     pages/<画面>/       # 画面専用に切り出した composable
     shared/
+      error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       session/         # useSession / useIntervalTimer（実行中セッションの状態系）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
+    app/               # App ルート（App.vue）専用のコンポーネント（ErrorScreen.vue）
     pages/<画面>/        # その画面専用のコンポーネント（例: menu/WeightStepper.vue）
     shared/
       ui/              # デザインプリミティブ（汎用・presentational・ドメイン非依存）※カテゴリ別
@@ -48,7 +50,7 @@ src/
   - **オブジェクト**は型注釈（`: Record<Exercise, string>`）では readonly にならないため `as const`（プロパティを `readonly` 化し書き換え・キー追加を弾く）+ `satisfies <型>`（`Record<Exercise, string>` などで網羅・値の型を保証）を併用する（例: `EXERCISE_LABELS = { … } as const satisfies Record<Exercise, string>`）。
   - 実行時の `Object.freeze` は使わない（外部入力ではないアプリ内定数のため過剰）。
 - **`components/shared/ui/`** はデザインシステムのプリミティブ専用で、フラットに並べず **カテゴリ別サブディレクトリ**（`base/` / `buttons/` / `typography/` / `inputs/` / `layout/` / `dialog/`）に分ける。`base/` は単一要素にトークンで見た目を着せるだけの基底プリミティブ（`BaseButton` / `BaseIcon` / `BaseLabel` / `BaseUnit` / `BaseCard`）専用で、`Base` プレフィックスで揃える。子要素の配置や画面領域の構造は与えず（見た目を着せるだけ）、面の土台 `BaseCard`（padding を持つだけで子の並びは制御しない）もここに含む。子要素の配置・画面領域の構造を担うもの（`ScreenFrame` の全高縦 flex 外殻 + 本文領域（左右 padding + 縦 gap、デザインの ScreenBody 相当を内包）、`AppBar` の領域分割）は `layout/`、base の文字プリミティブを組み合わせて意味を持つ文字 / 数値を提示する複合（`BigNumber` の数値提示）は `typography/` に置く。見た目の variant 違いは別コンポーネントに分けず prop で吸収する（例: `BaseButton` の `variant: 'primary' | 'secondary'`）。確認・通知系のオーバーレイは `dialog/` に置く（`ConfirmDialog` は破壊的操作の確認に使う presentational なモーダルで、`open` / `title` などを prop で受け取り `confirm` / `cancel` を emit するだけ。遷移先や実処理は呼び出し側が担い、router・業務ロジックを持たないため `ui/` プリミティブに属する）。これに対し、実行中セッションなどドメイン状態を内側に持つアプリ固有の複合コンポーネントは `components/shared/` 直下に置く。`CardButton`（`to` で `<router-link>` / `<button>` を切り替える押せる面・`buttons/`）は `BaseCard`（presentational な面・`base/`）を内包して面レシピを再利用し、押せる affordance（focus / hover / press・クリック emit）だけを足す。面の単一ソースは `BaseCard` に置き、静的な面か押せる面かという役割で配置を分ける。`ui/` のプリミティブは presentational に保ち、インタラクションは affordance + イベント発火まで（クリック emit・`@back` など）に留める。ナビゲーションや業務ロジック（遷移先の判断・状態更新・router 参照）は持たせず呼び出し側に委ねる（例: `AppBar` の `back` は押下で `@back` を emit するだけで、遷移先は画面側が決める）。
-- **画面専用は `shared/` に置かない**: 1 つの画面でしか使わないコンポーネントは `components/shared/ui/` ではなく `components/pages/<画面>/` に置く。例として WeightStepper（汎用 `NumberStepper` を 0.25 kg 刻みで包む重量入力）や LpIndicator（linear progression の増量プレビュー表示）は Menu 設定画面でのみ使うため、`ui/` ではなく `components/pages/menu/` に置く。「複数画面で使う汎用プリミティブか／単一画面のドメイン固有部品か」が判断基準。
+- **`components/` はオーナー（利用箇所）で三分割する**: App ルート（`App.vue`）専用は `app/`、1 つの画面でしか使わないものは `components/pages/<画面>/`、複数画面で横断的に使うものだけを `shared/` に置く。例として WeightStepper（汎用 `NumberStepper` を 0.25 kg 刻みで包む重量入力）や LpIndicator（linear progression の増量プレビュー表示）は Menu 設定画面でのみ使うため `components/pages/menu/` に、ErrorScreen（route を持たない全画面のエラー表示）は `App.vue` だけが mount するため `components/app/` に置く。「誰が使うか」が判断基準で、単一利用のものを `shared/` に置かない。
 - **ステッパーのロジックは 3 層に分離**する。ルールを純関数に寄せることで単体テストで完結させ、見た目とブラウザ依存を切り離す。
   1. `core/stepper.ts` = 純関数（increment / decrement / clamp・0.25 kg 刻みなどのルール。副作用なし）
   2. `composables/shared/ui/inputs/useNumberStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
@@ -90,6 +92,16 @@ src/
 - アプリ内部の型は、オブジェクト形状も含め原則 **`type`** で定義する（`type Session = { ... }`）。ユニオン型（例: `type Exercise = 'benchPress' | 'squat' | 'deadlift'`）が `type` 必須なため、全体を `type` に揃えて表記の混在を防ぐ
 - **`interface` は declaration merging が必要な型拡張のみ**に使う（例: `vite-env.d.ts` の `ImportMetaEnv` 拡張）。アプリ内の閉じたドメインモデルは `interface` にしない。意図しない再宣言マージ（footgun）を防ぎ、`Readonly<>` で固める不変モデルの思想とも揃える
 - **値の不在は `null` ではなく `undefined` で表す**（`Session | undefined`、リポジトリの「見つからない」も `undefined`）。Dexie の `.get()`・`Array.at()`・`?.`・`??` の自然な返り値が `undefined` であり、`?? null` のような変換を挟まないため。`null` リテラルは ESLint（`unicorn/no-null`）で禁止している。React リファレンス（`docs/design/source/*.jsx`）の `null` は対象外
+
+## エラーハンドリング
+
+想定外の失敗は境界 1 箇所で受けて全画面エラー表示にし、縮退（最善努力）だけを呼び出し元で明示的に catch する。判断基準は「**この失敗は根幹（トレーニングを実行して実績を記録し、それを正しく見せること）を壊すか？**」（spec「⚠️ エラーハンドリング」）。
+
+- **壊さない（周辺の縮退）**: Wake Lock / タイマー音 / `requestPersistentStorage` など、spec が最善努力と定めるもの。呼び出し元で catch して継続し、**spec の根拠をコメントに書く**（明示的なオプトイン）
+- **壊す・不明（想定外）**: IndexedDB 読み書き失敗・配線バグ・未知の例外。**画面では catch せず境界へ流す**。分類に迷ったら catch しない（分類漏れは自動的にエラー画面側へ落ちるため安全側）
+- `console.error` だけの catch（握りつぶし）は書かない。「動いているが中身が事実と違う」状態（例: 読み取り失敗を「未記録」と同じ空表示にする）は縮退ではなく根幹の破壊として扱う
+- 境界の実装は `main.ts` が `installErrorBoundary`（`composables/shared/error/`）で 4 配線（`app.config.errorHandler` / `router.onError` / `unhandledrejection` / `window` の `error`）を張り、`useFatalError` へ集約 → `App.vue` が `ErrorScreen` に切り替える。Vue は async イベントハンドラ・async ライフサイクルフックの reject も `errorHandler` へ流すため、画面側は catch を書かなければ自動で境界に落ちる
+- `useFatalError`（`composables/shared/error/`）の共有も「状態管理」の provide/inject 方式に乗せる。配線元の `main.ts` が component tree の外にあるため、App ルートの `provide()` ではなく **`app.provide()`** で供給する（main.ts が生成したインスタンスの `report` を 4 配線へ直接渡し、読み手の `App.vue` は inject で受ける）
 
 ## テスト
 
