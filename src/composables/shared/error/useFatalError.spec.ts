@@ -62,13 +62,16 @@ describe('installErrorBoundary', () => {
 
   function install() {
     const report = vi.fn()
-    const app = { config: {} } as App
+    const app: Pick<App, 'config'> = { config: {} as App['config'] }
+    // vue-router の onError は 3 引数（err / to / from）のハンドラを受け unsubscribe 関数を返す。
+    // テストは err だけ渡して発火を確認するので、捕捉時に err のみ受ける形へ絞って保持する
     let routerOnError: ((err: unknown) => void) | undefined
-    const router = {
-      onError: (cb: (err: unknown) => void) => {
-        routerOnError = cb
+    const router: Pick<Router, 'onError'> = {
+      onError: (handler) => {
+        routerOnError = handler as (err: unknown) => void
+        return () => {}
       },
-    } as unknown as Router
+    }
     installErrorBoundary(app, router, report)
     // errorHandler の instance / info 引数はテストに無関係なので、err だけ渡す形に型を絞って呼ぶ
     const triggerVueError = app.config.errorHandler as unknown as (e: unknown) => void

@@ -37,7 +37,11 @@ export const fatalErrorInjectionKey: InjectionKey<FatalErrorStore> = Symbol('fat
  * 全画面エラー表示に切り替える。縮退（最善努力）だけを呼び出し元で catch する
  * （docs/conventions.md「エラーハンドリング」）。main.ts が useFatalError の report を渡して呼ぶ。
  */
-export function installErrorBoundary(app: App, router: Router, report: (e: unknown) => void) {
+export function installErrorBoundary(
+  app: Pick<App, 'config'>,
+  router: Pick<Router, 'onError'>,
+  report: (e: unknown) => void,
+) {
   // 1) Vue が捕捉するエラー（setup / render / watcher、async ライフサイクル・イベントハンドラの reject 含む）
   app.config.errorHandler = (err) => {
     // errorHandler を設定すると Vue 既定の console 出力が消えるため、境界でも握りつぶさず出力する
