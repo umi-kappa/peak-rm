@@ -47,7 +47,7 @@ export function installErrorBoundary(app: App, router: Router, report: (e: unkno
   // 2) vue-router のエラー（ガード内 throw・lazy route component の読み込み失敗）は
   //    Vue の errorHandler に流れない。全ルートが lazy import + PWA autoUpdate のため、
   //    デプロイ後に旧 chunk への参照が 404 になるケースがここに落ちる
-  router.onError((err) => {
+  router.onError((err: unknown) => {
     // vue-router 既定の console 出力が出ないケースに備え、補償として出力する（二重ログには
     // ならない）。3・4 の window 経路はブラウザのネイティブ出力が残るので足さない
     console.error(err)
