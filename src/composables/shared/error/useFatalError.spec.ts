@@ -63,9 +63,9 @@ describe('useFatalError', () => {
 
 describe('installErrorBoundary', () => {
   // happy-dom は ErrorEvent / PromiseRejectionEvent を持たないため、リスナーが読むプロパティ
-  // （error / reason）だけを Event に生やして window へ dispatch し、経路を再現する
-  function dispatchWindow(type: 'error' | 'unhandledrejection', props: Record<string, unknown>) {
-    window.dispatchEvent(Object.assign(new Event(type), props))
+  // （error / reason）だけを Event に生やして捕捉したハンドラへ直接渡す
+  function windowEvent(props: Record<string, unknown>): Event {
+    return Object.assign(new Event('boundary'), props)
   }
 
   function install() {
@@ -80,10 +80,16 @@ describe('installErrorBoundary', () => {
         return () => {}
       },
     }
+    // installErrorBoundary が window に張るリスナー（error / unhandledrejection）を捕捉する。
+    // 実 window へ dispatch せず捕捉したハンドラを直接呼ぶことで、テスト間のリスナー蓄積を防ぐ
+    const windowHandlers = new Map<string, (event: Event) => void>()
+    vi.spyOn(window, 'addEventListener').mockImplementation((type, listener) => {
+      windowHandlers.set(type, listener as (event: Event) => void)
+    })
     installErrorBoundary(app, router, report)
     // errorHandler の instance / info 引数はテストに無関係なので、err だけ渡す形に型を絞って呼ぶ
     const triggerVueError = app.config.errorHandler as (e: unknown) => void
-    return { report, triggerVueError, routerOnError: routerOnError! }
+    return { report, triggerVueError, routerOnError: routerOnError!, windowHandlers }
   }
 
   beforeEach(() => {
@@ -111,23 +117,23 @@ describe('installErrorBoundary', () => {
   })
 
   test('window の unhandledrejection の reason を report する', () => {
-    const { report } = install()
+    const { report, windowHandlers } = install()
     const reason = new Error('floating')
-    dispatchWindow('unhandledrejection', { reason })
+    windowHandlers.get('unhandledrejection')!(windowEvent({ reason }))
     expect(report).toHaveBeenCalledWith(reason)
   })
 
   test('window の error は event.error が Error のときだけ report する', () => {
-    const { report } = install()
+    const { report, windowHandlers } = install()
     const err = new Error('sync boom')
-    dispatchWindow('error', { error: err })
+    windowHandlers.get('error')!(windowEvent({ error: err }))
     expect(report).toHaveBeenCalledWith(err)
   })
 
   test('window の error は error が Error でない（クロスオリジンの Script error. 等）なら report しない', () => {
-    const { report } = install()
+    const { report, windowHandlers } = install()
     // クロスオリジンの "Script error." は event.error を持たない。Error でないことが除外条件
-    dispatchWindow('error', { error: undefined })
+    windowHandlers.get('error')!(windowEvent({ error: undefined }))
     expect(report).not.toHaveBeenCalled()
   })
 })
