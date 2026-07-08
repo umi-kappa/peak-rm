@@ -61,8 +61,9 @@ export function installErrorBoundary(app: App, router: Router, report: (e: unkno
   })
   // 4) Vue 管理外の同期例外（setTimeout / setInterval・生の addEventListener のコールバック内 throw）
   window.addEventListener('error', (event) => {
-    // 自オリジンの未捕捉例外だけを致命扱いにする。クロスオリジンの "Script error."（error === null）や
-    // 拡張機能起因のノイズは根幹を壊さないため報告しない（console にはブラウザ既定の出力が残る）
+    // error が Error の未捕捉例外だけを致命扱いにする。クロスオリジン（拡張機能含む）の
+    // "Script error."（error が null）を除外するのが主目的。非 Error の同期 throw は経路 3 の
+    // reject と違いここでは拾わない（console にはブラウザ既定の出力が残る）
     if (event.error instanceof Error) report(event.error)
   })
 }
