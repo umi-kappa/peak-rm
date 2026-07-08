@@ -82,7 +82,7 @@ describe('installErrorBoundary', () => {
     }
     installErrorBoundary(app, router, report)
     // errorHandler の instance / info 引数はテストに無関係なので、err だけ渡す形に型を絞って呼ぶ
-    const triggerVueError = app.config.errorHandler as unknown as (e: unknown) => void
+    const triggerVueError = app.config.errorHandler as (e: unknown) => void
     return { report, triggerVueError, routerOnError: routerOnError! }
   }
 
