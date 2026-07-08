@@ -28,6 +28,13 @@ describe('useFatalError', () => {
     expect(error.value?.message).toBe('boom')
   })
 
+  test('空 message の Error の report は Unknown error に落とす', () => {
+    const { error, report } = useFatalError()
+    report(new Error(''))
+    expect(error.value).toBeInstanceOf(Error)
+    expect(error.value?.message).toBe('Unknown error')
+  })
+
   test('値なし（undefined）の report は「エラーなし」と区別して Unknown error に正規化する', () => {
     const { error, report } = useFatalError()
     report(undefined)

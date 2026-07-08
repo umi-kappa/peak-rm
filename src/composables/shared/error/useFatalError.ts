@@ -15,7 +15,8 @@ export function useFatalError() {
   function report(e: unknown) {
     if (error.value !== undefined) return
     if (e instanceof Error) {
-      error.value = e
+      // 空 message の Error（strip されたエラー等）は画面が空描画になるため Unknown error に落とす
+      error.value = e.message.trim() ? e : new Error('Unknown error')
       return
     }
     // 文字列 reason や値なしの reject も画面に出せるよう、常に Error へ正規化して保持する。
