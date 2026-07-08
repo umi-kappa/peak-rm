@@ -54,8 +54,8 @@ async function start() {
   starting.value = true
   // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
   // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）。
-  // これらは縮退（最善努力）なので個別に try/catch し、境界へ流さない（session.start の
-  // 書き込み失敗＝根幹破壊とは分けて扱う。docs/conventions.md「エラーハンドリング」）
+  // これらは縮退（最善努力）なので #41 で追加する際は個別に try/catch し、境界へ流さない
+  // （session.start の書き込み失敗＝根幹破壊とは分けて扱う。docs/conventions.md「エラーハンドリング」）
   await session.start(menu.value)
   router.replace({ name: 'training', params: { exercise } })
 }
