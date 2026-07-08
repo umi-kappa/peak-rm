@@ -21,7 +21,13 @@ export function useFatalError() {
     }
     // 文字列 reason や値なしの reject も画面に出せるよう、常に Error へ正規化して保持する。
     // 空文字や [object Object] のような無情報な文字列化は 'Unknown error' に落とす
-    const message = String(e ?? '').trim()
+    let message = ''
+    try {
+      message = String(e ?? '').trim()
+    } catch {
+      // toString/valueOf を持たない値（Object.create(null) 等）は文字列化で throw する。
+      // 4 経路の最終防波堤である report 自身が throw しないよう握り、Unknown error に落とす
+    }
     error.value = new Error(message && message !== '[object Object]' ? message : 'Unknown error')
   }
 

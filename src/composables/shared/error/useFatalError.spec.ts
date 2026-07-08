@@ -51,6 +51,14 @@ describe('useFatalError', () => {
     object.report({ code: 500 })
     expect(object.error.value?.message).toBe('Unknown error')
   })
+
+  test('文字列化で throw する値（toString/valueOf を持たない）の report も Unknown error に落とす', () => {
+    const { error, report } = useFatalError()
+    // Object.create(null) は String() が TypeError を throw する。最終防波堤の report が
+    // 巻き込まれて throw しないことを保証する（try/catch で握り Unknown error に落とす）
+    expect(() => report(Object.create(null))).not.toThrow()
+    expect(error.value?.message).toBe('Unknown error')
+  })
 })
 
 describe('installErrorBoundary', () => {
