@@ -110,6 +110,12 @@ Vitest を projects 構成で動かし、ロジック層の単体テスト（`un
 
 `storage/` のテストも `unit` project で動かす。happy-dom は IndexedDB を持たないため、`unit` project の `setupFiles` に `fake-indexeddb/auto` を読み込んでグローバルを補う。リポジトリのテストは `beforeEach` で `db.delete()` → `db.open()` してケース間の状態を分離する。
 
+コンポーネントのインタラクションは原則 Storybook の play が担うが、例外として **`RouterView`（route outlet）を内包するため Storybook で Story 化できないルートコンポーネント（`App.vue` など）は `@vue/test-utils` の `mount` で `unit` project のマウントテストを書いてよい**。
+
+- マウント時は RouterView を `global.stubs` で置換し、依存する store は `global.provide` で注入して、統合点（テンプレートの分岐・inject ガード）そのものを検証する
+- `provide` / `inject` への依存だけでは例外の根拠にならない。provide / inject は本アプリ標準の状態管理機構であり、inject する presentational な画面は Storybook の provide decorator で Story 化して play + Chromatic が担う
+- プレゼンテーショナルなコンポーネントの見た目・振る舞いは従来どおり Storybook が担い、二重には書かない
+
 ### 配置
 
 テスト対象のソースと同じディレクトリに co-located で置く（例: `src/core/oneRm.ts` の隣に `src/core/oneRm.spec.ts`）。`tests/` のような分離ディレクトリは使わない。Vitest は `src/**/*.spec.ts` を拾う。
