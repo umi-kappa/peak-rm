@@ -42,6 +42,7 @@
     "@vitest/browser-playwright": "^4.1.7",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
+    "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.7.0",
     "chromatic": "^17.0.1",
     "eslint": "^10.4.0",
