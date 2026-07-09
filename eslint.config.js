@@ -25,6 +25,25 @@ export default defineConfigWithVueTs(
     rules: { 'unicorn/no-null': 'error' },
   },
   {
+    name: 'app/no-relative-imports',
+    // src/ 配下の import は @/ alias に統一する（相対パス禁止）。詳細は docs/conventions.md「import」を参照。
+    // alias @/* は src/* にしか張っていないため、src/ 外（設定ファイル等）は対象外。
+    files: ['src/**/*.{ts,mts,tsx,vue}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['./*', '../*'],
+              message: 'src/ 配下の import は @/ alias を使う（相対パス禁止）。',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     name: 'app/page-entry-names',
     // 画面エントリは規約上 pages/<画面>/index.vue（Nuxt 風命名）。ファイル名がルートで一意なので
     // multi-word 強制の対象外にする（命名規約は docs/conventions.md「ファイル命名」を参照）。

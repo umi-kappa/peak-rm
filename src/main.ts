@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import App from '@/App.vue'
 import router from '@/router'
 import {
   fatalErrorInjectionKey,
@@ -7,8 +7,8 @@ import {
   useFatalError,
 } from '@/composables/shared/error/useFatalError'
 import { registerSW } from 'virtual:pwa-register'
-import './styles/tokens.css'
-import './styles/global.css'
+import '@/styles/tokens.css'
+import '@/styles/global.css'
 
 const app = createApp(App).use(router)
 
