@@ -11,13 +11,14 @@ src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
     constants.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
-    db.ts  sessionRepo.ts  backup.ts
+    db.ts  sessionRepo.ts  backup.ts（#42 予定）
   composables/
     pages/<画面>/       # 画面専用に切り出した composable
     shared/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
-      session/         # useSession / useIntervalTimer（実行中セッションの状態系）
-      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
+      navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
+      session/         # useSession / useIntervalTimer（#36 予定）（実行中セッションの状態系）
+      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）※ディレクトリごと #41 予定
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
     app/               # App ルート（App.vue）専用のコンポーネント（ErrorScreen.vue）
@@ -65,6 +66,7 @@ src/
 - **Vue コンポーネント**: PascalCase（`MenuSetup.vue`、`SessionResult.vue`）。Vue 公式スタイルガイド準拠。`components/shared/ui/` 配下の基底プリミティブで名前が 1 語になるもの（`BaseIcon` / `BaseLabel` / `BaseUnit` / `BaseCard`）は、Vue 公式の base component 規約に従い `Base` プレフィックスを付けて 2 語にする（`vue/multi-word-component-names` を満たすため）。修飾子を持つものはその機能名 2 語でよい（`IconButton` / `BigNumber`）
 - **画面エントリ**: `pages/<画面>/index.vue`（Nuxt 風）。ディレクトリ名で一意に識別できるため `vue/multi-word-component-names` の対象外とする（`eslint.config.js` で `src/pages/**/index.vue` に限り無効化）
 - **TypeScript ロジック・composable**: camelCase（`oneRm.ts`、`useSession.ts`）
+- **コンポーネント共有の型モジュール**: 対象コンポーネントと同じ命名 ＋ `.type.ts`（`BaseCard.vue` → `BaseCard.type.ts`）。複数コンポーネントで共有する props の union 型などを、主たるコンポーネントの隣に co-located で置く
 - **テストファイル**: テスト対象と同じ命名 ＋ `.spec.ts`（`oneRm.ts` → `oneRm.spec.ts`）
 - **Story ファイル**: 対象コンポーネントと同じ命名 ＋ `.stories.ts`（`BaseButton.vue` → `BaseButton.stories.ts`）
 - **設定ファイル（プロジェクトルート）**: ツール慣習に従う（`vite.config.ts`、`eslint.config.js`、`.prettierrc.json`）
@@ -81,7 +83,7 @@ src/
 ## Vue コンポーネント
 
 - script ブロックは **`<script setup lang="ts">` 1 つに統一**する。通常の `<script lang="ts">` ブロックを併設しない
-- コンポーネント外から参照する型・定数（props の union 型など）は `<script setup>` から export できない（値 export はビルド時に compiler-sfc が拒否する。vue-tsc では検出されない）ため、`.ts` モジュールに切り出して双方から import する（例: `assets/icons/index.ts` の `iconNames` / `IconName`）。モジュールスコープで 1 回だけ実行したい処理（`import.meta.glob` のマップ構築など）も `<script setup>` 内ではなく `.ts` 側に置く（`<script setup>` の本文はインスタンス生成ごとに実行されるため）
+- コンポーネント外から参照する型・定数（props の union 型など）は `<script setup>` から export できない（値 export はビルド時に compiler-sfc が拒否する。vue-tsc では検出されない）ため、`.ts` モジュールに切り出して双方から import する（例: `assets/icons/index.ts` の `iconNames` / `IconName`、`BaseCard.type.ts` の共有 props 型）。モジュールスコープで 1 回だけ実行したい処理（`import.meta.glob` のマップ構築など）も `<script setup>` 内ではなく `.ts` 側に置く（`<script setup>` の本文はインスタンス生成ごとに実行されるため）
 - `<script setup>` 内は **変数宣言（route / inject / props / state）→ 関数 → ライフサイクル登録（`onMounted` 等）の順**に並べる。関数の間にフック登録や変数宣言を挟まない
 - **composable は関数単体でなく named なオブジェクトを返す**（`return { goBack }` → `const { goBack } = useBackNavigation()`）。呼び出し側の変数名が composable の意図した名前に揃い、公開項目の追加にも形を変えず対応できる
 - **template にインライン式で処理を書かない**（`@back="router.push({ name: 'home' })"` 禁止）。イベントハンドラは script の名前付き関数に切り出す（`@back="goHome"`）。presentational コンポーネント内の単純な emit 転送（`@click="emit('confirm')"`）は例外
