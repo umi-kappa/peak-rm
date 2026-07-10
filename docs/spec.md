@@ -317,9 +317,9 @@ flowchart TD
     Home -- 設定を開く --> Settings
     Menu -- 開始 --> Training
     Menu -- 戻る --> Home
-    Training -- セット完了で遷移 --> Interval
+    Training -- セット完了で遷移（最終セットを除く） --> Interval
+    Training -- 最終セット完了で自動遷移 --> Result
     Interval -- 次のセットへ --> Training
-    Interval -- 最終セット完了で自動遷移 --> Result
     Interval -- 中断ボタン --> Result
     Result -- ホームに戻る (完了・中断経由) --> Home
     Result -- 履歴に戻る (履歴経由) --> History
@@ -334,9 +334,9 @@ flowchart TD
 stateDiagram-v2
     direction TB
     [*] --> セット実行中: 開始
-    セット実行中 --> インターバル中: セット完了（実績0回 = 実質スキップ）
-    インターバル中 --> セット実行中: 次セットへ
-    インターバル中 --> 完了: 最終セット後
+    セット実行中 --> インターバル中: セット完了（実績0回 = 実質スキップ。最終セットを除く）
+    セット実行中 --> 完了: 最終セット完了
+    インターバル中 --> セット実行中: 次のセットへ
     インターバル中 --> 中断確認: 中断ボタン
     中断確認 --> 中断: 確定
     中断確認 --> インターバル中: キャンセル
