@@ -1,17 +1,25 @@
 import { createApp } from 'vue'
 import App from '@/App.vue'
-import router from '@/router'
+import { createAppRouter } from '@/router'
 import {
   fatalErrorInjectionKey,
   installErrorBoundary,
   useFatalError,
 } from '@/composables/shared/error/useFatalError'
+import { sessionInjectionKey, useSession } from '@/composables/shared/session/useSession'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
 import '@/styles/tokens.css'
 import '@/styles/global.css'
 
+// 実行中セッションの単一インスタンス。router のセッションガードとコンポーネントツリー
+//（training / interval / result が inject）の両方から同じものを参照するため、ここで生成して配る
+//（Pinia は導入しない・規約 docs/conventions.md「状態管理」）。
+const session = useSession()
+const router = createAppRouter(session)
+
 const app = createApp(App).use(router)
+app.provide(sessionInjectionKey, session)
 
 // 想定外エラーの境界。生成した store を App.vue へ provide し、4 配線を report へ集約する。
 const fatalError = useFatalError()
