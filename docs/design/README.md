@@ -28,7 +28,7 @@ JSX 側は React で書かれているが、これは見た目の意図を示す
 
 ## Design Tokens
 
-すべてのトークンは `source/tokens.jsx` 内に React 実装として定義済み。実装時は CSS カスタムプロパティ or TS 定数として落とし込む。
+基本トークン（色スケール・タイポグラフィ・スペーシング等）は `source/tokens.jsx` 内に React 実装として定義済み（accent と motion 系は例外。後述の各節を参照）。実装時は CSS カスタムプロパティ or TS 定数として落とし込む。
 
 ### Color (Dark mode・モノトーン + シアンアクセント)
 

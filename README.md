@@ -11,10 +11,10 @@ src/
 ├─ core/          純ロジック（型・1RM 計算・linear progression・集約）。副作用なし
 ├─ storage/       永続化（Dexie / IndexedDB・リポジトリ・Export / Import）
 ├─ composables/   Vue composable
-│  ├─ shared/session/    useSession / useIntervalTimer
-│  ├─ shared/platform/   useWakeLock / useAudioCue
+│  ├─ shared/<分類>/      横断の composable（session / error / navigation / ui など）
 │  └─ pages/<画面>/       画面専用ロジック
 ├─ components/    Vue コンポーネント
+│  ├─ app/               App ルート専用（ErrorScreen など）
 │  ├─ shared/ui/         デザインプリミティブ（汎用・ドメイン非依存。dialog/ に ConfirmDialog）
 │  ├─ shared/*.vue       横断のアプリ固有複合（SetEditDialog など）
 │  └─ pages/<画面>/       画面専用コンポーネント

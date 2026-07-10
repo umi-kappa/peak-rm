@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## リポジトリの現状
 
-仕様策定が完了し、`docs/spec.md` に集約済み。実装コード・ビルド設定・テストはこれから整備するフェーズ。ブランチ `issue/1-add-spec-md`（Issue `#1`）で仕様を確定した。
+仕様は確定済みで `docs/spec.md` に集約している（Issue `#1` で策定）。現在は実装フェーズが進行中: ビルド・CI・テスト基盤、`src/` の core / storage / エラー境界 / UI プリミティブ、ホーム・メニュー設定画面までが実装済み。残作業と進捗は GitHub Issues を参照する。
 
 ## 技術スタック（確定済み）
 
