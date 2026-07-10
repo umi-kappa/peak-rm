@@ -7,6 +7,7 @@ import {
   useFatalError,
 } from '@/composables/shared/error/useFatalError'
 import { registerSW } from 'virtual:pwa-register'
+import { requestPersistentStorage } from '@/storage/db'
 import '@/styles/tokens.css'
 import '@/styles/global.css'
 
@@ -18,6 +19,10 @@ app.provide(fatalErrorInjectionKey, fatalError)
 installErrorBoundary(app, router, fatalError.report)
 
 app.mount('#app')
+
+// ITP 自動退避の抑止を最善努力で要求する（spec「ストレージ」: 拒否されても機能に影響しない縮退）。
+// 拒否・例外は関数内で握って false を返すため、起動を待たせず投げっぱなしでよい。
+void requestPersistentStorage()
 
 // SW 登録失敗は非致命（プログレッシブエンハンスメントの劣化）。virtual:pwa-register を
 // 自前 import して自動注入 registerSW.js を無効化し、reject を握って console に留める。
