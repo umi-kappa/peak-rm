@@ -4,21 +4,21 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 
 ## ディレクトリ構成
 
-`src/` 配下は **責務で分割** する。各レイヤを共通ルールで分岐させる: **画面専用のものは各レイヤの `pages/<画面名>/` に置く**、**複数画面で使う横断的なものは各レイヤの共有バケツ（`shared/` など）に置く**（`components/` のみ App ルート専用の `app/` を加えた 3 分類。後述）。
+`src/` 配下は **責務で分割** する。各レイヤを共通ルールで分岐させる: **画面専用のものは各レイヤの `pages/<画面名>/` に置く**、**複数画面で使う横断的なものは各レイヤの共有バケツ（`shared/` など）に置く**（`components/` のみ App ルート専用の `app/` を加えた 3 分類。後述）。以下のツリーは目標構造であり、未実装のモジュールも含む（実装の進捗は GitHub Issues を参照）。
 
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
     constants.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
-    db.ts  sessionRepo.ts  backup.ts（#42 予定）
+    db.ts  sessionRepo.ts  backup.ts
   composables/
     pages/<画面>/       # 画面専用に切り出した composable
     shared/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
-      session/         # useSession / useIntervalTimer（#36 予定）（実行中セッションの状態系）
-      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）※ディレクトリごと #41 予定
+      session/         # useSession / useIntervalTimer（実行中セッションの状態系）
+      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
     app/               # App ルート（App.vue）専用のコンポーネント（ErrorScreen.vue）
