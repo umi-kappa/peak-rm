@@ -120,6 +120,31 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('setActive')
   })
 
+  test('leave は setActive からでも追加の永続化をせず done にする', async () => {
+    const { repo, session } = setup()
+    await session.start(menu())
+    const callsBefore = repo.calls.length
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(repo.calls).toHaveLength(callsBefore)
+  })
+
+  test('leave は interval からも done にし、session データは残す', async () => {
+    const { session } = setup()
+    await session.start(menu({ sets: 3 }))
+    await session.completeSet()
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(session.session.value?.results).toHaveLength(1)
+  })
+
+  test('leave は done では何も変えない（冪等）', () => {
+    const { repo, session } = setup()
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(repo.calls).toHaveLength(0)
+  })
+
   test('開始後に元の Menu を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })

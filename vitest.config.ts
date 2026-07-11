@@ -30,8 +30,10 @@ export default defineConfig({
         // 事前スキャンでは発見されず、初回実行（CI 等のキャッシュなし環境）の途中で
         // 最適化 → 強制リロードが走ってテストが落ちるため、事前最適化の対象に明示する
         // （include のエントリにもエイリアスが適用されるため、エイリアス前の vue で指定）。
+        // dexie も同様: ページ stories が useSession（→ sessionRepo → dexie）を import するが、
+        // stories の動的 import 経由のため事前スキャンに乗らない。
         optimizeDeps: {
-          include: ['vue'],
+          include: ['vue', 'dexie'],
         },
         test: {
           name: 'storybook',

@@ -22,7 +22,8 @@ export type SessionDeps = {
 /**
  * 実行中セッション 1 つの状態機械と Dexie 増分保存を束ねるヘッドレス層。
  * 計算ルール（1RM・executed 判定）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
- * App ルートで単一インスタンスを provide し、training / interval / result が inject で共有する。
+ * main.ts が単一インスタンスを生成して router のセッションガードへ渡しつつ app.provide し、
+ * training / interval / result が inject で共有する。
  * deps は通常省略し、本番の sessionRepo・実時計・実 UUID を使う。テストでのみ fake repo や固定の now / createId を渡す。
  */
 export function useSession(deps: SessionDeps = { sessionRepo }) {
@@ -96,6 +97,14 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     phase.value = 'done'
   }
 
+  function leave() {
+    // セッションフロー（training / interval / result）からの離脱でフローを終端させる
+    //（spec「セッションフローからの離脱」）。ブラウザ / OS の戻る等どのフェーズからでも呼ばれるため
+    // abort と違いガードせず無条件に確定する。DB は開始時から aborted で保存済みのため追加書き込みは不要。
+    // session データは残す（結果確認画面が離脱後も参照しうる）
+    phase.value = 'done'
+  }
+
   // 完了済みセット 1 件のフィールドを更新し、results 全体を再保存する（editReps / editMemo の共通形）
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     const current = session.value
@@ -136,6 +145,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     completeSet,
     nextSet,
     abort,
+    leave,
     editReps,
     editCurrentReps,
     editMemo,
