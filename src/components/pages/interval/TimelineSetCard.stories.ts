@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import TimelineSetCard from '@/components/pages/interval/TimelineSetCard.vue'
 
 const meta: Meta<typeof TimelineSetCard> = {
@@ -60,5 +61,16 @@ export const WithLongMemo: Story = {
     targetReps: 8,
     actualReps: 8,
     memo: '前半はバーの軌道が安定していたが、6 回目以降は右肩が先に上がる癖が出た。次回はラックアップ後のセットアップを丁寧にやり直す。',
+  },
+}
+
+// done カード（button 版）のタップが edit を emit する配線だけを確認する
+export const Behavior: Story = {
+  args: { setNumber: 1, state: 'done', targetReps: 8, actualReps: 8, memo: '', onEdit: fn() },
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button'))
+    await expect(args.onEdit).toHaveBeenCalledOnce()
   },
 }
