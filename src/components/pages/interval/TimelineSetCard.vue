@@ -86,10 +86,22 @@ function onClick() {
 
   &.next {
     border-color: var(--color-accent);
+
+    .number {
+      color: var(--color-accent);
+    }
+
+    .target {
+      color: var(--color-text);
+    }
   }
 
   &.pending {
     opacity: 0.55;
+
+    .number {
+      color: var(--color-text-tertiary);
+    }
   }
 }
 
@@ -120,14 +132,6 @@ function onClick() {
   min-width: 20px;
   color: var(--color-text-secondary);
   text-align: center;
-
-  .next & {
-    color: var(--color-accent);
-  }
-
-  .pending & {
-    color: var(--color-text-tertiary);
-  }
 }
 
 .reps {
@@ -146,10 +150,6 @@ function onClick() {
 .target {
   margin-left: auto;
   color: var(--color-text-tertiary);
-
-  .next & {
-    color: var(--color-text);
-  }
 }
 
 /* セット番号カラム（20px + gap 12px）の分だけ字下げして本文に揃える。
