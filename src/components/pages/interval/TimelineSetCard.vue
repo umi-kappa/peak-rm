@@ -165,7 +165,7 @@ function onClick() {
 
 /* caption の行ボックス（12px × 1.4 ≒ 17px）の 1 行目にアイコン（12px）を光学的にセンタリングする */
 .memo-icon {
-  margin-top: 2px;
+  margin-top: var(--space-2);
 }
 
 .memo-text,
