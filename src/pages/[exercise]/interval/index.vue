@@ -201,7 +201,7 @@ function confirmAbort() {
   color: var(--color-text-tertiary);
 }
 
-/* 経過割合の hairline。装飾ではなく残り時間の受動的な可視化 */
+/* 経過割合の hairline。装飾ではなく経過時間の受動的な可視化 */
 .track {
   width: 100%;
   height: 4px;
