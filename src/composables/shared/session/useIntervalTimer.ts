@@ -1,9 +1,9 @@
 import { computed, onScopeDispose, ref, type InjectionKey } from 'vue'
 
 // カウント更新の tick 間隔。センチ秒表示（例: .32）が滑らかに見える粒度にする
-export const INTERVAL_TIMER_TICK_MS = 50
+const INTERVAL_TIMER_TICK_MS = 50
 // 超過表示の上限秒数。到達後はカウントを進めず +3:00 のまま固定する（spec「インターバルタイマー」）
-export const INTERVAL_TIMER_OVERRUN_CAP_SEC = 180
+const INTERVAL_TIMER_OVERRUN_CAP_SEC = 180
 
 export type IntervalTimerDeps = { now?: () => number }
 
