@@ -174,6 +174,16 @@ describe('useSession', () => {
     expect(session.session.value?.results).toHaveLength(0)
   })
 
+  test('completeSet の二重呼び出し（二重タップ）でも同一セットを重複記録しない', async () => {
+    const { session } = setup()
+    await session.start(menu({ sets: 3 }))
+    // await せず並走させる。2 回目は 1 回目の書き戻しで phase が interval になった後に
+    // await 後の再チェックへ到達し、書き戻さず終わる
+    await Promise.all([session.completeSet(), session.completeSet()])
+    expect(session.session.value?.results).toHaveLength(1)
+    expect(session.phase.value).toBe('interval')
+  })
+
   test('開始後に元の Menu を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })
