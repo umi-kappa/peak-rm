@@ -9,7 +9,7 @@ PeakRM のコーディング・命名・テスト・ドキュメント表記の�
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
-    constants.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
+    constants.ts  duration.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  backup.ts
   composables/
@@ -17,7 +17,7 @@ src/
     shared/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
-      session/         # useSession / useIntervalTimer（実行中セッションの状態系）
+      session/         # useSession / useIntervalTimer（実行中セッションの状態系。useSession は main.ts が生成し router ガードと画面で共有）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
@@ -41,7 +41,7 @@ src/
   assets/
     icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
-  stories/  router.ts    # Storybook 補助（全 story で 1 度だけ install する共有 router など）
+  stories/  router.ts  session.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・セッション状態を駆動する loaders 用ヘルパー）
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`。うち `menu` / `training` / `interval` / `result` はセッションフローとして `[exercise]/` 配下にネストし、ディレクトリ構成を URL（`/:exercise/…`）と一致させる（`[exercise]` は動的セグメント `:exercise` を表すディレクトリ名。ファイルベースルーティングではなく実際のルートは `router/index.ts` で定義する）。種目に属さない `home` / `history` / `settings` は `pages/` 直下に置く
@@ -57,7 +57,7 @@ src/
   2. `composables/shared/ui/inputs/useNumberStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
   3. `components/shared/ui/inputs/NumberStepper.vue` = 見た目（presentational）
 - **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
-- **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを App ルートで `provide` し、子孫が `inject` で共有する。依存リポジトリは composable の引数で注入する。
+- **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを共有する。component tree の外にある router のセッションガードも同じインスタンスを参照するため、`main.ts` が生成して `createAppRouter` へ渡しつつ **`app.provide()`** で供給し、画面（training / interval / result）が `inject` で受ける（`useFatalError` と同じ配線。後述）。依存リポジトリは composable の引数で注入する。
 
 `@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/NumberStepper.vue`、`@/pages/home/index.vue`、`@/pages/[exercise]/menu/index.vue`。
 
