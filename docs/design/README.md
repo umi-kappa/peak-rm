@@ -104,7 +104,7 @@ text-shadow:
 | 20 | ScreenBody gap・本文 padding-y |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
-| (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |
+| 32 | interval timeline の memo 字下げ・design tokens card outer pad (design-doc) |
 
 ### Radius
 

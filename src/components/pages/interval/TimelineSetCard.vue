@@ -159,7 +159,7 @@ function onClick() {
   align-items: flex-start;
   gap: var(--space-8);
   margin-top: var(--space-8);
-  padding-left: 32px;
+  padding-left: var(--space-32);
   color: var(--color-text-secondary);
 }
 

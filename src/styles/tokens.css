@@ -45,6 +45,7 @@
   --space-20: 20px; /* ScreenBody gap・本文 padding-y・BaseButton 左右 padding */
   --space-24: 24px; /* 画面外周・stage gap */
   --space-28: 28px; /* result hero padding y top */
+  --space-32: 32px; /* interval timeline の memo 字下げ */
 
   /* ===== radius ===== */
   --radius: 4px; /* card・button・stepper・modal */
