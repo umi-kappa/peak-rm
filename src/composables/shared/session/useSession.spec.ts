@@ -120,6 +120,70 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('setActive')
   })
 
+  test('leave は setActive からでも追加の永続化をせず done にする', async () => {
+    const { repo, session } = setup()
+    await session.start(menu())
+    const callsBefore = repo.calls.length
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(repo.calls).toHaveLength(callsBefore)
+  })
+
+  test('leave は interval からも done にし、session データは残す', async () => {
+    const { session } = setup()
+    await session.start(menu({ sets: 3 }))
+    await session.completeSet()
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(session.session.value?.results).toHaveLength(1)
+  })
+
+  test('leave は done では何も変えない（冪等）', () => {
+    const { repo, session } = setup()
+    session.leave()
+    expect(session.phase.value).toBe('done')
+    expect(repo.calls).toHaveLength(0)
+  })
+
+  test('completeSet の await 中に leave が割り込んでも done を interval で上書きしない', async () => {
+    const repo = createFakeRepo()
+    // patchResults を手動解決にして、永続化 I/O 中の離脱（ブラウザバック → afterEach → leave）を再現する
+    let releasePatch!: () => void
+    const blockedRepo = {
+      ...repo,
+      patchResults: (id: string, results: SetResult[]) =>
+        new Promise<void>((resolve) => {
+          releasePatch = () => {
+            repo.calls.push({ method: 'patchResults', id, results })
+            resolve()
+          }
+        }),
+    }
+    const session = useSession({
+      sessionRepo: blockedRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    await session.start(menu({ sets: 3 }))
+    const completing = session.completeSet()
+    session.leave()
+    releasePatch()
+    await completing
+    expect(session.phase.value).toBe('done')
+    // フロー終端後は session も書き戻さない（結果は DB 側には保存済み）
+    expect(session.session.value?.results).toHaveLength(0)
+  })
+
+  test('completeSet の二重呼び出し（二重タップ）でも同一セットを重複記録しない', async () => {
+    const { session } = setup()
+    await session.start(menu({ sets: 3 }))
+    // await せず並走させる。2 回目は 1 回目の書き戻しで phase が interval になった後に
+    // await 後の再チェックへ到達し、書き戻さず終わる
+    await Promise.all([session.completeSet(), session.completeSet()])
+    expect(session.session.value?.results).toHaveLength(1)
+    expect(session.phase.value).toBe('interval')
+  })
+
   test('開始後に元の Menu を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })

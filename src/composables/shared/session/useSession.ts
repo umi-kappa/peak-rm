@@ -22,7 +22,8 @@ export type SessionDeps = {
 /**
  * 実行中セッション 1 つの状態機械と Dexie 増分保存を束ねるヘッドレス層。
  * 計算ルール（1RM・executed 判定）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
- * App ルートで単一インスタンスを provide し、training / interval / result が inject で共有する。
+ * main.ts が単一インスタンスを生成して router のセッションガードへ渡しつつ app.provide し、
+ * training / interval / result が inject で共有する。
  * deps は通常省略し、本番の sessionRepo・実時計・実 UUID を使う。テストでのみ fake repo や固定の now / createId を渡す。
  */
 export function useSession(deps: SessionDeps = { sessionRepo }) {
@@ -67,6 +68,9 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const isLastSet = results.length === current.menu.sets
     if (!isLastSet) {
       await repo.patchResults(current.id, results)
+      // await 中にブラウザバック等の leave() でフローが終端していたら書き戻さない。
+      // done を interval で上書きすると、離脱済みのフローへセッションガードを素通りして再入できてしまう
+      if (phase.value !== 'setActive') return
       session.value = { ...current, results }
       phase.value = 'interval'
       return
@@ -93,6 +97,14 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     // nextSet / completeSet と対称にガードする
     if (phase.value !== 'interval') return
     // DB は開始時から aborted で保存済み・results も都度反映済みのため追加書き込みは不要
+    phase.value = 'done'
+  }
+
+  function leave() {
+    // セッションフロー（training / interval / result）からの離脱でフローを終端させる
+    //（spec「セッションフローからの離脱」）。ブラウザ / OS の戻る等どのフェーズからでも呼ばれるため
+    // abort と違いガードせず無条件に確定する。DB は開始時から aborted で保存済みのため追加書き込みは不要。
+    // session データは残す（結果確認画面が離脱後も参照しうる）
     phase.value = 'done'
   }
 
@@ -136,6 +148,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     completeSet,
     nextSet,
     abort,
+    leave,
     editReps,
     editCurrentReps,
     editMemo,

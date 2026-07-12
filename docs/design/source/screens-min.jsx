@@ -282,19 +282,19 @@ const M_Interval = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* set 1 — done with memo */}
-        <SetRow_M
-            n={1} state="done" reps={8} target={8}
+        <TimelineSetCard_M
+            setNumber={1} state="done" reps={8} target={8}
             memo="フォーム良し" />
           
         {/* set 2 — just done, memo prompt */}
-        <SetRow_M
-            n={2} state="done" reps={8} target={8} highlight
+        <TimelineSetCard_M
+            setNumber={2} state="done" reps={8} target={8}
             memoPrompt />
           
         {/* set 3 — next */}
-        <SetRow_M n={3} state="next" reps={null} target={8} />
+        <TimelineSetCard_M setNumber={3} state="next" reps={null} target={8} />
         {/* set 4 — not yet performed */}
-        <SetRow_M n={4} state="pending" reps={null} target={8} />
+        <TimelineSetCard_M setNumber={4} state="pending" reps={null} target={8} />
       </div>
 
       <div style={{ flex: 1 }} />
@@ -305,10 +305,10 @@ const M_Interval = () => {
 
 };
 
-const SetRow_M = ({ n, state, reps, target, memo, memoPrompt, highlight, readOnly = false }) =>
+const TimelineSetCard_M = ({ setNumber, state, reps, target, memo, memoPrompt, readOnly = false }) =>
 <div style={{
-  background: state === 'next' ? C.surface : highlight ? C.surface : C.surface,
-  border: `1px solid ${state === 'next' ? MA : highlight ? C.line : C.lineSoft}`,
+  background: C.surface,
+  border: `1px solid ${state === 'next' ? MA : C.lineSoft}`,
   borderRadius: 4, padding: '12px 16px',
   opacity: state === 'pending' ? 0.55 : 1,
   position: 'relative'
@@ -318,7 +318,7 @@ const SetRow_M = ({ n, state, reps, target, memo, memoPrompt, highlight, readOnl
       ...NumStyle, fontSize: T.body, fontWeight: W.bold,
       color: state === 'next' ? MA : state === 'pending' ? C.fg3 : C.fg2,
       minWidth: 20, textAlign: 'center'
-    }}>{n}</span>
+    }}>{setNumber}</span>
       <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>
         {state === 'pending' || state === 'next' ?
       <>
@@ -460,21 +460,21 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {aborted ?
           <>
-            <SetRow_M n={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
-            <SetRow_M n={2} state="pending" reps={null} target={8} />
-            <SetRow_M n={3} state="pending" reps={null} target={8} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={2} state="pending" reps={null} target={8} />
+            <TimelineSetCard_M setNumber={3} state="pending" reps={null} target={8} />
           </> :
           perfect ?
           <>
-            <SetRow_M n={1} state="done" reps={8} target={8} memo="好調" readOnly={fromHistory} />
-            <SetRow_M n={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
-            <SetRow_M n={3} state="done" reps={8} target={8} memo="フォーム維持" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="好調" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={3} state="done" reps={8} target={8} memo="フォーム維持" readOnly={fromHistory} />
           </> :
 
           <>
-            <SetRow_M n={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
-            <SetRow_M n={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
-            <SetRow_M n={3} state="done" reps={7} target={8} memo="4回目から乱れた" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={3} state="done" reps={7} target={8} memo="4回目から乱れた" readOnly={fromHistory} />
           </>
           }
       </div>

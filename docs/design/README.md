@@ -104,7 +104,7 @@ text-shadow:
 | 20 | ScreenBody gap・本文 padding-y |
 | 24 | screen pad (画面外周)・stage gap |
 | 28 | result hero padding y top |
-| (32) | design tokens card outer pad（design-doc 専用・product では未使用のためトークン化しない） |
+| 32 | interval timeline の memo 字下げ・design tokens card outer pad (design-doc) |
 
 ### Radius
 
@@ -245,7 +245,8 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 - セット完了で **自動開始**
 - 0 秒到達時: **音のみで通知**。バイブ・画面遷移・ハイライト等は禁止
-- 超過秒数を `+12` のように表示 (上限 `+180` で頭打ち)
+- 残り時間は `0:47.32` のように分:秒 + センチ秒で表示 (センチ秒は超過中も含め常に併記)
+- 超過時間を `+0:12` のように分:秒で表示 (上限 `+3:00` で頭打ち)
 - 「次のセットへ」「中断」はタイマー中でも押下可能
 
 ### Stepper
