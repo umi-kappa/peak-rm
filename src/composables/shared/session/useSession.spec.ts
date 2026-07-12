@@ -145,6 +145,35 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(0)
   })
 
+  test('completeSet の await 中に leave が割り込んでも done を interval で上書きしない', async () => {
+    const repo = createFakeRepo()
+    // patchResults を手動解決にして、永続化 I/O 中の離脱（ブラウザバック → afterEach → leave）を再現する
+    let releasePatch!: () => void
+    const blockedRepo = {
+      ...repo,
+      patchResults: (id: string, results: SetResult[]) =>
+        new Promise<void>((resolve) => {
+          releasePatch = () => {
+            repo.calls.push({ method: 'patchResults', id, results })
+            resolve()
+          }
+        }),
+    }
+    const session = useSession({
+      sessionRepo: blockedRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    await session.start(menu({ sets: 3 }))
+    const completing = session.completeSet()
+    session.leave()
+    releasePatch()
+    await completing
+    expect(session.phase.value).toBe('done')
+    // フロー終端後は session も書き戻さない（結果は DB 側には保存済み）
+    expect(session.session.value?.results).toHaveLength(0)
+  })
+
   test('開始後に元の Menu を書き換えても Session.menu は変わらない（deep copy）', async () => {
     const { session } = setup()
     const original = menu({ weight: 100 })

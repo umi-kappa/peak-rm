@@ -36,6 +36,8 @@ async function completeSet() {
   if (completing.value) return
   completing.value = true
   await session.completeSet()
+  // await 中にブラウザバック等で training を離脱していたら遷移しない（離脱先から引き戻さない）
+  if (route.name !== 'training') return
   if (session.phase.value === 'done') {
     router.replace({ name: 'result', params: route.params, query: { origin: 'session' } })
     return

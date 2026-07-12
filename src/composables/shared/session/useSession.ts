@@ -68,6 +68,9 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const isLastSet = results.length === current.menu.sets
     if (!isLastSet) {
       await repo.patchResults(current.id, results)
+      // await 中にブラウザバック等の leave() でフローが終端していたら書き戻さない。
+      // done を interval で上書きすると、離脱済みのフローへセッションガードを素通りして再入できてしまう
+      if (phase.value !== 'setActive') return
       session.value = { ...current, results }
       phase.value = 'interval'
       return
