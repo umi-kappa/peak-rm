@@ -2,6 +2,7 @@
 import { computed, inject, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
+import { MENU_MAX } from '@/core/menu'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
@@ -79,6 +80,7 @@ async function completeSet() {
           <NumberStepper
             large
             :min="0"
+            :max="MENU_MAX.reps"
             unit="REPS"
             :model-value="currentReps"
             @update:model-value="session.editCurrentReps"

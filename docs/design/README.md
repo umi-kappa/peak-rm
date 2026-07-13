@@ -170,7 +170,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - ヒーロー数値: `82.5` (mono display bold, accent, glow) + `kg` unit
 - 副情報: `× 8` (mono title semibold) + `reps` unit
 - 中央ラベル: `Reps done` (sans body regular)
-- Stepper (large): 実績回数を 0 以上で調整可能
+- Stepper (large): 実績回数を 0〜99 で調整可能（上限は安全弁、`spec.md` §3）
 - Primary CTA: `COMPLETE SET` (caps mono bold, fill accent)
 
 **注意:** この画面に中断ボタンは無い (`spec.md` §3)。中断はインターバル画面から。
