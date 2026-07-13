@@ -95,6 +95,8 @@ src/
 - アプリ内部の型は、オブジェクト形状も含め原則 **`type`** で定義する（`type Session = { ... }`）。ユニオン型（例: `type Exercise = 'benchPress' | 'squat' | 'deadlift'`）が `type` 必須なため、全体を `type` に揃えて表記の混在を防ぐ
 - **`interface` は declaration merging が必要な型拡張のみ**に使う（例: `vite-env.d.ts` の `ImportMetaEnv` 拡張）。アプリ内の閉じたドメインモデルは `interface` にしない。意図しない再宣言マージ（footgun）を防ぎ、`Readonly<>` で固める不変モデルの思想とも揃える
 - **値の不在は `null` ではなく `undefined` で表す**（`Session | undefined`、リポジトリの「見つからない」も `undefined`）。Dexie の `.get()`・`Array.at()`・`?.`・`??` の自然な返り値が `undefined` であり、`?? null` のような変換を挟まないため。`null` リテラルは ESLint（`unicorn/no-null`）で禁止している。React リファレンス（`docs/design/source/*.jsx`）の `null` は対象外
+- **モジュールスコープの定数は SCREAMING_SNAKE_CASE で命名する**（`MENU_MAX` / `ONE_RM_DIVISOR` / `NUMBER_STEPPER_REPEAT_DELAY_MS`）。対象は値が固定のプリミティブ・静的データで、インスタンス・injection key・関数（`sessionRepo` / `db` / `sessionInjectionKey`）は camelCase のまま
+  - 定数オブジェクトの**キーは大文字化せず camelCase のまま**にする。キーはドメイン型のフィールド名や値の写し（`MENU_MAX.weight` ← `Menu`、`ONE_RM_DIVISOR` のキー ← `Exercise`）であり、一致しているからこそ `satisfies` による網羅検査と spread での焼き込み（`{ exercise, ...DEFAULT_MENU }`）が成立する。大文字化の境界は識別子まで
 
 ## エラーハンドリング
 

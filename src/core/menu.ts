@@ -9,6 +9,15 @@ export const DEFAULT_MENU = {
   intervalSec: 90,
 } as const satisfies Omit<Menu, 'exercise'>
 
+// メニュー設定ステッパーの上限。想定ユーザー向けの UX レンジではなく、現実的に
+// あり得ない値だけを弾く安全弁。表示桁数の MAX を基準に統一する（spec §2）
+export const MENU_MAX = {
+  weight: 999,
+  reps: 99,
+  sets: 99,
+  intervalSec: 990,
+} as const satisfies Omit<Menu, 'exercise'>
+
 export type InitialMenu = {
   menu: Menu
   /** Linear progression 成立時のみ。from = 前回ベースライン、to = 増量後（= menu.weight） */

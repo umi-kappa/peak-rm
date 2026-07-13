@@ -44,14 +44,18 @@ export const Default: Story = {
   render: renderWithModel(150.25),
 }
 
-// NumberStepper が model に配線されていることだけを確認する。
-// 刻み・clamp の検証は stepper.spec / useNumberStepper.spec が担う。
+// NumberStepper が model に配線され、コンポーネントで確定する step / max が
+// 渡っていることだけを確認する。clamp の挙動自体は stepper.spec / useNumberStepper.spec が担う。
 export const Behavior: Story = {
-  render: renderWithModel(150.25),
+  render: renderWithModel(998.75),
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }))
-    await expect(canvas.getByText('150.5')).toBeVisible()
+    const increase = canvas.getByRole('button', { name: 'Increase' })
+    await userEvent.click(increase)
+    await expect(canvas.getByText('999')).toBeVisible()
+    // 上限（MENU_MAX.weight = 999）で止まる
+    await userEvent.click(increase)
+    await expect(canvas.getByText('999')).toBeVisible()
   },
 }
