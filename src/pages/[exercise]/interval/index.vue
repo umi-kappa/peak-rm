@@ -79,7 +79,7 @@ function closeAbortConfirm() {
   abortConfirmOpen.value = false
 }
 
-// 中断を確定して結果確認へ。DB は開始時から aborted で保存済みのため追加書き込みは無い
+// 中断を確定して結果確認へ。完了済みセットは aborted のまま都度保存済みのため追加書き込みは無い
 function confirmAbort() {
   abortConfirmOpen.value = false
   session.abort()

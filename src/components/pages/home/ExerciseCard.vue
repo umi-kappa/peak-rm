@@ -36,7 +36,7 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
         </div>
         <div class="last">
           <BaseLabel>LAST</BaseLabel>
-          <template v-if="session && session.results.length > 0">
+          <template v-if="session">
             <div class="last-weight">
               <span class="weight">{{ session.menu.weight }}</span>
               <BaseUnit>KG</BaseUnit>

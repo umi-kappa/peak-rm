@@ -36,7 +36,8 @@ const exercise =
 const menu = ref<Menu>()
 // 増量プレビューは初期解決時の値を固定表示する（増量提案の記録のため、手動編集には追従させない）
 const lpPreview = ref<{ from: number; to: number }>()
-// 遷移までに await を挟むため、二重タップで start() が並走するとセッションが重複 insert される
+// 遷移（router.replace）の完了は非同期のため、完了前の再タップで start() が再実行されると
+// セッションが作り直される（id / startedAt が変わる）
 const starting = ref(false)
 
 async function loadMenu(exercise: Exercise) {
@@ -49,16 +50,16 @@ async function loadMenu(exercise: Exercise) {
 // 開始すると session フローに入る。以降 training / interval / result は replace で畳み、
 // メニューへ戻れないようにする（重量・メニューはトレーニング中変更不可）。
 // 種目はフロー全体で URL に引き継ぐ。
-async function start() {
+function start() {
   if (starting.value || !menu.value || !exercise) return
   // 二重起動防止。session.start 失敗時は境界へ流れページごと unmount されるため、
   // 成功時（遷移で破棄）同様このフラグは戻さない
   starting.value = true
-  // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ（最初の await より前 =
-  // 「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）。
+  // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ
+  // （「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）。
   // これらは縮退（最善努力）なので #41 で追加する際は個別に try/catch し、境界へ流さない
-  // （session.start の書き込み失敗＝根幹破壊とは分けて扱う。docs/conventions.md「エラーハンドリング」）
-  await session.start(menu.value)
+  // （docs/conventions.md「エラーハンドリング」）
+  session.start(menu.value)
   router.replace({ name: 'training', params: { exercise } })
 }
 

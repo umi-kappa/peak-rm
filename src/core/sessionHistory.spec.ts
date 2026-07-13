@@ -7,12 +7,14 @@ function reps(actualReps: number): SetResult {
   return { actualReps, memo: '' }
 }
 
+// results の既定値は実績 1 件。DB には実績のあるセッション（results.length >= 1）しか
+// 存在しない不変条件（#80）に合わせる
 function makeSession(
   id: string,
   exercise: Exercise,
   startedAt: number,
   status: Session['status'] = 'aborted',
-  results: SetResult[] = [],
+  results: SetResult[] = [reps(8)],
 ): Session {
   return {
     id,

@@ -66,9 +66,9 @@ PeakRM は「1RM の成長を可視化する筋トレアプリ」だが、UI/UX 
 
 ### セッション永続化
 
-- セッション開始時に `status = 'aborted'`（保守的デフォルト）で insert。セット完了ごとに増分 update
-- 最終セット完了で `status = 'executed'` へ更新、中断時はそのまま `aborted` で確定
-- タブクローズ / クラッシュ / SW autoUpdate のリロード時は `aborted` セッションとして履歴に残る
+- 最初のセット完了時に `status = 'aborted'`（保守的デフォルト）・実績込みで insert（セッション開始時には保存しない）。以降のセット完了ごとに増分 update
+- 最終セット完了で `status = 'executed'` へ更新（`menu.sets = 1` は insert 時点で確定）、中断時はそのまま `aborted` で確定
+- タブクローズ / クラッシュ / SW autoUpdate のリロード時は、完了済みセットがあれば `aborted` セッションとして履歴に残る。1 セットも未完了なら何も保存されない（不変条件: DB には実績のあるセッション `results.length ≥ 1` しか存在しない）
 - 自動再開（resume）は行わない
 
 ### エラーハンドリング

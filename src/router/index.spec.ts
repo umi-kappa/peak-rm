@@ -5,6 +5,18 @@ import type { Router } from 'vue-router'
 import { createAppRouter, routes } from '@/router'
 import type { TrainingPhase } from '@/composables/shared/session/useSession'
 
+// このスペックの検証対象はルーティング（名前・ガード・履歴挙動）のみで、ページは mount しない。
+// 実ページを lazy import すると全ページの初回 transform 費用がここに集中し CI でタイムアウトする
+// ため、空コンポーネントに差し替える。import パスの実在は vue-tsc とビルドが検証する。
+// ルートを追加したらここにも 1 行足す（漏れてもテストは通るが、その分遅くなる）
+vi.mock('@/pages/home/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/[exercise]/menu/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/[exercise]/training/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/[exercise]/interval/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/[exercise]/result/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/history/index.vue', () => ({ default: { render: () => [] } }))
+vi.mock('@/pages/settings/index.vue', () => ({ default: { render: () => [] } }))
+
 // back() は awaitable でないため、次の afterEach（遷移完了）を待つ。
 function waitForNavigation(router: Router): Promise<void> {
   return new Promise((resolve) => {

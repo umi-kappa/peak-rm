@@ -30,7 +30,7 @@ export async function makeSessionStore(options: {
     ...options.menu,
   }
   const store = useSession({ sessionRepo: noopRepo })
-  await store.start(menu)
+  store.start(menu)
   for (const reps of options.completedReps ?? []) {
     // completeSet 直後は interval フェーズになるため、次のセットを積む前に setActive へ戻す
     if (store.phase.value === 'interval') store.nextSet()

@@ -9,11 +9,13 @@ beforeEach(async () => {
   await db.open()
 })
 
+// results の既定値は実績 1 件。DB には実績のあるセッション（results.length >= 1）しか
+// 存在しない不変条件（#80）に合わせる
 function makeSession(
   id: string,
   exercise: Exercise,
   startedAt: number,
-  results: SetResult[] = [],
+  results: SetResult[] = [reps(8)],
   status: Session['status'] = 'aborted',
 ): Session {
   return {
@@ -31,11 +33,12 @@ function reps(actualReps: number): SetResult {
 }
 
 describe('永続化シーケンス', () => {
-  test('aborted insert → 増分 patch → finalize で executed と全 results が揃う', async () => {
-    await sessionRepo.insert(makeSession('s1', 'benchPress', 1000))
-    expect((await db.sessions.get('s1'))?.status).toBe('aborted')
+  test('初回セット完了の insert → 増分 patch → finalize で executed と全 results が揃う', async () => {
+    await sessionRepo.insert(makeSession('s1', 'benchPress', 1000, [reps(8)]))
+    const inserted = await db.sessions.get('s1')
+    expect(inserted?.status).toBe('aborted')
+    expect(inserted?.results).toHaveLength(1)
 
-    await sessionRepo.patchResults('s1', [reps(8)])
     await sessionRepo.patchResults('s1', [reps(8), reps(8)])
     const mid = await db.sessions.get('s1')
     expect(mid?.status).toBe('aborted')
@@ -45,6 +48,11 @@ describe('永続化シーケンス', () => {
     const done = await db.sessions.get('s1')
     expect(done?.status).toBe('executed')
     expect(done?.results).toHaveLength(3)
+  })
+
+  test('results が空のセッションは insert を拒否する（不変条件: 実績のあるセッションのみ保存）', async () => {
+    await expect(sessionRepo.insert(makeSession('empty', 'benchPress', 1000, []))).rejects.toThrow()
+    expect(await db.sessions.get('empty')).toBeUndefined()
   })
 
   test('同一 id を 2 回 insert すると例外を投げる', async () => {
