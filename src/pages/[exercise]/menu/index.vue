@@ -3,7 +3,7 @@ import { inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, Menu } from '@/core/types'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
-import { resolveInitialMenu } from '@/core/menu'
+import { MENU_MAX, resolveInitialMenu } from '@/core/menu'
 import { sessionRepo } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
@@ -91,7 +91,7 @@ onMounted(async () => {
           <div class="row">
             <span class="row-label">REPS</span>
             <div class="stepper">
-              <NumberStepper v-model="menu.reps" :min="1" unit="REPS" />
+              <NumberStepper v-model="menu.reps" :min="1" :max="MENU_MAX.reps" unit="REPS" />
             </div>
           </div>
         </BaseCard>
@@ -99,7 +99,7 @@ onMounted(async () => {
           <div class="row">
             <span class="row-label">SETS</span>
             <div class="stepper">
-              <NumberStepper v-model="menu.sets" :min="1" unit="SETS" />
+              <NumberStepper v-model="menu.sets" :min="1" :max="MENU_MAX.sets" unit="SETS" />
             </div>
           </div>
         </BaseCard>
@@ -107,7 +107,13 @@ onMounted(async () => {
           <div class="row">
             <span class="row-label">INTERVAL</span>
             <div class="stepper">
-              <NumberStepper v-model="menu.intervalSec" :step="10" :min="0" unit="SEC" />
+              <NumberStepper
+                v-model="menu.intervalSec"
+                :step="10"
+                :min="0"
+                :max="MENU_MAX.intervalSec"
+                unit="SEC"
+              />
             </div>
           </div>
         </BaseCard>
