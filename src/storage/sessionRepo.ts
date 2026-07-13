@@ -5,10 +5,14 @@ import { db } from '@/storage/db'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 /**
- * セッションを新規保存する。呼び出し側が id・status='aborted' 込みで組み立てた
- * Session をそのまま保存する（保守的デフォルト）。重複 id は add が例外を投げる。
+ * セッションを新規保存する。最初のセット完了時に、呼び出し側が実績（results.length >= 1）と
+ * status 込みで組み立てた Session をそのまま保存する（開始時には insert しない。
+ * sets = 1 の完遂では insert 時点で executed になりうる）。重複 id は add が例外を投げる。
+ * 空の results は不変条件「DB には実績のあるセッションしか存在しない」に反するため、
+ * 書き込み境界で拒否する（patchResults / finalize の不在 id throw と同じく、規約違反をサイレントに通さない）。
  */
 async function insert(session: Session): Promise<void> {
+  if (session.results.length === 0) throw new Error(`session has no results: ${session.id}`)
   await db.sessions.add(session)
 }
 
