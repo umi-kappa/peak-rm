@@ -41,7 +41,7 @@ src/
   assets/
     icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
-  stories/  router.ts  session.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・セッション状態を駆動する loaders 用ヘルパー）
+  stories/  router.ts  session.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・fake sessionRepo / Session fixture / セッション状態を駆動する loaders 用ヘルパー）
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`。うち `menu` / `training` / `interval` / `result` はセッションフローとして `[exercise]/` 配下にネストし、ディレクトリ構成を URL（`/:exercise/…`）と一致させる（`[exercise]` は動的セグメント `:exercise` を表すディレクトリ名。ファイルベースルーティングではなく実際のルートは `router/index.ts` で定義する）。種目に属さない `home` / `history` / `settings` は `pages/` 直下に置く
@@ -58,6 +58,7 @@ src/
   3. `components/shared/ui/inputs/NumberStepper.vue` = 見た目（presentational）
 - **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
 - **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを共有する。component tree の外にある router のセッションガードも同じインスタンスを参照するため、`main.ts` が生成して `createAppRouter` へ渡しつつ **`app.provide()`** で供給し、画面（training / interval / result）が `inject` で受ける（`useFatalError` と同じ配線。後述）。依存リポジトリは composable の引数で注入する。
+- **画面が直接使うリポジトリ（`sessionRepo`）も `main.ts` が `app.provide()` で供給し、画面は `inject` で受ける**。画面（`pages/**/index.vue`）から `@/storage/sessionRepo` の実体を直接 import しない。データ源を provide 経由に統一することで、全画面が Storybook の provide decorator で fake repo（`src/stories/session.ts` の `makeSessionRepo`）に差し替えられ、実 IndexedDB に依存せずページ stories を書ける（#82 で確立。injection key は実体を定義するファイルの末尾に置く: `sessionRepoInjectionKey` は `storage/sessionRepo.ts`、`sessionInjectionKey` は `useSession.ts`）。
 
 `@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/NumberStepper.vue`、`@/pages/home/index.vue`、`@/pages/[exercise]/menu/index.vue`。
 
@@ -156,6 +157,7 @@ describe('oneRm', () => {
 - **コンポーネント説明や argTypes を Docs タブに表示するには `meta.tags: ['autodocs']` を必ず付ける**。Storybook v10 はデフォルトで `docs.autodocs: 'tag'` モードで、付けないと Docs ページが生成されない
 - **視覚差分として価値のない story には `parameters: { chromatic: { disableSnapshot: true } }` を付ける**。snapshot は実機 UI として意味のある代表状態だけに取り、既存 variant と見た目が重複する story（後述の `Behavior` など）は対象外にする（無料枠 5,000/月 を守るため）。引数を動かして見るためだけの探索用 story は作らない（Controls はどの story でも使えるため `Default` で足りる）。viewport（390px）・ブラウザ（Chrome のみ）は `.storybook/preview.ts` でグローバル設定済みなので個別指定は不要
 - **`play`（インタラクション / スモークテスト）は visual variant story に相乗りさせず、専用の `Behavior` story に分離する**。`Default` / `Large` などの variant story は見た目の提示に専念させ `play` を持たせない。`Behavior` は既存 variant と見た目が重複するため `parameters: { chromatic: { disableSnapshot: true } }` を付ける。同じ振る舞いを variant 違いで何本も検証せず、配線が成立することを 1 本で示すに留め、刻み・clamp などのロジックはロジック層の単体テストに委ねる
+- **画面（`pages/**/index.vue`）はすべてページ stories を持つ**（代表状態の visual story + 配線確認の `Behavior`。子コンポーネント側の `Behavior` が既に担う配線は二重に書かない）。画面のデータ源（`sessionRepo`・セッション状態）は provide 経由で注入される設計（「状態管理」節）なので、stories は provide decorator で `src/stories/session.ts` の fake（`makeSessionRepo` / `makeSessionStore`）を注入し、実 IndexedDB に依存しない。今後の画面実装（history / result / settings）もこの方針に従う
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3-vite'

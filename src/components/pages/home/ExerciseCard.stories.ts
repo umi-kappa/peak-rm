@@ -1,20 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import ExerciseCard from '@/components/pages/home/ExerciseCard.vue'
-import type { Exercise, Session } from '@/core/types'
+import { makeSession } from '@/stories/session'
 import { storybookRouter as router } from '@/stories/router'
-
-// 表示確認用の最小 Session。weight と各セットの実績回数から 1RM / reps 表示が決まる
-function makeSession(exercise: Exercise, weight: number, actualReps: number[]): Session {
-  return {
-    id: exercise,
-    exercise,
-    status: 'executed',
-    startedAt: 0,
-    menu: { exercise, weight, reps: actualReps[0] ?? 0, sets: actualReps.length, intervalSec: 90 },
-    results: actualReps.map((reps) => ({ actualReps: reps, memo: '' })),
-  }
-}
 
 const meta: Meta<typeof ExerciseCard> = {
   component: ExerciseCard,

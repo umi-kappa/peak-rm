@@ -1,12 +1,46 @@
 import { useSession, type SessionStore } from '@/composables/shared/session/useSession'
-import type { Menu } from '@/core/types'
+import { isExecuted } from '@/core/session'
+import type { SessionRepo } from '@/storage/sessionRepo'
+import type { Exercise, Menu, Session } from '@/core/types'
 
-// 実 DB へ書かない fake repo。stories は表示状態だけ欲しいので永続化はすべて握りつぶす
-const noopRepo = {
-  insert: async () => {},
-  patchResults: async () => {},
-  patchResultsAndStatus: async () => {},
-  finalize: async () => {},
+/**
+ * 実 DB へ書かない fake repo を作る（stories の loaders / provide decorator から使う）。
+ * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
+ * latestByExercise は latest で渡した fixture の Session を返し（未指定の種目は
+ * undefined = 記録なし）、一覧系（list / listForHistory）は空を返す。
+ */
+export function makeSessionRepo(latest: Partial<Record<Exercise, Session>> = {}): SessionRepo {
+  return {
+    insert: async () => {},
+    patchResults: async () => {},
+    patchResultsAndStatus: async () => {},
+    finalize: async () => {},
+    remove: async () => {},
+    list: async () => [],
+    listForHistory: async () => [],
+    latestByExercise: async (exercise) => latest[exercise],
+  }
+}
+
+/**
+ * 表示確認用の最小 Session fixture。weight と各セットの実績回数（actualReps）が
+ * そのまま 1RM / 前回記録の表示を決める。
+ * menu.reps には先頭セットの実績が入り、status は results から導出する。
+ * 全セットの実績を先頭セット以上（例: [8, 8, 8]）にすると完遂（executed）となり
+ * linear progression のトリガーとしても使える。届かないセットがあれば aborted。
+ */
+export function makeSession(exercise: Exercise, weight: number, actualReps: number[]): Session {
+  // status は menu / results が揃ってから isExecuted で導出する（'aborted' は仮値）
+  const session: Session = {
+    id: exercise,
+    exercise,
+    status: 'aborted',
+    startedAt: 0,
+    menu: { exercise, weight, reps: actualReps[0] ?? 0, sets: actualReps.length, intervalSec: 90 },
+    results: actualReps.map((reps) => ({ actualReps: reps, memo: '' })),
+  }
+  session.status = isExecuted(session) ? 'executed' : 'aborted'
+  return session
 }
 
 /**
@@ -29,7 +63,7 @@ export async function makeSessionStore(options: {
     intervalSec: 90,
     ...options.menu,
   }
-  const store = useSession({ sessionRepo: noopRepo })
+  const store = useSession({ sessionRepo: makeSessionRepo() })
   store.start(menu)
   for (const reps of options.completedReps ?? []) {
     // completeSet 直後は interval フェーズになるため、次のセットを積む前に setActive へ戻す

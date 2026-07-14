@@ -1,4 +1,5 @@
 import Dexie from 'dexie'
+import type { InjectionKey } from 'vue'
 
 import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import { db } from '@/storage/db'
@@ -93,3 +94,10 @@ export const sessionRepo = {
   listForHistory,
   latestByExercise,
 }
+
+export type SessionRepo = typeof sessionRepo
+
+// 画面は sessionRepo を直接 import せず、main.ts が app.provide したものを inject で受ける。
+// Storybook が provide decorator で fake repo に差し替えられるようにするため。
+// InjectionKey は型 only import なので、storage 層に Vue のランタイム依存は生じない
+export const sessionRepoInjectionKey: InjectionKey<SessionRepo> = Symbol('sessionRepo')

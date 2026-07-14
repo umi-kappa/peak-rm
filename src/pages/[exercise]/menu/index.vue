@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, Menu } from '@/core/types'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
 import { MENU_MAX, resolveInitialMenu } from '@/core/menu'
-import { sessionRepo } from '@/storage/sessionRepo'
+import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
@@ -20,10 +20,14 @@ const route = useRoute()
 const router = useRouter()
 const { goBack } = useBackNavigation()
 
-// App.vue で provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
+// いずれも main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
 const injected = inject(sessionInjectionKey)
 if (!injected) throw new Error('session store is not provided')
 const session = injected
+
+const injectedRepo = inject(sessionRepoInjectionKey)
+if (!injectedRepo) throw new Error('session repo is not provided')
+const sessionRepo = injectedRepo
 
 // route param を Exercise へ絞り込む。この画面は param を Session.exercise として
 // 保存するため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす

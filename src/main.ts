@@ -9,6 +9,7 @@ import {
 import { sessionInjectionKey, useSession } from '@/composables/shared/session/useSession'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
+import { sessionRepo, sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import '@/styles/tokens.css'
 import '@/styles/global.css'
 
@@ -20,6 +21,9 @@ const router = createAppRouter(session)
 
 const app = createApp(App).use(router)
 app.provide(sessionInjectionKey, session)
+// 画面が直接使うリポジトリも provide で配り、home / menu が inject で受ける
+// （Storybook では provide decorator で fake repo に差し替える）
+app.provide(sessionRepoInjectionKey, sessionRepo)
 
 // 想定外エラーの境界。生成した store を App.vue へ provide し、4 配線を report へ集約する。
 const fatalError = useFatalError()
