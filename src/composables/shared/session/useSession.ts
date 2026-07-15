@@ -124,7 +124,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     phase.value = 'done'
   }
 
-  // 完了済みセット 1 件のフィールドを更新し、results 全体を再保存する（editReps / editMemo の共通形）
+  // 完了済みセット 1 件のフィールド（実績回数・メモ）を更新し、results 全体を再保存する
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     const current = session.value
     if (current === undefined) return
@@ -137,16 +137,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     session.value = { ...current, results, status }
   }
 
-  function editReps(index: number, value: number) {
-    return patchResultAt(index, { actualReps: value })
-  }
-
   function editCurrentReps(value: number) {
     draftReps.value = value
-  }
-
-  function editMemo(index: number, memo: string) {
-    return patchResultAt(index, { memo })
   }
 
   return {
@@ -165,9 +157,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     nextSet,
     abort,
     leave,
-    editReps,
+    patchResultAt,
     editCurrentReps,
-    editMemo,
   }
 }
 

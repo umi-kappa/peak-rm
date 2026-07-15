@@ -227,7 +227,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - モーダル内容:
   - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `kg` + Set 番号 (mono stat bold)
   - 実績回数 Stepper (large)
-  - メモテキストエリア (min-height 64 px, sans body regular)
+  - メモテキストエリア (min-height 64 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
   - 下部: `SAVE` (primary, fill accent)
 - 閉じるための × は無い (保存のみで閉じる)
 

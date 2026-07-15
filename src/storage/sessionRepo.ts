@@ -27,7 +27,7 @@ async function patchResults(id: string, results: SetResult[]): Promise<void> {
 }
 
 /**
- * results と status を 1 update で同時に書き込む。実績編集（editReps）で完遂条件
+ * results と status を 1 update で同時に書き込む。実績編集（patchResultAt）で完遂条件
  * （isExecuted）の充足が変わったとき、呼び出し側が再導出した status を results と一緒に
  * 確定し、「results は更新されたが status は古い」二相不整合を構造的に排除する。
  * 対象 id が無ければ update は 0 件 no-op になるため例外を投げる（patchResults と同じ理由）。

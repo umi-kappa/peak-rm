@@ -7,6 +7,9 @@ const meta: Meta<typeof ConfirmDialog> = {
   tags: ['autodocs'],
   parameters: {
     docs: {
+      // showModal() のダイアログは top layer に出るため、インライン描画では Docs ページ上で全 story が重なる。
+      // story ごとに iframe を分けて top layer を隔離する
+      story: { inline: false, iframeHeight: 320 },
       description: {
         component:
           '破壊的操作（中断・Import・セッション削除）の確認に使うモーダル。`open` を唯一のソースにネイティブ `<dialog>` を開閉する presentational コンポーネント。確定で `confirm`、キャンセル / ESC / backdrop で `cancel` を emit するだけで、実際の処理・遷移は呼び出し側が担う。',
@@ -29,7 +32,6 @@ const meta: Meta<typeof ConfirmDialog> = {
     },
   },
   args: { open: true, title: 'トレーニングを中断しますか？' },
-  decorators: [() => ({ template: '<div style="min-height: 240px;"><story /></div>' })],
   render: (args) => ({
     components: { ConfirmDialog },
     setup: () => ({ args }),
