@@ -71,6 +71,35 @@ export const Overrun: Story = {
   decorators: [freezeTimerAt(12_470)],
 }
 
+// 完了セットのカードタップ → 編集モーダル → SAVE → patchResultAt でセッションが更新され
+// モーダルが閉じる、というページ側の配線を確認する（部品単体の挙動は各コンポーネントの Behavior が担う）
+export const SetEditBehavior: Story = {
+  loaders: [
+    async () => ({
+      sessionStore: await makeSessionStore({ menu: { sets: 4 }, completedReps: [8, 8] }),
+    }),
+  ],
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement, loaded }) => {
+    // ページは遷移先の :exercise を route.params から引き継ぐため、実際のルート上に置いてから操作する
+    await router.push('/benchPress/interval')
+    const canvas = within(canvasElement)
+    // SET 1 の done カード（アクセシブルネームは「1 8 REPS ADD NOTE」）を開いて編集する
+    await userEvent.click(canvas.getByRole('button', { name: /^1 8 REPS/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }))
+    await userEvent.type(canvas.getByRole('textbox', { name: 'NOTE' }), 'フォームを意識した')
+    await userEvent.click(canvas.getByRole('button', { name: 'SAVE' }))
+    await waitFor(() => {
+      const store = loaded.sessionStore as SessionStore
+      expect(store.session.value?.results.at(0)).toEqual({
+        actualReps: 9,
+        memo: 'フォームを意識した',
+      })
+      expect(canvas.queryByRole('dialog')).toBeNull()
+    })
+  },
+}
+
 // END SESSION → 確認ダイアログ → 確定で phase が done になり結果確認へ遷移する配線だけを確認する
 export const Behavior: Story = {
   loaders: [

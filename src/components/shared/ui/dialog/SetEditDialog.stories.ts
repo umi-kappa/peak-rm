@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
 import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
 
 const meta: Meta<typeof SetEditDialog> = {
@@ -57,19 +57,33 @@ export const EmptyMemo: Story = {
   args: { memo: '' },
 }
 
-// 実績・メモの編集結果が save の payload に配線されていることを確認する
+// 実績・メモの編集結果が save の payload に、破棄導線（ESC / backdrop）が cancel に配線されていることを確認する
 export const Behavior: Story = {
   args: { memo: '', onSave: fn(), onCancel: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
+    // role の name 指定は aria-labelledby の関連付け（dialog = h2 / textbox = NOTE ラベル）の退行検出を兼ねる
+    const dialog = canvas.getByRole('dialog', { name: 'BENCH PRESS' })
     await userEvent.click(canvas.getByRole('button', { name: 'Increase' }))
-    await userEvent.type(canvas.getByRole('textbox'), 'フォームを意識した')
+    await userEvent.type(canvas.getByRole('textbox', { name: 'NOTE' }), 'フォームを意識した')
     await userEvent.click(canvas.getByRole('button', { name: 'SAVE' }))
     await expect(args.onSave).toHaveBeenCalledOnce()
     await expect(args.onSave).toHaveBeenCalledWith({
       actualReps: 9,
       memo: 'フォームを意識した',
     })
+    // ESC のネイティブ close request は合成キーイベントでは発火しないため、
+    // ブラウザが発火する cancel イベントを直接 dispatch して @cancel の配線を確認する
+    await fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    await expect(args.onCancel).toHaveBeenCalledOnce()
+    // backdrop タップ（押下も解放も dialog 要素 = backdrop）は cancel を発火する
+    await fireEvent.pointerDown(dialog)
+    await fireEvent.click(dialog)
+    await expect(args.onCancel).toHaveBeenCalledTimes(2)
+    // textarea からのドラッグはみ出し（押下は textarea・click は共通祖先の dialog に解決）では発火しない
+    await fireEvent.pointerDown(canvas.getByRole('textbox', { name: 'NOTE' }))
+    await fireEvent.click(dialog)
+    await expect(args.onCancel).toHaveBeenCalledTimes(2)
   },
 }
