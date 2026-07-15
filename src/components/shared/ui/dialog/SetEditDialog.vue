@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { MENU_MAX } from '@/core/menu'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
@@ -42,6 +42,10 @@ const dialogEl = useTemplateRef<HTMLDialogElement>('dialogEl')
 const draftReps = ref(actualReps)
 const draftMemo = ref(memo)
 
+// click は mousedown / mouseup の共通祖先で発火するため、textarea 内のドラッグ選択を
+// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する
+const pressedOnBackdrop = ref(false)
+
 function onSave() {
   emit('save', { actualReps: draftReps.value, memo: draftMemo.value })
 }
@@ -50,23 +54,32 @@ function onCancel() {
   emit('cancel')
 }
 
+function onBackdropPointerdown(event: PointerEvent) {
+  pressedOnBackdrop.value = event.target === dialogEl.value
+}
+
 function onBackdropClick(event: MouseEvent) {
-  if (event.target === dialogEl.value) emit('cancel')
+  if (pressedOnBackdrop.value && event.target === dialogEl.value) emit('cancel')
 }
 
 onMounted(() => dialogEl.value?.showModal())
+// DOM 除去だけで閉じるとネイティブのフォーカス復元（showModal 前の要素へ戻す）が働かないため、
+// アンマウント前に close() を通す
+onBeforeUnmount(() => dialogEl.value?.close())
 </script>
 
 <template>
   <dialog
     ref="dialogEl"
     class="set-edit-dialog"
+    aria-labelledby="set-edit-title"
     @cancel.prevent="onCancel"
+    @pointerdown="onBackdropPointerdown"
     @click="onBackdropClick"
   >
     <div class="panel">
       <header class="context">
-        <h2 class="exercise">{{ exerciseLabel }}</h2>
+        <h2 id="set-edit-title" class="exercise">{{ exerciseLabel }}</h2>
         <div class="prescription">
           <div class="stat">
             <BigNumber :value="weight" />
@@ -95,8 +108,13 @@ onMounted(() => dialogEl.value?.showModal())
       </div>
 
       <div class="field">
-        <BaseLabel>NOTE</BaseLabel>
-        <textarea v-model="draftMemo" class="memo" placeholder="ADD NOTE" />
+        <BaseLabel id="set-edit-note-label">NOTE</BaseLabel>
+        <textarea
+          v-model="draftMemo"
+          class="memo"
+          placeholder="ADD NOTE"
+          aria-labelledby="set-edit-note-label"
+        />
       </div>
 
       <BaseButton @click="onSave">SAVE</BaseButton>
@@ -189,7 +207,7 @@ onMounted(() => dialogEl.value?.showModal())
   resize: none;
 
   &::placeholder {
-    /* デザインのメモ未入力プロンプト「Add note」（fg2）に合わせる */
+    /* デザインのモーダル placeholder「ADD NOTE」（fg2）に合わせる */
     color: var(--color-text-secondary);
   }
 }
