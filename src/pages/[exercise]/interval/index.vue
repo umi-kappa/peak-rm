@@ -17,7 +17,9 @@ import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
+import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
 import TimelineSetCard from '@/components/pages/interval/TimelineSetCard.vue'
+import type { SetResult } from '@/core/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,6 +40,9 @@ if (menu.value) timer.start(menu.value.intervalSec)
 
 const abortConfirmOpen = ref(false)
 
+// セット編集モーダルの対象 index。undefined = 非表示（唯一のソース）
+const editingIndex = ref<number>()
+
 // 0 秒到達後は残り時間表示を +超過時間 に切り替える（受動的な表示。延長等の操作は加えない）
 const isOverrun = computed(() => timer.remainingMs.value === 0)
 const clockText = computed(() =>
@@ -53,11 +58,27 @@ const progressWidth = computed(() => `${(timer.progress.value * 100).toFixed(1)}
 const cards = computed(() => {
   const results = session.session.value?.results ?? []
   return Array.from({ length: setsTotal.value }, (_, i) => ({
+    index: i,
     setNumber: i + 1,
     state: cardState(i, results.length),
     actualReps: results[i]?.actualReps,
     memo: results[i]?.memo,
   }))
+})
+
+// 編集対象の完了セットからモーダルへ渡す値を導出する。対象が無ければモーダルごと出さない
+const editingSet = computed(() => {
+  const current = session.session.value
+  if (current === undefined || editingIndex.value === undefined) return undefined
+  const result = current.results[editingIndex.value]
+  if (result === undefined) return undefined
+  return {
+    exerciseLabel: EXERCISE_LABELS[current.exercise],
+    weight: current.menu.weight,
+    setNumber: editingIndex.value + 1,
+    actualReps: result.actualReps,
+    memo: result.memo,
+  }
 })
 
 function cardState(index: number, doneCount: number): 'done' | 'next' | 'pending' {
@@ -84,6 +105,22 @@ function confirmAbort() {
   abortConfirmOpen.value = false
   session.abort()
   router.replace({ name: 'result', params: route.params, query: { origin: 'session' } })
+}
+
+function openSetEdit(index: number) {
+  editingIndex.value = index
+}
+
+function closeSetEdit() {
+  editingIndex.value = undefined
+}
+
+// SAVE で実績とメモを 1 回の patch で保存して閉じる（status の再導出は useSession が担う）
+async function saveSetEdit(result: SetResult) {
+  const index = editingIndex.value
+  if (index === undefined) return
+  await session.patchResultAt(index, result)
+  closeSetEdit()
 }
 </script>
 
@@ -131,6 +168,7 @@ function confirmAbort() {
           :target-reps="menu.reps"
           :actual-reps="card.actualReps"
           :memo="card.memo"
+          @edit="openSetEdit(card.index)"
         />
       </section>
     </template>
@@ -149,6 +187,18 @@ function confirmAbort() {
       confirm-label="中断する"
       @confirm="confirmAbort"
       @cancel="closeAbortConfirm"
+    />
+
+    <!-- 編集対象がある間だけマウントする（対象由来の props にダミーの既定値を渡さない） -->
+    <SetEditDialog
+      v-if="editingSet"
+      :exercise-label="editingSet.exerciseLabel"
+      :weight="editingSet.weight"
+      :set-number="editingSet.setNumber"
+      :actual-reps="editingSet.actualReps"
+      :memo="editingSet.memo"
+      @save="saveSetEdit"
+      @cancel="closeSetEdit"
     />
   </ScreenFrame>
 </template>

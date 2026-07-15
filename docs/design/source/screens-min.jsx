@@ -669,11 +669,11 @@ const M_Modal = () =>
     <div style={{
     position: 'absolute', left: 16, right: 16, top: '50%', transform: 'translateY(-50%)',
     background: C.surface, border: `1px solid ${C.line}`, borderRadius: 4,
-    padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
+    padding: 20, display: 'flex', flexDirection: 'column', gap: 20,
     boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
   }}>
       {/* HEADER · context */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <span style={{ fontFamily: FONT_SANS, fontSize: T.title, fontWeight: W.semibold, color: C.fg, textTransform: 'uppercase' }}>Bench Press</span>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -695,7 +695,7 @@ const M_Modal = () =>
         <Label color={C.fg2}>Reps done</Label>
         <div style={{
         background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4,
-        padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end'
+        padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'flex-end'
       }}>
           <Stepper value="8" unit="reps" size="lg" style={{ width: '100%', justifyContent: 'space-between', gap: 0 }} />
         </div>
@@ -704,8 +704,9 @@ const M_Modal = () =>
       {/* EDITABLE · note */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <Label color={C.fg2}>Note</Label>
+        {/* 未入力時は placeholder として ADD NOTE (fg2 uppercase) を表示 */}
         <div style={{
-        padding: '12px 14px', borderRadius: 4, background: C.surface, border: `1px solid ${C.lineSoft}`,
+        padding: 12, borderRadius: 4, background: C.surface, border: `1px solid ${C.lineSoft}`,
         minHeight: 64, fontSize: T.body, color: C.fg, fontWeight: W.regular
       }}>4回目からフォームが乱れた…</div>
       </div>

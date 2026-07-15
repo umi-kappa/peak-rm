@@ -268,11 +268,11 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('done')
   })
 
-  test('editReps は完了済みセットの実績を更新し patchResultsAndStatus する', async () => {
+  test('patchResultAt は完了済みセットの実績を更新し patchResultsAndStatus する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
-    await session.editReps(0, 3)
+    await session.patchResultAt(0, { actualReps: 3 })
     expect(session.session.value?.results.at(0)?.actualReps).toBe(3)
     expect(repo.calls.at(-1)).toMatchObject({
       method: 'patchResultsAndStatus',
@@ -287,32 +287,49 @@ describe('useSession', () => {
     expect(session.session.value?.status).toBe('executed')
 
     // 目標未満へ編集 → aborted へ降格
-    await session.editReps(0, 5)
+    await session.patchResultAt(0, { actualReps: 5 })
     expect(session.session.value?.status).toBe('aborted')
     expect(session.isExecutedNow.value).toBe(false)
     expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'aborted' })
 
     // 目標達成へ戻す → executed へ復帰
-    await session.editReps(0, 8)
+    await session.patchResultAt(0, { actualReps: 8 })
     expect(session.session.value?.status).toBe('executed')
     expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'executed' })
   })
 
-  test('editMemo は完了済みセットのメモを更新し patchResultsAndStatus する', async () => {
+  test('patchResultAt はメモだけの更新もでき patchResultsAndStatus する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
-    await session.editMemo(0, 'フォームを意識した')
+    await session.patchResultAt(0, { memo: 'フォームを意識した' })
     expect(session.session.value?.results.at(0)?.memo).toBe('フォームを意識した')
     expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus' })
   })
 
-  test('editReps は範囲外 index では何もせず永続化もしない', async () => {
+  test('patchResultAt は実績とメモを 1 回の patchResultsAndStatus で同時更新する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
     const callsBefore = repo.calls.length
-    await session.editReps(5, 3)
+    await session.patchResultAt(0, { actualReps: 5, memo: '4回目からフォームが乱れた' })
+    expect(session.session.value?.results.at(0)).toEqual({
+      actualReps: 5,
+      memo: '4回目からフォームが乱れた',
+    })
+    expect(repo.calls).toHaveLength(callsBefore + 1)
+    expect(repo.calls.at(-1)).toMatchObject({
+      method: 'patchResultsAndStatus',
+      results: [{ actualReps: 5, memo: '4回目からフォームが乱れた' }],
+    })
+  })
+
+  test('patchResultAt は範囲外 index では何もせず永続化もしない', async () => {
+    const { repo, session } = setup()
+    session.start(menu({ sets: 2 }))
+    await session.completeSet()
+    const callsBefore = repo.calls.length
+    await session.patchResultAt(5, { actualReps: 3 })
     expect(repo.calls).toHaveLength(callsBefore)
     expect(session.session.value?.results).toHaveLength(1)
   })
@@ -349,10 +366,10 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('setActive')
   })
 
-  test('start 前は completeSet / editReps を呼んでも永続化せず状態も変えない', async () => {
+  test('start 前は completeSet / patchResultAt を呼んでも永続化せず状態も変えない', async () => {
     const { repo, session } = setup()
     await session.completeSet()
-    await session.editReps(0, 5)
+    await session.patchResultAt(0, { actualReps: 5 })
     expect(repo.calls).toHaveLength(0)
     expect(session.session.value).toBeUndefined()
     expect(session.phase.value).toBe('done')
