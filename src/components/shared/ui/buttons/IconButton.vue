@@ -23,7 +23,7 @@ function onClick() {
 <template>
   <component
     :is="to ? RouterLink : 'button'"
-    :to="to"
+    :to
     :type="to ? undefined : 'button'"
     class="icon-button"
     :aria-label="label"

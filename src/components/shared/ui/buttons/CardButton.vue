@@ -22,7 +22,7 @@ function onClick() {
 <template>
   <component
     :is="to ? RouterLink : 'button'"
-    :to="to"
+    :to
     :type="to ? undefined : 'button'"
     class="card-button"
     @click="onClick"

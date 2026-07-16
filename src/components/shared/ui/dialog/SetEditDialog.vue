@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { ref } from 'vue'
 import { MENU_MAX } from '@/core/menu'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
+import BaseDialog from '@/components/shared/ui/base/BaseDialog.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
@@ -35,16 +36,10 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const dialogEl = useTemplateRef<HTMLDialogElement>('dialogEl')
-
 // 編集中のドラフト。SAVE まで親へ反映せず、破棄クローズで捨てられるようにする。
-// マウント = 表示（親が v-if で出し分ける）なので、初期化子が開くたびの初期化を兼ねる
+// 親が v-if で出し分ける（マウント = 表示）ので、初期化子が開くたびの初期化を兼ねる
 const draftReps = ref(actualReps)
 const draftMemo = ref(memo)
-
-// click は mousedown / mouseup の共通祖先で発火するため、textarea 内のドラッグ選択を
-// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する
-const pressedOnBackdrop = ref(false)
 
 function onSave() {
   emit('save', { actualReps: draftReps.value, memo: draftMemo.value })
@@ -53,111 +48,53 @@ function onSave() {
 function onCancel() {
   emit('cancel')
 }
-
-function onBackdropPointerdown(event: PointerEvent) {
-  pressedOnBackdrop.value = event.target === dialogEl.value
-}
-
-function onBackdropClick(event: MouseEvent) {
-  if (pressedOnBackdrop.value && event.target === dialogEl.value) emit('cancel')
-}
-
-onMounted(() => dialogEl.value?.showModal())
-// DOM 除去だけで閉じるとネイティブのフォーカス復元（showModal 前の要素へ戻す）が働かないため、
-// アンマウント前に close() を通す
-onBeforeUnmount(() => dialogEl.value?.close())
 </script>
 
 <template>
-  <dialog
-    ref="dialogEl"
-    class="set-edit-dialog"
-    aria-labelledby="set-edit-title"
-    @cancel.prevent="onCancel"
-    @pointerdown="onBackdropPointerdown"
-    @click="onBackdropClick"
-  >
-    <div class="panel">
-      <header class="context">
-        <h2 id="set-edit-title" class="exercise">{{ exerciseLabel }}</h2>
-        <div class="prescription">
-          <div class="stat">
-            <BigNumber :value="weight" />
-            <BaseUnit>KG</BaseUnit>
-          </div>
-          <span class="dot">·</span>
-          <div class="stat">
-            <BaseUnit>SET</BaseUnit>
-            <BigNumber :value="setNumber" />
-          </div>
+  <BaseDialog :title="exerciseLabel" @cancel="onCancel">
+    <template #header>
+      <div class="prescription">
+        <div class="stat">
+          <BigNumber :value="weight" />
+          <BaseUnit>KG</BaseUnit>
         </div>
-      </header>
-
-      <hr class="divider" />
-
-      <div class="field">
-        <BaseLabel>REPS DONE</BaseLabel>
-        <div v-if="!repsReadonly" class="stepper-box">
-          <NumberStepper v-model="draftReps" large :min="0" :max="MENU_MAX.reps" unit="REPS" />
-        </div>
-        <!-- read-only は入力 UI を出さない（spec「実績値の編集ポリシー」実装記）。ステッパーの値表示と同じ体裁で据える -->
-        <div v-else class="stat">
-          <BigNumber :value="actualReps" />
-          <BaseUnit>REPS</BaseUnit>
+        <span class="dot">·</span>
+        <div class="stat">
+          <BaseUnit>SET</BaseUnit>
+          <BigNumber :value="setNumber" />
         </div>
       </div>
+    </template>
 
-      <div class="field">
-        <BaseLabel id="set-edit-note-label">NOTE</BaseLabel>
-        <textarea
-          v-model="draftMemo"
-          class="memo"
-          placeholder="ADD NOTE"
-          aria-labelledby="set-edit-note-label"
-        />
+    <hr class="divider" />
+
+    <div class="field">
+      <BaseLabel>REPS DONE</BaseLabel>
+      <div v-if="!repsReadonly" class="stepper-box">
+        <NumberStepper v-model="draftReps" large :min="0" :max="MENU_MAX.reps" unit="REPS" />
       </div>
-
-      <BaseButton @click="onSave">SAVE</BaseButton>
+      <!-- read-only は入力 UI を出さない（spec「実績値の編集ポリシー」実装記）。ステッパーの値表示と同じ体裁で据える -->
+      <div v-else class="stat">
+        <BigNumber :value="actualReps" />
+        <BaseUnit>REPS</BaseUnit>
+      </div>
     </div>
-  </dialog>
+
+    <div class="field">
+      <BaseLabel id="set-edit-note-label">NOTE</BaseLabel>
+      <textarea
+        v-model="draftMemo"
+        class="memo"
+        placeholder="ADD NOTE"
+        aria-labelledby="set-edit-note-label"
+      />
+    </div>
+
+    <BaseButton @click="onSave">SAVE</BaseButton>
+  </BaseDialog>
 </template>
 
 <style scoped>
-.set-edit-dialog {
-  width: calc(100% - var(--space-16) * 2);
-  max-width: 400px;
-  margin: auto;
-  padding: 0;
-  background: var(--color-bg-light);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius);
-  color: var(--color-text);
-
-  &::backdrop {
-    background: var(--color-backdrop);
-  }
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-20);
-  padding: var(--space-20);
-}
-
-.context {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.exercise {
-  margin: 0;
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-tight);
-}
-
 .prescription {
   display: flex;
   align-items: baseline;
