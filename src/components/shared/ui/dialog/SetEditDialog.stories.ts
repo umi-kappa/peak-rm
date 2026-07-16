@@ -11,7 +11,7 @@ const meta: Meta<typeof SetEditDialog> = {
       story: topLayerDocs(560),
       description: {
         component:
-          '完了セットの実績回数とメモを編集するモーダル。BaseDialog の外殻に編集フォームを載せ、呼び出し側が `v-if` で出し分ける（マウント = 表示）。重量は表示のみで編集 UI を持たず、SAVE で編集後の `SetResult` を `save` に emit する（保存と閉じるは呼び出し側の責務）。閉じる用の × ボタンは置かず、ESC / backdrop は編集を破棄する `cancel` を emit する。`repsReadonly`（履歴詳細用）はステッパーを出さず実績を静的表示にし、メモだけ編集できる。',
+          '完了セットの実績回数とメモを編集するモーダル。BaseDialog の外殻に編集フォームを載せ、呼び出し側が `v-if` で出し分ける（マウント = 表示。ドラフトの初期化はマウント時に行う）。重量は表示のみで編集 UI を持たず、SAVE で編集後の `SetResult` を `save` に emit する（保存と閉じるは呼び出し側の責務）。閉じる用の × ボタンは置かず、ESC / backdrop は編集を破棄する `cancel` を emit する。`repsReadonly`（履歴詳細用）はステッパーを出さず実績を静的表示にし、メモだけ編集できる。',
       },
     },
   },

@@ -3,13 +3,11 @@ import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseDialog from '@/components/shared/ui/base/BaseDialog.vue'
 
 const {
-  open,
   title,
   message,
   confirmLabel = '確定',
   cancelLabel = 'キャンセル',
 } = defineProps<{
-  open: boolean
   title: string
   message?: string
   confirmLabel?: string
@@ -27,7 +25,7 @@ function onCancel() {
 </script>
 
 <template>
-  <BaseDialog :open :title :inset="24" @cancel="onCancel">
+  <BaseDialog :title :inset="24" @cancel="onCancel">
     <template v-if="message" #header>
       <p class="message">{{ message }}</p>
     </template>

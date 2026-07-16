@@ -51,7 +51,7 @@ function onCancel() {
 </script>
 
 <template>
-  <BaseDialog :open="true" :title="exerciseLabel" @cancel="onCancel">
+  <BaseDialog :title="exerciseLabel" @cancel="onCancel">
     <template #header>
       <div class="prescription">
         <div class="stat">

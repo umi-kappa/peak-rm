@@ -11,12 +11,11 @@ const meta: Meta<typeof ConfirmDialog> = {
       story: topLayerDocs(320),
       description: {
         component:
-          '破壊的操作（中断・Import・セッション削除）の確認に使うモーダル。BaseDialog の外殻に確認の文言と確定 / キャンセルボタンを載せた presentational コンポーネント。確定で `confirm`、キャンセル / ESC / backdrop で `cancel` を emit するだけで、実際の処理・遷移は呼び出し側が担う。',
+          '破壊的操作（中断・Import・セッション削除）の確認に使うモーダル。BaseDialog の外殻に確認の文言と確定 / キャンセルボタンを載せた presentational コンポーネントで、呼び出し側が `v-if` で出し分ける（マウント = 表示）。確定で `confirm`、キャンセル / ESC / backdrop で `cancel` を emit するだけで、実際の処理・遷移は呼び出し側が担う。',
       },
     },
   },
   argTypes: {
-    open: { control: 'boolean', description: '開閉状態（唯一のソース）' },
     title: { control: 'text', description: '見出し' },
     message: { control: 'text', description: '補足メッセージ（任意）' },
     confirmLabel: {
@@ -30,7 +29,7 @@ const meta: Meta<typeof ConfirmDialog> = {
       table: { defaultValue: { summary: 'キャンセル' } },
     },
   },
-  args: { open: true, title: 'トレーニングを中断しますか？' },
+  args: { title: 'トレーニングを中断しますか？' },
   render: (args) => ({
     components: { ConfirmDialog },
     setup: () => ({ args }),

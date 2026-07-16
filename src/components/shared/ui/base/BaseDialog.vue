@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, useId, useTemplateRef, watch } from 'vue'
+import { onBeforeUnmount, onMounted, useId, useTemplateRef } from 'vue'
 
-const {
-  open,
-  title,
-  inset = 16,
-} = defineProps<{
-  /** 開閉状態（唯一のソース）。マウント = 表示にしたい呼び出し側は v-if と併用して true 固定を渡す */
-  open: boolean
+const { title, inset = 16 } = defineProps<{
   /** ヘッダーの h2 に表示する見出し。dialog のアクセシブルネーム（aria-labelledby）を兼ねる */
   title: string
   /** 画面端からの横インセット。top layer に出るため通常フローの親が幅を決められず、prop で受ける */
@@ -27,16 +21,6 @@ const titleId = useId()
 // イベントハンドラ間の受け渡しにしか使わず表示に影響しないため、ref にしない
 let pressedOnBackdrop = false
 
-watch(
-  [dialogEl, () => open],
-  ([newDialogEl, newOpen]) => {
-    if (!newDialogEl) return
-    if (newOpen && !newDialogEl.open) newDialogEl.showModal()
-    else if (!newOpen && newDialogEl.open) newDialogEl.close()
-  },
-  { immediate: true },
-)
-
 function onCancel() {
   emit('cancel')
 }
@@ -49,6 +33,8 @@ function onBackdropClick(event: MouseEvent) {
   if (pressedOnBackdrop && event.target === dialogEl.value) emit('cancel')
 }
 
+// マウント = 表示。開閉は呼び出し側の v-if が唯一のソースで、open prop は持たない
+onMounted(() => dialogEl.value?.showModal())
 // DOM 除去だけで閉じるとネイティブのフォーカス復元（showModal 前の要素へ戻す）が働かないため、
 // アンマウント前に close() を通す
 onBeforeUnmount(() => dialogEl.value?.close())

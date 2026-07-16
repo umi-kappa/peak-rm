@@ -11,12 +11,11 @@ const meta: Meta<typeof BaseDialog> = {
       story: topLayerDocs(240),
       description: {
         component:
-          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。`open` を唯一のソースに `showModal()/close()` を配線し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。開いたままアンマウントされてもフォーカス復元が働くよう、アンマウント前に `close()` を通す。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
+          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。マウント = 表示（開閉は呼び出し側の `v-if` が唯一のソース）で `showModal()` し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。ネイティブのフォーカス復元が働くよう、アンマウント前に `close()` を通す。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
       },
     },
   },
   argTypes: {
-    open: { control: 'boolean', description: '開閉状態（唯一のソース）' },
     title: { control: 'text', description: '見出し（アクセシブルネームを兼ねる）' },
     inset: {
       control: 'inline-radio',
@@ -25,7 +24,7 @@ const meta: Meta<typeof BaseDialog> = {
       table: { defaultValue: { summary: '16' } },
     },
   },
-  args: { open: true, title: 'ダイアログ見出し' },
+  args: { title: 'ダイアログ見出し' },
   render: (args) => ({
     components: { BaseDialog },
     setup: () => ({ args }),

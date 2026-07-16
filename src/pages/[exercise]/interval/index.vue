@@ -181,7 +181,7 @@ async function saveSetEdit(result: SetResult) {
     </template>
 
     <ConfirmDialog
-      :open="abortConfirmOpen"
+      v-if="abortConfirmOpen"
       title="トレーニングを中断しますか？"
       message="ここまでの記録を保存して結果確認画面へ進みます。"
       confirm-label="中断する"
@@ -189,7 +189,7 @@ async function saveSetEdit(result: SetResult) {
       @cancel="closeAbortConfirm"
     />
 
-    <!-- 編集対象がある間だけマウントする（対象由来の props にダミーの既定値を渡さない） -->
+    <!-- 編集対象がある間だけマウントする（対象由来の props にダミーの既定値を渡さず、ドラフト初期化をマウントに乗せる） -->
     <SetEditDialog
       v-if="editingSet"
       :exercise-label="editingSet.exerciseLabel"
