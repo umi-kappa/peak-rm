@@ -87,6 +87,7 @@ src/
 - `<script setup>` 内は **変数宣言（route / inject / props / state）→ 関数 → ライフサイクル登録（`onMounted` 等）の順**に並べる。関数の間にフック登録や変数宣言を挟まない。変数宣言の中でも種類でまとめ、**`ref` を先に、`computed` を後に**置く（ref と computed を交互に並べない）
 - **composable は関数単体でなく named なオブジェクトを返す**（`return { goBack }` → `const { goBack } = useBackNavigation()`）。呼び出し側の変数名が composable の意図した名前に揃い、公開項目の追加にも形を変えず対応できる
 - **template にインライン式で処理を書かない**（`@back="router.push({ name: 'home' })"` 禁止）。イベントハンドラは script の名前付き関数に切り出す（`@back="goHome"`）。presentational コンポーネント内の単純な emit 転送（`@click="emit('confirm')"`）は例外
+- **同名の prop バインドは same-name shorthand（Vue 3.4+）で書く**（`:open="open"` ではなく `:open`。`:to` / `:name` / `:border` も同様）。バインド先が同名の単純な変数のときだけ使え、別名・メンバー式・リテラル（`:inset="24"`）は通常の記法のまま
 - props は型引数つき `defineProps` を **reactive props destructure**（Vue 3.5+）で受け、デフォルト値は分割代入のデフォルト値で書く（`const { size = 16 } = defineProps<{ size?: number }>()`）。`withDefaults` は使わない
   - destructure した props を `<script setup>` 直下の式で使うとリアクティビティを失う（setup は 1 回しか走らない）。派生値は `computed` かテンプレート内の式にする
 
