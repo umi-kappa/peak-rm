@@ -40,7 +40,7 @@ src/
   assets/
     icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
-  stories/  router.ts  session.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・fake sessionRepo / Session fixture / セッション状態を駆動する loaders 用ヘルパー）
+  stories/  router.ts  session.ts  topLayerDocs.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・fake sessionRepo / Session fixture / セッション状態を駆動する loaders 用ヘルパー・top layer に出る dialog 系 stories の Docs 描画を iframe 分離する topLayerDocs）
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`。うち `menu` / `training` / `interval` / `result` はセッションフローとして `[exercise]/` 配下にネストし、ディレクトリ構成を URL（`/:exercise/…`）と一致させる（`[exercise]` は動的セグメント `:exercise` を表すディレクトリ名。ファイルベースルーティングではなく実際のルートは `router/index.ts` で定義する）。種目に属さない `home` / `history` / `settings` は `pages/` 直下に置く

@@ -1,18 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
+import { topLayerDocs } from '@/stories/topLayerDocs'
 
 const meta: Meta<typeof ConfirmDialog> = {
   component: ConfirmDialog,
   tags: ['autodocs'],
   parameters: {
     docs: {
-      // showModal() のダイアログは top layer に出るため、インライン描画では Docs ページ上で全 story が重なる。
-      // story ごとに iframe を分けて top layer を隔離する
-      story: { inline: false, iframeHeight: 320 },
+      story: topLayerDocs(320),
       description: {
         component:
-          '破壊的操作（中断・Import・セッション削除）の確認に使うモーダル。`open` を唯一のソースにネイティブ `<dialog>` を開閉する presentational コンポーネント。確定で `confirm`、キャンセル / ESC / backdrop で `cancel` を emit するだけで、実際の処理・遷移は呼び出し側が担う。',
+          '破壊的操作（中断・Import・セッション削除）の確認に使うモーダル。BaseDialog の外殻に確認の文言と確定 / キャンセルボタンを載せた presentational コンポーネント。確定で `confirm`、キャンセル / ESC / backdrop で `cancel` を emit するだけで、実際の処理・遷移は呼び出し側が担う。',
       },
     },
   },
