@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
 import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
 import { topLayerDocs } from '@/stories/topLayerDocs'
 
@@ -56,15 +56,15 @@ export const EmptyMemo: Story = {
   args: { memo: '' },
 }
 
-// 実績・メモの編集結果が save の payload に配線されていることを確認する
-// （ESC / backdrop の cancel 配線はシェル側 BaseDialog の Behavior で検証する）
+// 実績・メモの編集結果が save の payload に配線されていることと、シェルの cancel が
+// 再 emit されることを確認する（ESC / backdrop の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
 export const Behavior: Story = {
-  args: { memo: '', onSave: fn() },
+  args: { memo: '', onSave: fn(), onCancel: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     // role の name 指定は title → シェルの aria-labelledby 配線（dialog = h2 / textbox = NOTE ラベル）の退行検出を兼ねる
-    canvas.getByRole('dialog', { name: 'BENCH PRESS' })
+    const dialog = canvas.getByRole('dialog', { name: 'BENCH PRESS' })
     await userEvent.click(canvas.getByRole('button', { name: 'Increase' }))
     await userEvent.type(canvas.getByRole('textbox', { name: 'NOTE' }), 'フォームを意識した')
     await userEvent.click(canvas.getByRole('button', { name: 'SAVE' }))
@@ -73,5 +73,8 @@ export const Behavior: Story = {
       actualReps: 9,
       memo: 'フォームを意識した',
     })
+    // シェル → SetEditDialog の cancel 転送配線。SetEditDialog は閉じるボタンを持たず、この転送が唯一の閉じ経路
+    await fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    await expect(args.onCancel).toHaveBeenCalledOnce()
   },
 }
