@@ -13,7 +13,7 @@ import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import NumberStepper from '@/components/shared/ui/inputs/NumberStepper.vue'
-import LpIndicator from '@/components/pages/menu/LpIndicator.vue'
+import LpIndicator from '@/components/shared/session/LpIndicator.vue'
 import WeightStepper from '@/components/pages/menu/WeightStepper.vue'
 
 const route = useRoute()
@@ -86,7 +86,12 @@ onMounted(async () => {
       <section class="section">
         <BaseLabel>WEIGHT</BaseLabel>
         <WeightStepper v-model="menu.weight" />
-        <LpIndicator v-if="lpPreview" :from="lpPreview.from" :to="lpPreview.to" />
+        <LpIndicator
+          v-if="lpPreview"
+          :from="lpPreview.from"
+          :to="lpPreview.to"
+          message="LAST SESSION COMPLETED!"
+        />
       </section>
 
       <section class="section">

@@ -4,11 +4,13 @@ import BaseIcon from '@/components/shared/ui/base/BaseIcon.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 
-const { from, to } = defineProps<{
+const { from, to, message } = defineProps<{
   /** 前回ベースラインの重量（kg） */
   from: number
   /** 増量後の重量（kg） */
   to: number
+  /** タイトル下の説明文。増量の根拠を画面の文脈で言い換える（menu: 前回完遂 / result: 今回完遂） */
+  message: string
 }>()
 </script>
 
@@ -17,7 +19,7 @@ const { from, to } = defineProps<{
     <BaseIcon name="trending-up" />
     <div class="text">
       <BaseLabel class="title">LINEAR PROGRESSION</BaseLabel>
-      <span class="message">LAST SESSION COMPLETED!</span>
+      <span class="message">{{ message }}</span>
     </div>
     <div class="diff">
       <span class="from">{{ from }}</span>

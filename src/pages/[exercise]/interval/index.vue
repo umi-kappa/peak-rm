@@ -16,11 +16,11 @@ import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
-import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
 import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
-import TimelineSetCard from '@/components/pages/interval/TimelineSetCard.vue'
+import MenuSummary from '@/components/shared/session/MenuSummary.vue'
+import TimelineSetCard from '@/components/shared/session/TimelineSetCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -90,16 +90,7 @@ function confirmAbort() {
     </template>
 
     <template v-if="menu">
-      <div class="summary">
-        <span class="summary-value">{{ menu.weight }}</span>
-        <BaseUnit>KG</BaseUnit>
-        <span class="dot">·</span>
-        <span class="summary-value">{{ menu.reps }}</span>
-        <BaseUnit>REPS</BaseUnit>
-        <span class="dot">·</span>
-        <span class="summary-value">{{ menu.sets }}</span>
-        <BaseUnit>SETS</BaseUnit>
-      </div>
+      <MenuSummary :weight="menu.weight" :reps="menu.reps" :sets="menu.sets" />
 
       <BaseCard>
         <div class="timer">
@@ -127,6 +118,7 @@ function confirmAbort() {
           :target-reps="menu.reps"
           :actual-reps="card.actualReps"
           :memo="card.memo"
+          memo-prompt
           @edit="openSetEdit(card.index)"
         />
       </section>
@@ -163,28 +155,6 @@ function confirmAbort() {
 </template>
 
 <style scoped>
-.summary {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-8);
-}
-
-/* サマリーの数値と centis は色以外同じ数値スタイルを共有する */
-.summary-value,
-.centis {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-bold);
-}
-
-.summary-value {
-  color: var(--color-text-secondary);
-}
-
-.dot {
-  color: var(--color-text-tertiary);
-}
-
 /* カードの padding 16px に 12px を足し、設計のタイマーヒーロー上下 28px に合わせる */
 .timer {
   display: flex;
@@ -208,6 +178,9 @@ function confirmAbort() {
 
 .centis {
   color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-bold);
 }
 
 /* 経過割合の hairline。装飾ではなく経過時間の受動的な可視化 */

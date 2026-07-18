@@ -2,17 +2,26 @@
 import BaseIcon from '@/components/shared/ui/base/BaseIcon.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 
-const { setNumber, state, targetReps, actualReps, memo } = defineProps<{
+const {
+  setNumber,
+  state,
+  targetReps,
+  actualReps,
+  memo,
+  memoPrompt = false,
+} = defineProps<{
   /** 1 始まりのセット番号 */
   setNumber: number
-  /** カードの状態。完了済み results との対応はページ側で算出して渡す */
+  /** カードの状態。完了済み results との対応はページ側で算出して渡す（結果確認は next を使わない） */
   state: 'done' | 'next' | 'pending'
   /** メニューの目標回数。next / pending で表示する */
   targetReps: number
-  /** 実績回数。done で表示する。next / pending は実績自体が無いので undefined を明示的に渡す */
+  /** 実績回数。done で表示し、0 はスキップとして示す。next / pending は実績自体が無いので undefined を明示的に渡す */
   actualReps: number | undefined
   /** セットメモ。未入力はデータモデルの初期値と同じ ""。next / pending は undefined を明示的に渡す */
   memo: string | undefined
+  /** メモ未入力の完了セットに ADD NOTE プロンプトを出すか。インターバル中のみ true（spec「セット編集モーダル」） */
+  memoPrompt?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -37,8 +46,14 @@ function onClick() {
     <div class="line">
       <span class="number">{{ setNumber }}</span>
       <template v-if="state === 'done'">
-        <span class="reps">{{ actualReps }}</span>
-        <BaseUnit>REPS</BaseUnit>
+        <!-- 実績 0 回はスキップとして示す（spec「結果確認画面」。記録には残るため行自体は出す） -->
+        <span v-if="actualReps === 0" class="skipped">SKIPPED</span>
+        <template v-else>
+          <span class="reps">{{ actualReps }}</span>
+          <BaseUnit>REPS</BaseUnit>
+        </template>
+        <!-- 編集可能の目印。タップ対象はカード全体（spec「セット編集モーダル」） -->
+        <BaseIcon class="edit-icon" name="pen-line" :size="16" />
       </template>
       <template v-else>
         <span v-if="state === 'next'" class="next-label">NEXT</span>
@@ -46,8 +61,8 @@ function onClick() {
         <BaseUnit>REPS</BaseUnit>
       </template>
     </div>
-    <!-- メモ未入力の完了セットは ADD NOTE で入力を促す（spec「セットメモ」。インターバル画面のみの表現） -->
-    <div v-if="state === 'done'" class="memo">
+    <!-- メモは非空のときのみ表示。未入力の ADD NOTE プロンプトはインターバル中だけ（spec「セット編集モーダル」） -->
+    <div v-if="state === 'done' && (memo || memoPrompt)" class="memo">
       <BaseIcon class="memo-icon" name="file-text" :size="12" />
       <span v-if="memo" class="memo-text">{{ memo }}</span>
       <span v-else class="memo-prompt">ADD NOTE</span>
@@ -115,7 +130,8 @@ function onClick() {
 .number,
 .next-label,
 .reps,
-.target {
+.target,
+.skipped {
   font-family: var(--font-family-mono);
 }
 
@@ -137,6 +153,18 @@ function onClick() {
 .reps {
   color: var(--color-text);
   font-size: var(--font-size-title);
+}
+
+.skipped {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-caption);
+}
+
+/* 編集可能の目印は右端に寄せ、行のベースライン揃えには参加せず上下センターに置く */
+.edit-icon {
+  align-self: center;
+  margin-left: auto;
+  color: var(--color-text-tertiary);
 }
 
 /* .number と同じく、ベースライン揃えに参加せず上下センターに置く */
