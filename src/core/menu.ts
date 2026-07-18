@@ -1,4 +1,4 @@
-import { computeLinearProgression } from '@/core/linearProgression'
+import { computeLpPreview, type LpPreview } from '@/core/linearProgression'
 import type { Exercise, Menu, Session } from '@/core/types'
 
 // 初回起動時（同一種目のセッションが 1 件も無い）に表示する全種目共通の初期値（spec §2）
@@ -20,8 +20,8 @@ export const MENU_MAX = {
 
 export type InitialMenu = {
   menu: Menu
-  /** Linear progression 成立時のみ。from = 前回ベースライン、to = 増量後（= menu.weight） */
-  lpPreview?: { from: number; to: number }
+  /** Linear progression 成立時のみ（to = menu.weight） */
+  lpPreview?: LpPreview
 }
 
 /**
@@ -29,7 +29,7 @@ export type InitialMenu = {
  * 直前セッション無し（初回起動・データクリア直後）は共通初期値、あれば直前セッション
  * （中断含む）の menu をベースにし、重量には linear progression を適用する。
  * 増量が成立したときだけ lpPreview を返す
- * （成立判定は computeLinearProgression の責務。undefined は据え置き）。
+ * （成立判定は computeLpPreview の責務。undefined は据え置き）。
  * 返す menu は画面上で編集されるため、prevSession.menu（Readonly）のコピーを返す。
  */
 export function resolveInitialMenu(
@@ -39,7 +39,7 @@ export function resolveInitialMenu(
   // exercise は直前セッションが無いときの共通初期値スタンプ専用。
   // 直前セッションがあれば prevSession.menu.exercise が支配的で exercise は使われない。
   const base: Menu = prevSession ? { ...prevSession.menu } : { exercise, ...DEFAULT_MENU }
-  const weight = computeLinearProgression(prevSession)
-  if (weight === undefined) return { menu: base }
-  return { menu: { ...base, weight }, lpPreview: { from: base.weight, to: weight } }
+  const lpPreview = computeLpPreview(prevSession)
+  if (lpPreview === undefined) return { menu: base }
+  return { menu: { ...base, weight: lpPreview.to }, lpPreview }
 }

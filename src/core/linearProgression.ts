@@ -1,5 +1,5 @@
 import { isExecuted } from '@/core/session'
-import type { Exercise, Session } from '@/core/types'
+import type { Exercise, ReadonlySession } from '@/core/types'
 
 const PROGRESSION_STEP_KG: Record<Exercise, number> = {
   benchPress: 2.5,
@@ -15,7 +15,9 @@ const PROGRESSION_STEP_KG: Record<Exercise, number> = {
  * ベースライン・増量幅とも prevSession から導出する（同一種目の直前セッションを渡す前提。
  * 手動編集はセッションの menu に焼き込まれて累積する）。
  */
-export function computeLinearProgression(prevSession: Session | undefined): number | undefined {
+export function computeLinearProgression(
+  prevSession: ReadonlySession | undefined,
+): number | undefined {
   if (prevSession === undefined) return undefined
   // status が executed かつ results も条件を満たすときだけ増量する
   if (prevSession.status === 'executed' && isExecuted(prevSession)) {
@@ -23,4 +25,18 @@ export function computeLinearProgression(prevSession: Session | undefined): numb
   }
   // aborted、および両者が食い違う異常データは据え置き
   return undefined
+}
+
+/** Linear progression 成立時の増量プレビュー。from = 前回ベースライン、to = 増量後 */
+export type LpPreview = { from: number; to: number }
+
+/**
+ * LpIndicator へ渡す増量プレビュー（増量前 → 増量後のペア）を導出する。
+ * 成立判定は computeLinearProgression に委ね、不成立（据え置き）は undefined を返す。
+ */
+export function computeLpPreview(prevSession: ReadonlySession | undefined): LpPreview | undefined {
+  if (prevSession === undefined) return undefined
+  const to = computeLinearProgression(prevSession)
+  if (to === undefined) return undefined
+  return { from: prevSession.menu.weight, to }
 }

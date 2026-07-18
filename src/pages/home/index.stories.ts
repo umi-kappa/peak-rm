@@ -34,11 +34,11 @@ type Story = StoryObj<typeof HomePage>
 export const Default: Story = {
   loaders: [
     () => ({
-      sessionRepo: makeSessionRepo({
-        benchPress: makeSession('benchPress', 82.5, [8, 8, 7]),
-        squat: makeSession('squat', 100, [8, 8, 8]),
-        deadlift: makeSession('deadlift', 150, [5, 5, 5]),
-      }),
+      sessionRepo: makeSessionRepo([
+        makeSession('benchPress', 82.5, [8, 8, 7]),
+        makeSession('squat', 100, [8, 8, 8]),
+        makeSession('deadlift', 150, [5, 5, 5]),
+      ]),
     }),
   ],
 }
@@ -54,7 +54,7 @@ export const Empty: Story = {
 export const Behavior: Story = {
   loaders: [
     () => ({
-      sessionRepo: makeSessionRepo({ benchPress: makeSession('benchPress', 82.5, [8, 8, 7]) }),
+      sessionRepo: makeSessionRepo([makeSession('benchPress', 82.5, [8, 8, 7])]),
     }),
   ],
   parameters: { chromatic: { disableSnapshot: true } },
