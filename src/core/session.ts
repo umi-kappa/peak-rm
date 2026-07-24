@@ -34,3 +34,17 @@ export function isExecuted(session: ReadonlySession): boolean {
     session.results.every((r) => r.actualReps >= session.menu.reps)
   )
 }
+
+/**
+ * セッション結果の表示用 3 状態（spec「結果確認画面」のステータスマーカー）。
+ * status（executed / aborted の 2 値）とは別の表示軸:
+ * aborted = 未実施セットあり（中断）/ finished = 全セット完走・目標未達（SESSION EXECUTED）/
+ * complete = 完遂（SESSION COMPLETE）。ラベルへの写像は画面側が担う。
+ */
+export type SessionOutcome = 'aborted' | 'finished' | 'complete'
+
+/** results の実態から SessionOutcome を導出する（status フィールドは見ない）。 */
+export function sessionOutcome(session: ReadonlySession): SessionOutcome {
+  if (session.results.length < session.menu.sets) return 'aborted'
+  return isExecuted(session) ? 'complete' : 'finished'
+}

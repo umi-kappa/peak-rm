@@ -8,7 +8,8 @@ import type { Exercise, Menu, Session } from '@/core/types'
  * 実 DB へ書かない fake repo を作る（stories の loaders / provide decorator から使う）。
  * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
- * （latestByExercise = 同種目の直近、一覧系 = startedAt 降順 / 同日同種目の集約）。
+ * （get = id 一致、latestByExercise = 同種目の直近、latestExecutedBefore = 同種目・executed・
+ * startedAt がより前の直近、一覧系 = startedAt 降順 / 同日同種目の集約）。
  */
 export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
   const byStartedAt = [...sessions].sort((a, b) => a.startedAt - b.startedAt)
@@ -18,10 +19,20 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
     patchResultsAndStatus: async () => {},
     finalize: async () => {},
     remove: async () => {},
+    get: async (id) => sessions.find((session) => session.id === id),
     list: async () => [...byStartedAt].reverse(),
     listForHistory: async () => dedupeHistoryByDay(sessions),
     latestByExercise: async (exercise) =>
       byStartedAt.filter((session) => session.exercise === exercise).at(-1),
+    latestExecutedBefore: async (exercise, startedAt) =>
+      byStartedAt
+        .filter(
+          (session) =>
+            session.exercise === exercise &&
+            session.status === 'executed' &&
+            session.startedAt < startedAt,
+        )
+        .at(-1),
   }
 }
 
