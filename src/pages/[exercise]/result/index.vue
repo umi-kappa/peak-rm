@@ -3,6 +3,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { useResultSession } from '@/composables/pages/result/useResultSession'
+import { formatDeltaBadge } from '@/core/deltaBadge'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useSetEdit } from '@/composables/shared/session/useSetEdit'
 import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
@@ -50,6 +51,8 @@ const repo = injectedRepo
 // history = ヘッダー左上「←」で履歴へ / session = 下部 FINISH でホームへ（spec「結果確認画面」）
 const origin: ResultOrigin = route.query.origin === 'history' ? 'history' : 'session'
 const sessionId = typeof route.query.id === 'string' ? route.query.id : undefined
+// 履歴経由フラグ。← 戻り・削除導線・ヘッダ表示の分岐に使う（origin はマウント中不変）
+const isHistory = origin === 'history'
 
 const {
   session,
@@ -70,24 +73,19 @@ const { editingSet, openSetEdit, closeSetEdit, saveSetEdit } = useSetEdit(
   patchResultAt,
 )
 
-// 全セットスキップ等で推定 1RM が 0 のときは数値を出さず —（home の ExerciseCard と同じ規則）
-const oneRmText = computed(() => (maxOneRm.value > 0 ? maxOneRm.value.toFixed(1) : '—'))
-
-// 前回比バッジ。増減で矢印を出し分け、差 0 は矢印なしの ±0.0（design には増減の 2 例のみ）
-const deltaBadge = computed(() => {
-  const value = delta.value
-  if (value === undefined) return undefined
-  if (value === 0) return { text: '±0.0', icon: undefined }
-  return {
-    text: `${value > 0 ? '+' : '−'}${Math.abs(value).toFixed(1)}`,
-    icon: value > 0 ? ('arrow-up' as const) : ('arrow-down' as const),
-  }
-})
-
 // 結果は確定済みなので next は無し（中断で未実施のセットは pending のまま）
 const { cards } = useSetTimeline(() => session.value, { live: false })
 
 const deleteConfirmOpen = ref(false)
+
+// 全セットスキップ等で推定 1RM が 0 のときは数値を出さず —（home の ExerciseCard と同じ規則）
+const oneRmText = computed(() => (maxOneRm.value > 0 ? maxOneRm.value.toFixed(1) : '—'))
+
+// 前回比バッジ（整形は formatDeltaBadge。増減で矢印を出し分け、差 0 は矢印なしの ±0.0）
+const deltaBadge = computed(() => formatDeltaBadge(delta.value))
+
+// 中断は通常境界の枠でわずかに強調する（design: aborted のみ line）
+const cardBorder = computed(() => (marker.value === 'aborted' ? 'line' : 'soft'))
 
 // 完了フローの終端。result を replace で畳み、戻るでフローに再入できないようにする
 function finishTraining() {
@@ -121,12 +119,8 @@ onMounted(initialize)
 <template>
   <ScreenFrame>
     <template v-if="session" #header>
-      <AppBar
-        :title="EXERCISE_LABELS[session.exercise]"
-        :back="origin === 'history'"
-        @back="goBack"
-      >
-        <template v-if="origin === 'history'" #action>
+      <AppBar :title="EXERCISE_LABELS[session.exercise]" :back="isHistory" @back="goBack">
+        <template v-if="isHistory" #action>
           <IconButton name="trash-2" label="Delete" @click="openDeleteConfirm" />
         </template>
       </AppBar>
@@ -141,8 +135,7 @@ onMounted(initialize)
         :sets="session.menu.sets"
       />
 
-      <!-- 中断は通常境界の枠でわずかに強調する（design: aborted のみ line） -->
-      <BaseCard :border="marker === 'aborted' ? 'line' : 'soft'">
+      <BaseCard :border="cardBorder">
         <div class="hero">
           <div v-if="marker" class="marker" :class="{ complete: marker === 'complete' }">
             <span class="rule" />
@@ -212,7 +205,7 @@ onMounted(initialize)
       :set-number="editingSet.setNumber"
       :actual-reps="editingSet.actualReps"
       :memo="editingSet.memo"
-      :reps-readonly="repsReadonly"
+      :reps-readonly
       @save="saveSetEdit"
       @cancel="closeSetEdit"
     />
@@ -290,7 +283,8 @@ onMounted(initialize)
   display: flex;
   align-items: center;
   gap: var(--space-8);
-  padding: var(--space-8) var(--space-16);
+  padding-block: var(--space-8);
+  padding-inline: var(--space-16);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
 }
