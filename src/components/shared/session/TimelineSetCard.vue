@@ -53,7 +53,7 @@ function onClick() {
           <BaseUnit>REPS</BaseUnit>
         </template>
         <!-- 編集可能の目印。タップ対象はカード全体（spec「セット編集モーダル」） -->
-        <BaseIcon class="edit-icon" name="pen-line" :size="16" />
+        <BaseIcon class="edit-icon" name="pen-line" :size="12" />
       </template>
       <template v-else>
         <span v-if="state === 'next'" class="next-label">NEXT</span>
