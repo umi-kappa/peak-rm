@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## リポジトリの現状
 
-仕様は確定済みで `docs/spec.md` に集約している（Issue `#1` で策定）。現在は実装フェーズが進行中: ビルド・CI・テスト基盤、`src/` の core / storage / エラー境界 / UI プリミティブ、ホーム・メニュー設定・トレーニング・インターバル画面（インターバルタイマー・セッションガード含む）までが実装済み。残作業と進捗は GitHub Issues を参照する。
+仕様は確定済みで `docs/spec.md` に集約している（Issue `#1` で策定）。現在は実装フェーズが進行中: ビルド・CI・テスト基盤、`src/` の core / storage / エラー境界 / UI プリミティブ、ホーム・メニュー設定・トレーニング・インターバル画面（インターバルタイマー・セッションガード含む）・結果確認画面までが実装済み。残作業と進捗は GitHub Issues を参照する。
 
 ## 技術スタック（確定済み）
 

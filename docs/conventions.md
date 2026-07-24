@@ -13,7 +13,7 @@ src/
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  backup.ts
   composables/
-    pages/<画面>/       # 画面専用に切り出した composable
+    pages/<画面>/       # 画面専用に切り出した composable（例: result/useResultSession）
     shared/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
