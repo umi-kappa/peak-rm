@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { computeLinearProgression } from '@/core/linearProgression'
+import { computeLinearProgression, computeLpPreview } from '@/core/linearProgression'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function makeSession(
@@ -57,5 +57,21 @@ describe('computeLinearProgression', () => {
   test('status が aborted なら results が full でも undefined（据え置き）', () => {
     const prev = makeSession('benchPress', 8, 3, [rep(8), rep(8), rep(8)], 'aborted')
     expect(computeLinearProgression(prev)).toBeUndefined()
+  })
+})
+
+describe('computeLpPreview', () => {
+  test('成立時は前回ベースライン → 増量後のペアを返す', () => {
+    const prev = makeSession('benchPress', 8, 3, [rep(8), rep(8), rep(8)])
+    expect(computeLpPreview(prev)).toEqual({ from: 100, to: 102.5 })
+  })
+
+  test('直前セッションが無ければ undefined（据え置き）', () => {
+    expect(computeLpPreview(undefined)).toBeUndefined()
+  })
+
+  test('据え置き（target 未達）なら undefined', () => {
+    const prev = makeSession('benchPress', 8, 3, [rep(8), rep(6), rep(8)])
+    expect(computeLpPreview(prev)).toBeUndefined()
   })
 })

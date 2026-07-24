@@ -44,10 +44,10 @@ function makeDeps(options: { storeSession?: Session; stored?: Session[]; prev?: 
     patchResultAt: vi.fn(async (index: number, patch: Partial<SetResult>) => {
       const current = storeRef.value
       if (current === undefined) return
-      storeRef.value = {
-        ...current,
-        results: current.results.map((r, i) => (i === index ? { ...r, ...patch } : r)),
-      }
+      // 本番 useSession.patchResultAt と同じく results 更新後に status を再導出する
+      const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
+      const next = { ...current, results }
+      storeRef.value = { ...next, status: isExecuted(next) ? 'executed' : 'aborted' }
     }),
   }
   const repo = {
