@@ -8,18 +8,19 @@ import {
   intervalTimerDepsInjectionKey,
   useIntervalTimer,
 } from '@/composables/shared/session/useIntervalTimer'
+import { useSetEdit } from '@/composables/shared/session/useSetEdit'
+import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
-import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
 import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
-import TimelineSetCard from '@/components/pages/interval/TimelineSetCard.vue'
-import type { SetResult } from '@/core/types'
+import MenuSummary from '@/components/shared/session/MenuSummary.vue'
+import TimelineSetCard from '@/components/shared/session/TimelineSetCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -30,7 +31,7 @@ const injected = inject(sessionInjectionKey)
 if (!injected) throw new Error('session store is not provided')
 const session = injected
 
-const { menu, exercise, setsTotal } = session
+const { menu, exercise } = session
 
 // セット完了で自動開始（この画面のマウント = セット完了直後）。停止はスコープ破棄
 //（次のセット / 中断での遷移）のみで、0 秒到達では止めず超過を数え続ける。
@@ -40,8 +41,11 @@ if (menu.value) timer.start(menu.value.intervalSec)
 
 const abortConfirmOpen = ref(false)
 
-// セット編集モーダルの対象 index。undefined = 非表示（唯一のソース）
-const editingIndex = ref<number>()
+// セット編集モーダルの配線（SAVE の status 再導出は useSession.patchResultAt が担う）
+const { editingSet, openSetEdit, closeSetEdit, saveSetEdit } = useSetEdit(
+  () => session.session.value,
+  session.patchResultAt,
+)
 
 // 0 秒到達後は残り時間表示を +超過時間 に切り替える（受動的な表示。延長等の操作は加えない）
 const isOverrun = computed(() => timer.remainingMs.value === 0)
@@ -54,37 +58,8 @@ const centisText = computed(() =>
 )
 const progressWidth = computed(() => `${(timer.progress.value * 100).toFixed(1)}%`)
 
-// results[i] があるのは done のみ。next / pending の実績・メモは undefined のままカードへ渡す
-const cards = computed(() => {
-  const results = session.session.value?.results ?? []
-  return Array.from({ length: setsTotal.value }, (_, i) => ({
-    index: i,
-    setNumber: i + 1,
-    state: cardState(i, results.length),
-    actualReps: results[i]?.actualReps,
-    memo: results[i]?.memo,
-  }))
-})
-
-// 編集対象の完了セットからモーダルへ渡す値を導出する。対象が無ければモーダルごと出さない
-const editingSet = computed(() => {
-  const current = session.session.value
-  if (current === undefined || editingIndex.value === undefined) return undefined
-  const result = current.results[editingIndex.value]
-  if (result === undefined) return undefined
-  return {
-    exerciseLabel: EXERCISE_LABELS[current.exercise],
-    weight: current.menu.weight,
-    setNumber: editingIndex.value + 1,
-    actualReps: result.actualReps,
-    memo: result.memo,
-  }
-})
-
-function cardState(index: number, doneCount: number): 'done' | 'next' | 'pending' {
-  if (index < doneCount) return 'done'
-  return index === doneCount ? 'next' : 'pending'
-}
+// 進行中なので先頭の未実施セットを next に昇格させる
+const { cards } = useSetTimeline(() => session.session.value, { live: true })
 
 // :exercise は session フロー内で不変なので、現在の params をそのまま引き継ぐ
 function nextSet() {
@@ -106,22 +81,6 @@ function confirmAbort() {
   session.abort()
   router.replace({ name: 'result', params: route.params, query: { origin: 'session' } })
 }
-
-function openSetEdit(index: number) {
-  editingIndex.value = index
-}
-
-function closeSetEdit() {
-  editingIndex.value = undefined
-}
-
-// SAVE で実績とメモを 1 回の patch で保存して閉じる（status の再導出は useSession が担う）
-async function saveSetEdit(result: SetResult) {
-  const index = editingIndex.value
-  if (index === undefined) return
-  await session.patchResultAt(index, result)
-  closeSetEdit()
-}
 </script>
 
 <template>
@@ -131,16 +90,7 @@ async function saveSetEdit(result: SetResult) {
     </template>
 
     <template v-if="menu">
-      <div class="summary">
-        <span class="summary-value">{{ menu.weight }}</span>
-        <BaseUnit>KG</BaseUnit>
-        <span class="dot">·</span>
-        <span class="summary-value">{{ menu.reps }}</span>
-        <BaseUnit>REPS</BaseUnit>
-        <span class="dot">·</span>
-        <span class="summary-value">{{ menu.sets }}</span>
-        <BaseUnit>SETS</BaseUnit>
-      </div>
+      <MenuSummary :weight="menu.weight" :reps="menu.reps" :sets="menu.sets" />
 
       <BaseCard>
         <div class="timer">
@@ -168,6 +118,7 @@ async function saveSetEdit(result: SetResult) {
           :target-reps="menu.reps"
           :actual-reps="card.actualReps"
           :memo="card.memo"
+          memo-prompt
           @edit="openSetEdit(card.index)"
         />
       </section>
@@ -204,28 +155,6 @@ async function saveSetEdit(result: SetResult) {
 </template>
 
 <style scoped>
-.summary {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-8);
-}
-
-/* サマリーの数値と centis は色以外同じ数値スタイルを共有する */
-.summary-value,
-.centis {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-bold);
-}
-
-.summary-value {
-  color: var(--color-text-secondary);
-}
-
-.dot {
-  color: var(--color-text-tertiary);
-}
-
 /* カードの padding 16px に 12px を足し、設計のタイマーヒーロー上下 28px に合わせる */
 .timer {
   display: flex;
@@ -249,6 +178,9 @@ async function saveSetEdit(result: SetResult) {
 
 .centis {
   color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-bold);
 }
 
 /* 経過割合の hairline。装飾ではなく経過時間の受動的な可視化 */

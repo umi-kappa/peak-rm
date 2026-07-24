@@ -128,6 +128,52 @@ describe('listForHistory', () => {
   })
 })
 
+describe('get', () => {
+  test('id で当該 1 件を返す', async () => {
+    await sessionRepo.insert(makeSession('target', 'benchPress', 1000))
+    await sessionRepo.insert(makeSession('other', 'squat', 2000))
+    expect((await sessionRepo.get('target'))?.id).toBe('target')
+  })
+
+  test('存在しない id は undefined', async () => {
+    expect(await sessionRepo.get('missing')).toBeUndefined()
+  })
+})
+
+describe('latestExecutedBefore', () => {
+  const executedResults = [reps(8), reps(8), reps(8)]
+
+  test('startedAt より前の直近 executed を返す（当該セッション自身は含めない）', async () => {
+    await sessionRepo.insert(makeSession('older', 'benchPress', 1000, executedResults, 'executed'))
+    await sessionRepo.insert(makeSession('prev', 'benchPress', 2000, executedResults, 'executed'))
+    // 当該セッション（結果確認中の本人）。上限排他で除外される
+    await sessionRepo.insert(makeSession('self', 'benchPress', 3000, executedResults, 'executed'))
+
+    expect((await sessionRepo.latestExecutedBefore('benchPress', 3000))?.id).toBe('prev')
+  })
+
+  test('aborted はスキップしてさらに前の executed を返す', async () => {
+    await sessionRepo.insert(
+      makeSession('executed', 'benchPress', 1000, executedResults, 'executed'),
+    )
+    await sessionRepo.insert(makeSession('aborted', 'benchPress', 2000))
+
+    expect((await sessionRepo.latestExecutedBefore('benchPress', 3000))?.id).toBe('executed')
+  })
+
+  test('他種目の executed は無視する', async () => {
+    await sessionRepo.insert(makeSession('squat', 'squat', 1000, executedResults, 'executed'))
+
+    expect(await sessionRepo.latestExecutedBefore('benchPress', 3000)).toBeUndefined()
+  })
+
+  test('前に executed が無ければ undefined（初回セッション）', async () => {
+    await sessionRepo.insert(makeSession('self', 'benchPress', 1000, executedResults, 'executed'))
+
+    expect(await sessionRepo.latestExecutedBefore('benchPress', 1000)).toBeUndefined()
+  })
+})
+
 describe('latestByExercise', () => {
   test('該当種目が無ければ undefined', async () => {
     await sessionRepo.insert(makeSession('s', 'squat', 1000))

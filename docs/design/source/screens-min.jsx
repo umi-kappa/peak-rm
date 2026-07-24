@@ -305,7 +305,7 @@ const M_Interval = () => {
 
 };
 
-const TimelineSetCard_M = ({ setNumber, state, reps, target, memo, memoPrompt, readOnly = false }) =>
+const TimelineSetCard_M = ({ setNumber, state, reps, target, memo, memoPrompt }) =>
 <div style={{
   background: C.surface,
   border: `1px solid ${state === 'next' ? MA : C.lineSoft}`,
@@ -333,7 +333,7 @@ const TimelineSetCard_M = ({ setNumber, state, reps, target, memo, memoPrompt, r
           </>
       }
       </div>
-      {state !== 'pending' && state !== 'next' && !readOnly && <Ic.Edit color={C.fg3} size={12} />}
+      {state !== 'pending' && state !== 'next' && <Ic.Edit color={C.fg3} size={12} />}
     </div>
     {memo &&
   <div style={{ marginTop: 8, paddingLeft: 32, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -385,8 +385,8 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
           background: C.surface, border: `1px solid ${aborted ? C.line : C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16
         }}>
-        {/* status marker */}
-        {live && (() => {
+        {/* status marker · history detail でも表示（日付と併記） */}
+        {(() => {
             const celebratory = perfect;
             const markerColor = celebratory ? MA : C.fg2;
             const lineColor = celebratory ? MA : C.line;
@@ -458,23 +458,25 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
       {/* Set list */}
       <Label>Sets</Label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* メモ未入力の Add note プロンプトはインターバル中のみ（spec「セット編集モーダル」）。
+            ✎ は履歴詳細でも表示する（実績は read-only だがメモは編集できるため。spec「セットメモ」） */}
         {aborted ?
           <>
-            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" />
             <TimelineSetCard_M setNumber={2} state="pending" reps={null} target={8} />
             <TimelineSetCard_M setNumber={3} state="pending" reps={null} target={8} />
           </> :
           perfect ?
           <>
-            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="好調" readOnly={fromHistory} />
-            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
-            <TimelineSetCard_M setNumber={3} state="done" reps={8} target={8} memo="フォーム維持" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="好調" />
+            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} />
+            <TimelineSetCard_M setNumber={3} state="done" reps={8} target={8} memo="フォーム維持" />
           </> :
 
           <>
-            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" readOnly={fromHistory} />
-            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} memoPrompt={!fromHistory} readOnly={fromHistory} />
-            <TimelineSetCard_M setNumber={3} state="done" reps={7} target={8} memo="4回目から乱れた" readOnly={fromHistory} />
+            <TimelineSetCard_M setNumber={1} state="done" reps={8} target={8} memo="フォーム良し" />
+            <TimelineSetCard_M setNumber={2} state="done" reps={8} target={8} />
+            <TimelineSetCard_M setNumber={3} state="done" reps={7} target={8} memo="4回目から乱れた" />
           </>
           }
       </div>

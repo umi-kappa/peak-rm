@@ -2,6 +2,7 @@
 import { inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, Menu } from '@/core/types'
+import type { LpPreview } from '@/core/linearProgression'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
 import { MENU_MAX, resolveInitialMenu } from '@/core/menu'
 import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
@@ -13,7 +14,7 @@ import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import NumberStepper from '@/components/shared/ui/inputs/NumberStepper.vue'
-import LpIndicator from '@/components/pages/menu/LpIndicator.vue'
+import LpIndicator from '@/components/shared/session/LpIndicator.vue'
 import WeightStepper from '@/components/pages/menu/WeightStepper.vue'
 
 const route = useRoute()
@@ -39,7 +40,7 @@ const exercise =
 //（共通初期値 → 増量後の値へ表示が切り替わるフラッシュを防ぐ）
 const menu = ref<Menu>()
 // 増量プレビューは初期解決時の値を固定表示する（増量提案の記録のため、手動編集には追従させない）
-const lpPreview = ref<{ from: number; to: number }>()
+const lpPreview = ref<LpPreview>()
 // 遷移（router.replace）の完了は非同期のため、完了前の再タップで start() が再実行されると
 // セッションが作り直される（id / startedAt が変わる）
 const starting = ref(false)
@@ -86,7 +87,12 @@ onMounted(async () => {
       <section class="section">
         <BaseLabel>WEIGHT</BaseLabel>
         <WeightStepper v-model="menu.weight" />
-        <LpIndicator v-if="lpPreview" :from="lpPreview.from" :to="lpPreview.to" />
+        <LpIndicator
+          v-if="lpPreview"
+          :from="lpPreview.from"
+          :to="lpPreview.to"
+          message="LAST SESSION COMPLETED!"
+        />
       </section>
 
       <section class="section">

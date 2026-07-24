@@ -188,17 +188,16 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### 5. Result (`M_Result`)
 
-- AppBar: 履歴経由なら左 ← 、それ以外は無し
-- 日付 (mono body bold, `2025/05/12` 形式)
-- 種目名 (sans title semibold)
+- AppBar: 種目名タイトル。履歴経由なら左 ← と右にゴミ箱 (削除)、それ以外はどちらも無し
+- 日付 (履歴経由のみ。mono body bold, `2025/05/12` 形式)
 - Prescription summary: `82.5 kg · 8 reps · 3 sets`
-- Status marker: `EXECUTED` (accent + glow) または `ABORTED` (fg2, no glow)
+- Status marker (3 状態・履歴経由でも表示): `SESSION ABORTED` / `SESSION EXECUTED` (完走・目標未達。fg2, no glow) / `SESSION COMPLETE` (完遂。check + accent + glow)
 - ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit
 - Delta badge (前回 executed セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
-- Next session preview (LP triggered 時のみ): `Next session +2.5 kg` 形式の hint
-- セットタイムライン (実績回数読み専用 / 履歴詳細時)
+- Next weight preview (LP triggered・セッション経由のみ): `Linear Progression` 行で `82.5 → 85.0 kg` を提示
+- セットタイムライン: カード全体のタップで編集モーダル (右端の ✎ は目印。履歴詳細でも表示され、実績 read-only でもメモは編集可)。`Add note` プロンプトはインターバル中のみで、この画面では未入力メモの行を出さない
 - 下部:
-  - トレーニング終了経由なら `END SESSION` (primary)
+  - セッション経由 (完了・中断直後) なら `FINISH` (primary)
   - 履歴経由なら下部ボタン無し
 
 ### 6. History (`M_History`)
@@ -262,7 +261,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### Set Edit Modal (M_Modal)
 
-- インターバル画面の完了セットカード全体、または結果確認画面の ✎ アイコンから開く
+- 完了セットカード全体のタップで開く（インターバル・結果確認・履歴詳細で共通。カード右端の ✎ は目印）
 - SAVE で確定して閉じる。× ボタンなし
 - 履歴詳細から開いた場合は実績回数は read-only (`spec.md` §3 「実績値の編集ポリシー」)
 

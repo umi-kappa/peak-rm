@@ -13,12 +13,12 @@ import { storybookRouter as router } from '@/stories/router'
 
 // 各 story 共通の loader を作る。メニュー画面は route.params.exercise を型ガードして描画する
 // （不正値はホームへ逃がす）ため、training / interval と違い visual story でも描画前に実ルートへ置く。
-// 直前セッションの有無は latest の fixture で再現する。session store はトレーニング開始前の
+// 直前セッションの有無は sessions の fixture で再現する。session store はトレーニング開始前の
 // 画面なので idle のまま渡す
-function loadMenuPage(latest?: Parameters<typeof makeSessionRepo>[0]) {
+function loadMenuPage(sessions?: Parameters<typeof makeSessionRepo>[0]) {
   return async () => {
     await router.push('/benchPress/menu')
-    const sessionRepo = makeSessionRepo(latest)
+    const sessionRepo = makeSessionRepo(sessions)
     return { sessionRepo, sessionStore: useSession({ sessionRepo }) }
   }
 }
@@ -51,7 +51,7 @@ type Story = StoryObj<typeof MenuPage>
 
 // 直前セッション（82.5 kg 完遂）から増量した状態。LP プレビュー（82.5 → 85）が出る
 export const Default: Story = {
-  loaders: [loadMenuPage({ benchPress: makeSession('benchPress', 82.5, [8, 8, 8]) })],
+  loaders: [loadMenuPage([makeSession('benchPress', 82.5, [8, 8, 8])])],
 }
 
 // 初回起動（直前セッションなし）。全種目共通の初期値 40 kg / 8 回 / 3 セット / 90 秒を表示し、

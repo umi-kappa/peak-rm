@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { formatSetReps, isExecuted, sessionMaxOneRm } from '@/core/session'
+import { formatSetReps, isExecuted, sessionMaxOneRm, sessionOutcome } from '@/core/session'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function makeSession(
@@ -93,5 +93,22 @@ describe('isExecuted', () => {
   test('results が空なら false', () => {
     const session = makeSession('benchPress', 100, 8, 3, [])
     expect(isExecuted(session)).toBe(false)
+  })
+})
+
+describe('sessionOutcome', () => {
+  test('未実施セットがあれば aborted（中断）', () => {
+    const session = makeSession('benchPress', 100, 8, 3, [reps(8)])
+    expect(sessionOutcome(session)).toBe('aborted')
+  })
+
+  test('全セット完走したが目標未達なら finished', () => {
+    const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(8), reps(7)])
+    expect(sessionOutcome(session)).toBe('finished')
+  })
+
+  test('完遂（isExecuted）なら complete', () => {
+    const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(8), reps(8)])
+    expect(sessionOutcome(session)).toBe('complete')
   })
 })

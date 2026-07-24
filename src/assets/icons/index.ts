@@ -4,6 +4,7 @@ import type { FunctionalComponent, SVGAttributes } from 'vue'
 // SVG 実体は同階層の <name>.svg（lucide 純正・ISC。NOTICE 参照）。
 // アイコンを追加するときは、その名前で lucide 純正の SVG ファイルを 1 つ置き、この配列に名前を 1 つ追加する。
 export const iconNames = [
+  'arrow-down',
   'arrow-up',
   'check',
   'chevron-left',

@@ -21,3 +21,11 @@ export type Session = {
   menu: Readonly<Menu> // 開始時点の deep copy を焼き込み、Readonly で変更を禁止
   results: SetResult[]
 }
+
+/**
+ * 読み取り専用のセッションビュー。読むだけの純関数の入力型に使う。
+ * Session はそのまま代入でき、readonly()（DeepReadonly）で包まれた実行中セッションも受け取れる。
+ */
+export type ReadonlySession = Readonly<Omit<Session, 'results'>> & {
+  readonly results: readonly Readonly<SetResult>[]
+}

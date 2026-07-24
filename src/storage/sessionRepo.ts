@@ -62,6 +62,11 @@ async function remove(id: string): Promise<void> {
   await db.sessions.delete(id)
 }
 
+/** 当該 1 件を id で取得する。無ければ undefined（履歴経由の結果確認画面のロード用）。 */
+async function get(id: string): Promise<Session | undefined> {
+  return db.sessions.get(id)
+}
+
 /** 全セッションを startedAt 降順で返す（履歴一覧の生データ）。 */
 async function list(): Promise<Session[]> {
   return db.sessions.orderBy('startedAt').reverse().toArray()
@@ -84,15 +89,34 @@ async function latestByExercise(exercise: Exercise): Promise<Session | undefined
     .last()
 }
 
+/**
+ * 同一種目で startedAt より前の直近 executed セッションを返す。無ければ undefined。
+ * 結果確認画面の前回比 delta 用。当該セッションは DB へ保存済みのため、
+ * latestByExercise では自分自身が返ってしまう（上限排他の範囲で自分を除外する）。
+ * status の filter は index に乗らないが、走査は範囲末尾からの後方 1 件探索で済む。
+ */
+async function latestExecutedBefore(
+  exercise: Exercise,
+  startedAt: number,
+): Promise<Session | undefined> {
+  return db.sessions
+    .where('[exercise+startedAt]')
+    .between([exercise, Dexie.minKey], [exercise, startedAt], true, false)
+    .filter((session) => session.status === 'executed')
+    .last()
+}
+
 export const sessionRepo = {
   insert,
   patchResults,
   patchResultsAndStatus,
   finalize,
   remove,
+  get,
   list,
   listForHistory,
   latestByExercise,
+  latestExecutedBefore,
 }
 
 export type SessionRepo = typeof sessionRepo

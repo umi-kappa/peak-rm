@@ -43,3 +43,11 @@ export function localDayKey(timestamp: number): string {
   const day = String(d.getDate()).padStart(2, '0')
   return `${d.getFullYear()}-${month}-${day}`
 }
+
+/**
+ * timestamp が属するローカルカレンダー日の表示ラベル（`2026/01/09` 形式）。
+ * localDayKey と同じ日付構成から作り、キーの内部表現（`-` 区切り）を表示層に漏らさない。
+ */
+export function formatLocalDay(timestamp: number): string {
+  return localDayKey(timestamp).replace(/-/g, '/')
+}

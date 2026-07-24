@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { dedupeHistoryByDay, localDayKey } from '@/core/sessionHistory'
+import { dedupeHistoryByDay, formatLocalDay, localDayKey } from '@/core/sessionHistory'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function reps(actualReps: number): SetResult {
@@ -39,6 +39,12 @@ describe('localDayKey', () => {
 
   test('ローカル日付境界（23:59 と翌 00:00）は別キーになる', () => {
     expect(localDayKey(day1Night)).not.toBe(localDayKey(day2Start))
+  })
+})
+
+describe('formatLocalDay', () => {
+  test('ローカル日付を YYYY/MM/DD 形式で返す（月日はゼロ詰め）', () => {
+    expect(formatLocalDay(day1Morning)).toBe('2026/01/01')
   })
 })
 
