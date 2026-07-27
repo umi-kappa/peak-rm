@@ -97,14 +97,14 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   flex: 1;
   flex-direction: column;
   align-items: flex-end;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .last-weight,
 .last-reps {
   display: flex;
   align-items: baseline;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .weight {
@@ -120,6 +120,8 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   font-size: var(--font-size-caption);
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-regular);
+  /* 折り返しうるのでルートの tight ではなく既定の行間（conventions「line-height の使い分け」） */
+  line-height: var(--line-height);
   text-align: right;
   word-break: break-word;
 }
