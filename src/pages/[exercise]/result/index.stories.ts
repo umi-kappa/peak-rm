@@ -4,7 +4,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import ResultPage from '@/pages/[exercise]/result/index.vue'
 import { sessionInjectionKey, type SessionStore } from '@/composables/shared/session/useSession'
 import { sessionRepoInjectionKey, type SessionRepo } from '@/storage/sessionRepo'
-import { makeSession, makeSessionRepo, makeSessionStore } from '@/stories/session'
+import { localStartedAt, makeSession, makeSessionRepo, makeSessionStore } from '@/stories/session'
 import { storybookRouter as router } from '@/stories/router'
 
 // セッション経由（完了・中断直後）の loaders。route を先に確定してから store / repo を用意する。
@@ -25,7 +25,7 @@ const sessionOriginLoader = (completedReps: number[], prevWeight?: number) => as
 const makePastSession = (memo = '') => {
   const past = makeSession('benchPress', 82.5, [8, 8, 8], {
     id: 'past',
-    startedAt: new Date(2025, 4, 12, 9, 0).getTime(),
+    startedAt: localStartedAt(2025, 5, 12),
   })
   past.results[0]!.memo = memo
   return past
@@ -47,7 +47,7 @@ const historyOriginLoader =
       sessions.push(
         makeSession('benchPress', 80, [8, 8, 8], {
           id: 'prev',
-          startedAt: new Date(2025, 4, 9, 9, 0).getTime(),
+          startedAt: localStartedAt(2025, 5, 9),
         }),
       )
     }
