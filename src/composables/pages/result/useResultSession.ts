@@ -1,6 +1,7 @@
 import { computed, shallowRef } from 'vue'
 
 import { computeLpPreview } from '@/core/linearProgression'
+import { hasOneRm } from '@/core/oneRm'
 import { sessionMaxOneRm, sessionOutcome } from '@/core/session'
 import { formatLocalDay } from '@/core/sessionHistory'
 import type { SessionStore } from '@/composables/shared/session/useSession'
@@ -55,10 +56,10 @@ export function useResultSession(
   // その日の推定 1RM（実績 0 回のセットは除外済み）。対象セットが無ければ 0
   const maxOneRm = computed(() => (session.value ? sessionMaxOneRm(session.value) : 0))
 
-  // 前回 executed の推定 1RM からの差分。前回が無い・当日の 1RM が 0（全セットスキップ等）なら
-  // 比較不能として undefined（画面は非表示。0 を — にする home の ExerciseCard と同じ規則）
+  // 前回 executed の推定 1RM からの差分。前回が無い・当日の 1RM が算出できない（全セットスキップ等）なら
+  // 比較不能として undefined（画面は非表示。算出可否の判定は core の hasOneRm に集約）
   const delta = computed(() => {
-    if (prev.value === undefined || maxOneRm.value === 0) return undefined
+    if (prev.value === undefined || !hasOneRm(maxOneRm.value)) return undefined
     return maxOneRm.value - sessionMaxOneRm(prev.value)
   })
 

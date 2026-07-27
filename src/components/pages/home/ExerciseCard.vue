@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Exercise, Session } from '@/core/types'
 import { EXERCISE_LABELS } from '@/core/constants'
+import { formatOneRm, hasOneRm } from '@/core/oneRm'
 import { formatSetReps, sessionMaxOneRm } from '@/core/session'
 import CardButton from '@/components/shared/ui/buttons/CardButton.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
@@ -15,9 +16,9 @@ const { exercise, session } = defineProps<{
 }>()
 
 const oneRm = computed(() => (session ? sessionMaxOneRm(session) : 0))
-// 全セットスキップ等で推定 1RM が 0 のときは記録があっても数値を出さず — にする
-const hasOneRm = computed(() => oneRm.value > 0)
-const oneRmText = computed(() => oneRm.value.toFixed(1))
+// 数値は accent + glow、— は tertiary と色が異なるため要素も分ける（文字列自体は formatOneRm が決める）
+const showOneRm = computed(() => hasOneRm(oneRm.value))
+const oneRmText = computed(() => formatOneRm(oneRm.value))
 const reps = computed(() => (session ? formatSetReps(session) : ''))
 </script>
 
@@ -29,8 +30,8 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
         <div class="est">
           <BaseLabel>EST. 1RM</BaseLabel>
           <div class="est-value">
-            <BigNumber v-if="hasOneRm" :value="oneRmText" size="stat" accent />
-            <span v-else class="est-empty">—</span>
+            <BigNumber v-if="showOneRm" :value="oneRmText" size="stat" accent />
+            <span v-else class="est-empty">{{ oneRmText }}</span>
             <BaseUnit>KG</BaseUnit>
           </div>
         </div>

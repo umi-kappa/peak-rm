@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { useResultSession } from '@/composables/pages/result/useResultSession'
 import { formatDeltaBadge } from '@/core/deltaBadge'
+import { formatOneRm, hasOneRm } from '@/core/oneRm'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useSetEdit } from '@/composables/shared/session/useSetEdit'
 import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
@@ -28,11 +29,11 @@ import type { ResultOrigin } from '@/router'
 
 // セッション結果 3 状態の表示ラベル（spec「結果確認画面」）。
 // EXECUTED は「全セット完走・目標未達」で、Session.status の executed（完遂）とは別の表示軸
-const MARKER_LABELS: Record<SessionOutcome, string> = {
+const MARKER_LABELS = {
   aborted: 'SESSION ABORTED',
   finished: 'SESSION EXECUTED',
   complete: 'SESSION COMPLETE',
-}
+} as const satisfies Record<SessionOutcome, string>
 
 const route = useRoute()
 const router = useRouter()
@@ -78,8 +79,9 @@ const { cards } = useSetTimeline(() => session.value, { live: false })
 
 const deleteConfirmOpen = ref(false)
 
-// 全セットスキップ等で推定 1RM が 0 のときは数値を出さず —（home の ExerciseCard と同じ規則）
-const oneRmText = computed(() => (maxOneRm.value > 0 ? maxOneRm.value.toFixed(1) : '—'))
+// 数値は accent + glow、— は tertiary と色が異なるため要素も分ける（home の ExerciseCard と同じ扱い）
+const showOneRm = computed(() => hasOneRm(maxOneRm.value))
+const oneRmText = computed(() => formatOneRm(maxOneRm.value))
 
 // 前回比バッジ（整形は formatDeltaBadge。増減で矢印を出し分け、差 0 は矢印なしの ±0.0）
 const deltaBadge = computed(() => formatDeltaBadge(delta.value))
@@ -149,7 +151,8 @@ onMounted(initialize)
           <div class="one-rm">
             <BaseLabel>EST. 1RM</BaseLabel>
             <div class="one-rm-value">
-              <BigNumber :value="oneRmText" size="hero" accent />
+              <BigNumber v-if="showOneRm" :value="oneRmText" size="hero" accent />
+              <span v-else class="one-rm-empty">{{ oneRmText }}</span>
               <BaseUnit>KG</BaseUnit>
             </div>
           </div>
@@ -276,6 +279,16 @@ onMounted(initialize)
   display: flex;
   align-items: baseline;
   gap: var(--space-8);
+}
+
+/* 算出できない（全セットスキップ）ときの — は、実績値と同じ重みで並ばないよう階調を落とす
+   （home の ExerciseCard・履歴の SessionSummaryCard と同じ規則） */
+.one-rm-empty {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
 }
 
 /* 前回比のピル。増減の事実提示に留める（丸枠 + 矢印 + 差分） */
