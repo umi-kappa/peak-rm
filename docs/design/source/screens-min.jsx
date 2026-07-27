@@ -497,9 +497,10 @@ const M_History = () => {
     <ScreenBody p={24}>
       {/* tabs */}
       <div style={{ display: 'flex', gap: 4, padding: 4, background: C.surface, borderRadius: 4, border: `1px solid ${C.lineSoft}` }}>
+        {/* 左右 padding は 8px。12px では最長ラベル（Bench Press）が 3 分割幅に収まらず折り返す */}
         {['Bench Press', 'Squat', 'Deadlift'].map((t, i) =>
           <div key={t} style={{
-            flex: 1, padding: '8px 12px', borderRadius: 4,
+            flex: 1, padding: 8, borderRadius: 4,
             background: i === 0 ? C.fg : 'transparent',
             color: i === 0 ? C.bg : C.fg3,
             fontFamily: FONT_MONO, fontSize: T.caption, fontWeight: i === 0 ? W.bold : W.regular,
@@ -564,22 +565,27 @@ const M_History = () => {
           ['05/12', '82.5', '8/8/7', '99.0', 'executed'],
           ['05/09', '80.0', '8/8/8', '96.0', 'completed'],
           ['05/06', '80.0', '8/8/5', '96.0', 'aborted'],
-          ['05/03', '77.5', '8/8/8', '93.0', 'completed']].
+          ['05/03', '77.5', '8/8/8', '93.0', 'completed'],
+          // 全セットスキップ = 推定 1RM が算出できない行。数値の代わりに — を fg3 で出す
+          ['04/29', '77.5', '0/0/0', '—', 'executed']].
           map(([d, weight, reps, rm, s]) => {
+            // 完遂だけをアクセントで立て、それ以外は本文より落とした階調にする
+            // （Result の Status marker と同じ扱い）
             const badge = {
               completed: { label: 'Completed', color: MA },
-              executed: { label: 'Executed', color: C.fg },
+              executed: { label: 'Executed', color: C.fg2 },
               aborted: { label: 'Aborted', color: C.fg3 }
             }[s];
             return (
               <div key={d} style={{
-                display: 'grid', gridTemplateColumns: '52px auto 1fr',
+                /* 日付は MM/DD の固定 5 桁なので、auto でも行をまたいで推定 1RM の左端が揃う */
+                display: 'grid', gridTemplateColumns: 'auto auto 1fr',
                 gap: 12, alignItems: 'center',
                 background: C.surface, border: `1px solid ${C.lineSoft}`, borderRadius: 4,
                 padding: '12px 16px'
               }}>
-            <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, textAlign: 'center' }}>{d}</span>
-            <span style={{ ...NumStyle, fontSize: T.title, fontWeight: W.bold, color: C.fg, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
+            <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2 }}>{d}</span>
+            <span style={{ ...NumStyle, fontSize: T.title, fontWeight: W.bold, color: rm === '—' ? C.fg3 : C.fg, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
               <span>{rm}</span>
               <Unit size={12}>kg</Unit>
             </span>
@@ -587,15 +593,17 @@ const M_History = () => {
               <span style={{ ...NumStyle, fontSize: T.body, color: C.fg2, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
                 <span>{weight}</span>
                 <Unit size={12}>kg</Unit>
-                <span style={{
-                      fontFamily: FONT_MONO, fontSize: T.caption, fontWeight: W.bold,
-                      color: badge.color, textTransform: 'uppercase', marginLeft: 4
-                    }}>{badge.label}</span>
               </span>
               <span style={{ ...NumStyle, fontSize: T.caption, color: C.fg3, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
-                <span>{reps}</span>
+                {/* 多セットで長くなったとき折り返し、右寄せ列の端を揃える（M_Home の reps と同じ） */}
+                <span style={{ textAlign: 'right', wordBreak: 'break-word' }}>{reps}</span>
                 <Unit size={12}>reps</Unit>
               </span>
+              {/* ステータスは実績から導出した結論なので、根拠（実績回数）の直後に置く */}
+              <span style={{
+                    fontFamily: FONT_MONO, fontSize: T.caption, fontWeight: W.bold,
+                    color: badge.color, textTransform: 'uppercase'
+                  }}>{badge.label}</span>
             </div>
           </div>);
           })}
