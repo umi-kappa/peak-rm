@@ -80,14 +80,14 @@ test('session フローを replace で畳むと、結果画面からの戻るは
   expect(router.currentRoute.value.name).toBe('home')
 })
 
-test('history から push で開いた結果画面の戻るは history に戻る', async () => {
+test('history から push で開いた結果画面の戻るは history に戻り、種目の絞り込みも保つ', async () => {
   const router = createAppRouter(createFakeSession().session, createMemoryHistory())
   await router.push({ name: 'home' }) // 初回 push で初期遷移（START_LOCATION → home）
 
-  await router.push({ name: 'history' })
+  await router.push({ name: 'history', query: { exercise: 'squat' } })
   await router.push({
     name: 'result',
-    params: { exercise: 'benchPress' },
+    params: { exercise: 'squat' },
     query: { origin: 'history' },
   })
   expect(router.currentRoute.value.name).toBe('result')
@@ -95,6 +95,20 @@ test('history から push で開いた結果画面の戻るは history に戻る
   router.back()
   await waitForNavigation(router)
   expect(router.currentRoute.value.name).toBe('history')
+  // 選択種目は URL に載っているので、戻ったときに絞り込みが失われない（spec「履歴」）
+  expect(router.currentRoute.value.query.exercise).toBe('squat')
+})
+
+test('履歴の種目切り替えは replace なので、戻るは切り替え前の種目ではなく history の手前へ抜ける', async () => {
+  const router = createAppRouter(createFakeSession().session, createMemoryHistory())
+  await router.push({ name: 'home' }) // 初回 push で初期遷移（START_LOCATION → home）
+
+  await router.push({ name: 'history', query: { exercise: 'benchPress' } })
+  await router.replace({ name: 'history', query: { exercise: 'squat' } })
+
+  router.back()
+  await waitForNavigation(router)
+  expect(router.currentRoute.value.name).toBe('home')
 })
 
 test('実行中セッションが無ければ training / interval へは入れずホームへ戻される', async () => {

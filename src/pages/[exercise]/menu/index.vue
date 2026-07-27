@@ -33,8 +33,7 @@ const sessionRepo = injectedRepo
 // route param を Exercise へ絞り込む。この画面は param を Session.exercise として
 // 保存するため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす
 const rawExercise = route.params.exercise
-const exercise =
-  typeof rawExercise === 'string' && isExercise(rawExercise) ? rawExercise : undefined
+const exercise = isExercise(rawExercise) ? rawExercise : undefined
 
 // undefined 始まりにして読み込み完了まで本体を描画しない
 //（共通初期値 → 増量後の値へ表示が切り替わるフラッシュを防ぐ）

@@ -14,4 +14,10 @@ describe('isExercise', () => {
     expect(isExercise('BENCHPRESS')).toBe(false)
     expect(isExercise('')).toBe(false)
   })
+
+  // route query は string | string[] | undefined を取り得る（配列は ?exercise=a&exercise=b）
+  test('文字列でない値も Exercise ではない（配列 query・値なし）', () => {
+    expect(isExercise(['squat'])).toBe(false)
+    expect(isExercise(undefined)).toBe(false)
+  })
 })
