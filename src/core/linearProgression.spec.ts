@@ -8,12 +8,10 @@ function makeSession(
   reps: number,
   sets: number,
   results: SetResult[],
-  status: Session['status'] = 'executed',
 ): Session {
   return {
     id: 'prev',
     exercise,
-    status,
     startedAt: 0,
     menu: { exercise, weight: 100, reps, sets, intervalSec: 90 },
     results,
@@ -25,17 +23,17 @@ function rep(actualReps: number): SetResult {
 }
 
 describe('computeLinearProgression', () => {
-  test('直前 executed のベンチプレスは menu.weight + 2.5kg を返す', () => {
+  test('直前が完遂のベンチプレスは menu.weight + 2.5kg を返す', () => {
     const prev = makeSession('benchPress', 8, 3, [rep(8), rep(8), rep(8)])
     expect(computeLinearProgression(prev)).toBe(102.5)
   })
 
-  test('直前 executed のスクワットは menu.weight + 5kg を返す', () => {
+  test('直前が完遂のスクワットは menu.weight + 5kg を返す', () => {
     const prev = makeSession('squat', 5, 3, [rep(5), rep(5), rep(5)])
     expect(computeLinearProgression(prev)).toBe(105)
   })
 
-  test('直前 executed のデッドリフトは menu.weight + 5kg を返す', () => {
+  test('直前が完遂のデッドリフトは menu.weight + 5kg を返す', () => {
     const prev = makeSession('deadlift', 5, 1, [rep(5)])
     expect(computeLinearProgression(prev)).toBe(105)
   })
@@ -50,12 +48,7 @@ describe('computeLinearProgression', () => {
   })
 
   test('直前が中断（results 不足）なら undefined（据え置き）', () => {
-    const prev = makeSession('benchPress', 8, 3, [rep(8)], 'aborted')
-    expect(computeLinearProgression(prev)).toBeUndefined()
-  })
-
-  test('status が aborted なら results が full でも undefined（据え置き）', () => {
-    const prev = makeSession('benchPress', 8, 3, [rep(8), rep(8), rep(8)], 'aborted')
+    const prev = makeSession('benchPress', 8, 3, [rep(8)])
     expect(computeLinearProgression(prev)).toBeUndefined()
   })
 })

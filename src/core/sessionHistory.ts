@@ -1,11 +1,11 @@
-import { sessionMaxOneRm } from '@/core/session'
+import { isComplete, sessionMaxOneRm } from '@/core/session'
 import type { Session } from '@/core/types'
 
 /**
  * 同（ローカル日付 × 種目）ごとに 1 件へ集約する純関数。結果は startedAt 降順。
  * 採用優先順位（spec「1RM グラフ」節の集約規則。履歴一覧でも共通）:
- *   1. `executed` を `aborted` より優先（後発の中断が同日の完遂記録を消さないため）
- *   2. 同 status なら推定 1RM が最大のもの（PeakRM はピーク強度を追跡するため、最新ではなくベスト記録を採用）
+ *   1. 完遂（isComplete）を未完遂より優先（後発の中断が同日の完遂記録を消さないため）
+ *   2. 完遂の有無が同じなら推定 1RM が最大のもの（PeakRM はピーク強度を追跡するため、最新ではなくベスト記録を採用）
  *   3. 1RM も同値なら startedAt 最大（決定論のための最終 tie-break）
  */
 export function dedupeHistoryByDay(sessions: Session[]): Session[] {
@@ -20,11 +20,11 @@ export function dedupeHistoryByDay(sessions: Session[]): Session[] {
   return [...best.values()].sort((a, b) => b.startedAt - a.startedAt)
 }
 
-// executed を aborted より優先 → 同 status なら推定 1RM 最大 → それも同値なら startedAt 最大。
+// 完遂を未完遂より優先 → 完遂の有無が同じなら推定 1RM 最大 → それも同値なら startedAt 最大。
 function isHigherPriority(a: Session, b: Session): boolean {
-  const aExecuted = a.status === 'executed'
-  const bExecuted = b.status === 'executed'
-  if (aExecuted !== bExecuted) return aExecuted
+  const aComplete = isComplete(a)
+  const bComplete = isComplete(b)
+  if (aComplete !== bComplete) return aComplete
   const aOneRm = sessionMaxOneRm(a)
   const bOneRm = sessionMaxOneRm(b)
   if (aOneRm !== bOneRm) return aOneRm > bOneRm

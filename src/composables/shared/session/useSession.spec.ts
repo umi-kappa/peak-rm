@@ -1,15 +1,18 @@
 import { reactive } from 'vue'
 import { describe, expect, test } from 'vitest'
 
-import { useSession, type SessionDeps } from '@/composables/shared/session/useSession'
+import {
+  useSession,
+  type SessionDeps,
+  type SessionStore,
+} from '@/composables/shared/session/useSession'
+import { isComplete } from '@/core/session'
 import type { Menu, SetResult, Session } from '@/core/types'
 
 // fake sessionRepo が記録する呼び出し履歴。永続化タイミングの検証に使う。
 type RepoCall =
   | { method: 'insert'; session: Session }
   | { method: 'patchResults'; id: string; results: SetResult[] }
-  | { method: 'patchResultsAndStatus'; id: string; results: SetResult[]; status: Session['status'] }
-  | { method: 'finalize'; id: string; results: SetResult[] }
 
 function createFakeRepo() {
   const calls: RepoCall[] = []
@@ -20,12 +23,6 @@ function createFakeRepo() {
     },
     patchResults: async (id: string, results: SetResult[]) => {
       calls.push({ method: 'patchResults', id, results })
-    },
-    patchResultsAndStatus: async (id: string, results: SetResult[], status: Session['status']) => {
-      calls.push({ method: 'patchResultsAndStatus', id, results, status })
-    },
-    finalize: async (id: string, results: SetResult[]) => {
-      calls.push({ method: 'finalize', id, results })
     },
   }
 }
@@ -41,15 +38,20 @@ function setup() {
   return { repo, session: useSession(deps) }
 }
 
+// 完遂かどうかは results から都度導出する（判定は core の isComplete に委ねる）
+function completed(store: SessionStore): boolean {
+  const current = store.session.value
+  return current !== undefined && isComplete(current)
+}
+
 describe('useSession', () => {
-  test('start は DB へ書き込まず、メモリ上に status=aborted の Session を構築する', () => {
+  test('start は DB へ書き込まず、メモリ上に実績空の Session を構築する', () => {
     const { repo, session } = setup()
     session.start(menu())
     expect(repo.calls).toHaveLength(0)
     expect(session.session.value).toMatchObject({
       id: 'sess-1',
       exercise: 'benchPress',
-      status: 'aborted',
       startedAt: 1000,
       results: [],
     })
@@ -67,7 +69,6 @@ describe('useSession', () => {
       method: 'insert',
       session: {
         id: 'sess-1',
-        status: 'aborted',
         results: [{ actualReps: 8, memo: '' }],
       },
     })
@@ -89,51 +90,57 @@ describe('useSession', () => {
     })
   })
 
-  test('最終セットを目標達成で完了すると finalize し status=executed・done になる', async () => {
+  test('最終セットを目標達成で完了すると patchResults で全 results を保存し、完遂・done になる', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2, reps: 8 }))
     await session.completeSet()
     session.nextSet()
     await session.completeSet()
     expect(repo.calls.at(-1)).toMatchObject({
-      method: 'finalize',
+      method: 'patchResults',
       id: 'sess-1',
       results: [
         { actualReps: 8, memo: '' },
         { actualReps: 8, memo: '' },
       ],
     })
-    expect(session.session.value?.status).toBe('executed')
+    expect(completed(session)).toBe(true)
     expect(session.phase.value).toBe('done')
   })
 
-  test('最終セットでも目標未達なら patchResults で aborted のまま done になる', async () => {
+  test('最終セットが目標未達なら未完遂のまま done になる', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2, reps: 8 }))
     await session.completeSet()
     session.nextSet()
     session.editCurrentReps(5)
     await session.completeSet()
-    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResults', id: 'sess-1' })
-    expect(repo.calls.some((c) => c.method === 'finalize')).toBe(false)
-    expect(session.session.value?.status).toBe('aborted')
+    expect(repo.calls.at(-1)).toMatchObject({
+      method: 'patchResults',
+      id: 'sess-1',
+      results: [
+        { actualReps: 8, memo: '' },
+        { actualReps: 5, memo: '' },
+      ],
+    })
+    expect(completed(session)).toBe(false)
     expect(session.phase.value).toBe('done')
   })
 
-  test('sets=1 の完遂は初回完了 = 最終セット完了で、insert 時点で executed を焼き込む', async () => {
+  test('sets=1 の完遂は初回完了 = 最終セット完了で、insert 1 回だけで確定する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 1, reps: 8 }))
     await session.completeSet()
     expect(repo.calls).toHaveLength(1)
     expect(repo.calls.at(0)).toMatchObject({
       method: 'insert',
-      session: { status: 'executed', results: [{ actualReps: 8, memo: '' }] },
+      session: { results: [{ actualReps: 8, memo: '' }] },
     })
-    expect(session.session.value?.status).toBe('executed')
+    expect(completed(session)).toBe(true)
     expect(session.phase.value).toBe('done')
   })
 
-  test('sets=1 の目標未達は insert 時点で aborted のまま確定する', async () => {
+  test('sets=1 の目標未達も insert 1 回で確定し、未完遂のまま done になる', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 1, reps: 8 }))
     session.editCurrentReps(5)
@@ -141,9 +148,9 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(1)
     expect(repo.calls.at(0)).toMatchObject({
       method: 'insert',
-      session: { status: 'aborted', results: [{ actualReps: 5, memo: '' }] },
+      session: { results: [{ actualReps: 5, memo: '' }] },
     })
-    expect(session.session.value?.status).toBe('aborted')
+    expect(completed(session)).toBe(false)
     expect(session.phase.value).toBe('done')
   })
 
@@ -171,7 +178,7 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('setActive')
   })
 
-  test('1 セットも完了せず leave すると DB には何も書かれない（空の aborted セッションを残さない）', () => {
+  test('1 セットも完了せず leave すると DB には何も書かれない（実績のないセッションを残さない）', () => {
     const { repo, session } = setup()
     session.start(menu())
     session.leave()
@@ -267,45 +274,28 @@ describe('useSession', () => {
     expect(session.phase.value).toBe('done')
   })
 
-  test('patchResultAt は完了済みセットの実績を更新し patchResultsAndStatus する', async () => {
+  test('patchResultAt は完了済みセットの実績を更新し patchResults する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
     await session.patchResultAt(0, { actualReps: 3 })
     expect(session.session.value?.results.at(0)?.actualReps).toBe(3)
     expect(repo.calls.at(-1)).toMatchObject({
-      method: 'patchResultsAndStatus',
+      method: 'patchResults',
       results: [{ actualReps: 3, memo: '' }],
     })
   })
 
-  test('結果確認画面での実績編集は status を再導出し executed↔aborted を追従する', async () => {
-    const { repo, session } = setup()
-    session.start(menu({ sets: 1, reps: 8 }))
-    await session.completeSet()
-    expect(session.session.value?.status).toBe('executed')
-
-    // 目標未満へ編集 → aborted へ降格
-    await session.patchResultAt(0, { actualReps: 5 })
-    expect(session.session.value?.status).toBe('aborted')
-    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'aborted' })
-
-    // 目標達成へ戻す → executed へ復帰
-    await session.patchResultAt(0, { actualReps: 8 })
-    expect(session.session.value?.status).toBe('executed')
-    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'executed' })
-  })
-
-  test('patchResultAt はメモだけの更新もでき patchResultsAndStatus する', async () => {
+  test('patchResultAt はメモだけの更新もでき patchResults する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
     await session.patchResultAt(0, { memo: 'フォームを意識した' })
     expect(session.session.value?.results.at(0)?.memo).toBe('フォームを意識した')
-    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus' })
+    expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResults' })
   })
 
-  test('patchResultAt は実績とメモを 1 回の patchResultsAndStatus で同時更新する', async () => {
+  test('patchResultAt は実績とメモを 1 回の patchResults で同時更新する', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 2 }))
     await session.completeSet()
@@ -317,7 +307,7 @@ describe('useSession', () => {
     })
     expect(repo.calls).toHaveLength(callsBefore + 1)
     expect(repo.calls.at(-1)).toMatchObject({
-      method: 'patchResultsAndStatus',
+      method: 'patchResults',
       results: [{ actualReps: 5, memo: '4回目からフォームが乱れた' }],
     })
   })

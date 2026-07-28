@@ -12,7 +12,7 @@ import type { SetResult, Session } from '@/core/types'
 // 依存は inject 済みの実体を画面から受け取る（useSession の deps と同じく、テストでは fake を渡す）
 export type ResultSessionDeps = {
   store: Pick<SessionStore, 'session' | 'patchResultAt'>
-  repo: Pick<SessionRepo, 'get' | 'patchResults' | 'latestExecutedBefore' | 'remove'>
+  repo: Pick<SessionRepo, 'get' | 'patchResults' | 'latestCompleteBefore' | 'remove'>
 }
 
 /**
@@ -30,13 +30,13 @@ export function useResultSession(
   // history origin で repo からロードしたセッション。実行中セッションと同じく
   // shallowRef + イミュータブル更新にし、編集の再保存で reactive proxy を repo へ渡さない
   const loaded = shallowRef<Session>()
-  // 同一種目で当該より前の直近 executed セッション（前回比の基準）。無ければ undefined のまま
+  // 同一種目で当該より前の直近の完遂セッション（前回比の基準）。無ければ undefined のまま
   const prev = shallowRef<Session>()
 
   const session = computed(() => (origin === 'session' ? store.session.value : loaded.value))
 
   /**
-   * 非同期ロード（history origin のセッション本体と、両 origin の前回 executed）。
+   * 非同期ロード（history origin のセッション本体と、両 origin の前回完遂セッション）。
    * 画面が onMounted で呼ぶ。history origin で id 不正・削除済みのときだけ false を返し、
    * 画面が履歴一覧へ逃がす（削除後のブラウザ戻り対策）。
    * 失敗（IndexedDB 例外）は catch せずエラー境界へ落とす
@@ -49,14 +49,14 @@ export function useResultSession(
     }
     const current = session.value
     if (current === undefined) return true
-    prev.value = await repo.latestExecutedBefore(current.exercise, current.startedAt)
+    prev.value = await repo.latestCompleteBefore(current.exercise, current.startedAt)
     return true
   }
 
   // その日の推定 1RM（実績 0 回のセットは除外済み）。対象セットが無ければ 0
   const maxOneRm = computed(() => (session.value ? sessionMaxOneRm(session.value) : 0))
 
-  // 前回 executed の推定 1RM からの差分。前回が無い・当日の 1RM が算出できない（全セットスキップ等）なら
+  // 前回完遂セッションの推定 1RM からの差分。前回が無い・当日の 1RM が算出できない（全セットスキップ等）なら
   // 比較不能として undefined（画面は非表示。算出可否の判定は core の hasOneRm に集約）
   const delta = computed(() => {
     if (prev.value === undefined || !hasOneRm(maxOneRm.value)) return undefined
@@ -86,8 +86,8 @@ export function useResultSession(
   // 編集ポリシーは下の保存規則（patchResultAt の history 分岐）と対でここが持ち、画面は配線だけにする
   const repsReadonly = origin === 'history'
 
-  // 実績・メモの編集。session origin は store（status 再導出込み）へ委譲する。
-  // history origin はメモのみの編集（実績は repsReadonly）なので status 不変のまま results を全置換する
+  // 実績・メモの編集。session origin は store へ委譲する。history origin（実績は repsReadonly で
+  // メモのみ編集可）は store を経由しないため、loaded と repo を自分で更新する
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     if (origin === 'session') {
       await store.patchResultAt(index, patch)

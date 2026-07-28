@@ -6,7 +6,7 @@ import type { ReadonlySession, SetResult } from '@/core/types'
 /**
  * セット編集モーダル（SetEditDialog）の画面側 glue を共通化するヘッドレス層。
  * 対象 index の保持・モーダルへ渡す値の導出・open / close / save の配線だけを担い、
- * 保存先の規則（status 再導出の有無など）は save 関数として画面から受け取る
+ * 保存先の規則は save 関数として画面から受け取る
  * （インターバル画面 = useSession.patchResultAt / 結果確認画面 = useResultSession.patchResultAt）。
  */
 export function useSetEdit(

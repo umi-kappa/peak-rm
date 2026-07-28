@@ -1,27 +1,24 @@
 import { computed, readonly, ref, shallowRef, toRaw, type InjectionKey } from 'vue'
 
-import { isComplete, sessionMaxOneRm } from '@/core/session'
+import { sessionMaxOneRm } from '@/core/session'
 import { sessionRepo } from '@/storage/sessionRepo'
 import type { Menu, SetResult, Session } from '@/core/types'
 
-// トレーニングフローの内部フェーズ。Session.status（executed / aborted）とは別軸で、
-// done は「フローが終端に達した」ことのみを表す（成否は Session.status が持つ）。
+// トレーニングフローの内部フェーズ。done は「フローが終端に達した」ことのみを表し、
+// 成否は results から導出する（core/session の isComplete / 表示用の sessionOutcome）。
 export type TrainingPhase = 'setActive' | 'interval' | 'done'
 
 // 依存は sessionRepo のみ注入する。start() には menu 画面で確定済みの Menu を渡す。
 // now / createId はテストで決定的にするため差し替え可能にする。
 export type SessionDeps = {
-  sessionRepo: Pick<
-    typeof sessionRepo,
-    'insert' | 'patchResults' | 'patchResultsAndStatus' | 'finalize'
-  >
+  sessionRepo: Pick<typeof sessionRepo, 'insert' | 'patchResults'>
   now?: () => number
   createId?: () => string
 }
 
 /**
  * 実行中セッション 1 つの状態機械と Dexie 増分保存を束ねるヘッドレス層。
- * 計算ルール（1RM・完遂判定）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
+ * 計算ルール（1RM 等）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
  * main.ts が単一インスタンスを生成して router のセッションガードへ渡しつつ app.provide し、
  * training / interval / result が inject で共有する。
  * deps は通常省略し、本番の sessionRepo・実時計・実 UUID を使う。テストでのみ fake repo や固定の now / createId を渡す。
@@ -53,8 +50,6 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     session.value = {
       id: createId(),
       exercise: menu.exercise,
-      // 保守的デフォルト。完遂時のみ executed へ更新する
-      status: 'aborted',
       startedAt: now(),
       menu: frozenMenu,
       results: [],
@@ -73,20 +68,15 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
       const results = [...current.results, { actualReps: draftReps.value, memo: '' }]
       const isFirstSet = current.results.length === 0
       const isLastSet = results.length === current.menu.sets
-      // 最終セットのみ完遂判定する。全セット目標達成のときだけ executed、それ以外（未達・非最終）は aborted 据え置き
-      const status = isLastSet && isComplete({ ...current, results }) ? 'executed' : 'aborted'
-      // 初回セット完了で初めて DB へ insert する（開始時には insert しない。
-      // sets = 1 なら初回完了 = 最終セット完了で、insert 時点で status を確定して焼き込む）。
-      // 以降は増分 patch、executed 確定時のみ finalize
+      // 初回セット完了で初めて DB へ insert する（開始時には insert しない）。以降は results を増分 patch。
+      // 完遂かどうかは results から都度導出されるため、書き込みは results のみで足りる
       if (isFirstSet) {
-        await repo.insert({ ...current, results, status })
-      } else if (status === 'executed') {
-        await repo.finalize(current.id, results)
+        await repo.insert({ ...current, results })
       } else {
         await repo.patchResults(current.id, results)
       }
       if (isLastSet) {
-        session.value = { ...current, results, status }
+        session.value = { ...current, results }
         phase.value = 'done'
         return
       }
@@ -110,8 +100,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     // 中断はインターバル中のみ（spec: 中断ボタンはインターバル画面にのみ配置。setActive には置かない）。
     // nextSet / completeSet と対称にガードする
     if (phase.value !== 'interval') return
-    // インターバル中 = 1 セット以上完了済みで、results は completeSet が aborted のまま
-    // 都度保存しているため追加書き込みは不要
+    // インターバル中 = 1 セット以上完了済みで、results は completeSet が都度保存しているため
+    // 追加書き込みは不要
     phase.value = 'done'
   }
 
@@ -130,11 +120,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     if (current === undefined) return
     if (index < 0 || index >= current.results.length) return
     const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
-    // 実績編集で完遂条件の充足が変わりうるため status を再導出し、results と同時に確定する。
-    // executed セッションを未達へ編集すれば aborted へ降格、その逆も追従し status×results の整合を保つ
-    const status = isComplete({ ...current, results }) ? 'executed' : 'aborted'
-    await repo.patchResultsAndStatus(current.id, results, status)
-    session.value = { ...current, results, status }
+    await repo.patchResults(current.id, results)
+    session.value = { ...current, results }
   }
 
   function editCurrentReps(value: number) {

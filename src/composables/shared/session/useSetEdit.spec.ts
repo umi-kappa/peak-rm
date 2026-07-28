@@ -8,7 +8,6 @@ function session(results: SetResult[]): ReadonlySession {
   return {
     id: 's',
     exercise: 'benchPress',
-    status: 'aborted',
     startedAt: 0,
     menu: { exercise: 'benchPress', weight: 100, reps: 8, sets: 3, intervalSec: 90 },
     results,

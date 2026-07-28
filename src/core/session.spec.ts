@@ -9,12 +9,10 @@ function makeSession(
   reps: number,
   sets: number,
   results: SetResult[],
-  status: Session['status'] = 'executed',
 ): Session {
   return {
     id: 'test',
     exercise,
-    status,
     startedAt: 0,
     menu: { exercise, weight, reps, sets, intervalSec: 90 },
     results,
@@ -36,8 +34,8 @@ describe('sessionMaxOneRm', () => {
     expect(sessionMaxOneRm(session)).toBe(112.5)
   })
 
-  test('aborted でも実施済みセットがあれば算出する', () => {
-    const session = makeSession('squat', 100, 8, 3, [reps(8)], 'aborted')
+  test('中断（未実施セットあり）でも実施済みセットがあれば算出する', () => {
+    const session = makeSession('squat', 100, 8, 3, [reps(8)])
     expect(sessionMaxOneRm(session)).toBeCloseTo(100 * (1 + 8 / 33.3))
   })
 

@@ -3,7 +3,7 @@ import type { ReadonlySession } from '@/core/types'
 
 /**
  * 1 Session 内の actualReps >= 1 のセットのみで 1RM を算出し、その最大値を返す。
- * status は見ず results のみで計算する（aborted でも実施済みセットは対象に含める）。
+ * セッションの結果によらず、実施済みセットはすべて対象に含める。
  * 対象セットが無い場合は 0。
  */
 export function sessionMaxOneRm(session: ReadonlySession): number {
@@ -27,6 +27,8 @@ export function formatSetReps(session: ReadonlySession): string {
  * 完遂（complete）の定義: 全セットが完了（results.length === menu.sets）し、
  * かつ全セットで actualReps >= menu.reps（目標回数）を満たすか。
  * results が menu.sets に満たない（＝中断）場合は false。
+ * ドメイン規則（増量トリガー・同日集約・repo の絞り込み）が参照する基底述語で、
+ * セッションの成否はこれを唯一の source とする。
  */
 export function isComplete(session: ReadonlySession): boolean {
   return (
@@ -36,14 +38,14 @@ export function isComplete(session: ReadonlySession): boolean {
 }
 
 /**
- * セッション結果の表示用 3 状態（spec「結果確認画面」のステータスマーカー）。
- * status（executed / aborted の 2 値）とは別の表示軸:
+ * セッション結果の 3 状態（spec「結果確認画面」のステータスマーカー）。
+ * isComplete に「未実施セットあり」を足した表示専用の投影で、ドメイン規則はこちらを参照しない:
  * aborted = 未実施セットあり（中断）/ finished = 全セット完走・目標未達（SESSION EXECUTED）/
  * complete = 完遂（SESSION COMPLETE）。ラベルへの写像は画面側が担う。
  */
 export type SessionOutcome = 'aborted' | 'finished' | 'complete'
 
-/** results の実態から SessionOutcome を導出する（status フィールドは見ない）。 */
+/** results と menu の実態から SessionOutcome を導出する。 */
 export function sessionOutcome(session: ReadonlySession): SessionOutcome {
   if (session.results.length < session.menu.sets) return 'aborted'
   return isComplete(session) ? 'complete' : 'finished'

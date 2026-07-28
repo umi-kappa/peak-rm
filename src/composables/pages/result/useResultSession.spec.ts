@@ -5,10 +5,9 @@ import {
   useResultSession,
   type ResultSessionDeps,
 } from '@/composables/pages/result/useResultSession'
-import { isComplete } from '@/core/session'
 import type { Session, SetResult } from '@/core/types'
 
-// 実績・メニューから status を導出した Session fixture（sets 指定で中断 = 未実施セットありを作る）
+// Session fixture（sets を実績件数より多く指定すると中断 = 未実施セットありになる）
 function makeSession(options: {
   id?: string
   startedAt?: number
@@ -18,10 +17,9 @@ function makeSession(options: {
   memos?: string[]
 }): Session {
   const { id = 'current', startedAt = 2000, weight = 100, actualReps, memos = [] } = options
-  const session: Session = {
+  return {
     id,
     exercise: 'benchPress',
-    status: 'aborted',
     startedAt,
     menu: {
       exercise: 'benchPress',
@@ -32,8 +30,6 @@ function makeSession(options: {
     },
     results: actualReps.map((reps, i) => ({ actualReps: reps, memo: memos[i] ?? '' })),
   }
-  session.status = isComplete(session) ? 'executed' : 'aborted'
-  return session
 }
 
 // store / repo の fake を束ねた deps。store は実装と同じイミュータブル更新で編集を反映する
@@ -44,16 +40,15 @@ function makeDeps(options: { storeSession?: Session; stored?: Session[]; prev?: 
     patchResultAt: vi.fn(async (index: number, patch: Partial<SetResult>) => {
       const current = storeRef.value
       if (current === undefined) return
-      // 本番 useSession.patchResultAt と同じく results 更新後に status を再導出する
+      // 本番 useSession.patchResultAt と同じくイミュータブルに results を差し替える
       const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
-      const next = { ...current, results }
-      storeRef.value = { ...next, status: isComplete(next) ? 'executed' : 'aborted' }
+      storeRef.value = { ...current, results }
     }),
   }
   const repo = {
     get: vi.fn(async (id: string) => options.stored?.find((s) => s.id === id)),
     patchResults: vi.fn(async () => {}),
-    latestExecutedBefore: vi.fn(async () => options.prev),
+    latestCompleteBefore: vi.fn(async () => options.prev),
     remove: vi.fn(async () => {}),
   }
   const deps: ResultSessionDeps = { store, repo }
@@ -72,7 +67,7 @@ describe('session origin', () => {
     expect(result.dayLabel.value).toBeUndefined()
   })
 
-  test('load が同一種目・当該より前の直近 executed を取得し delta を導出する', async () => {
+  test('load が同一種目・当該より前の直近の完遂セッションを取得し delta を導出する', async () => {
     const prev = makeSession({ id: 'prev', startedAt: 1000, weight: 97.5, actualReps: [8, 8, 8] })
     const { deps, repo } = makeDeps({
       storeSession: makeSession({ actualReps: [8, 8, 8] }),
@@ -81,12 +76,12 @@ describe('session origin', () => {
     const result = useResultSession('session', undefined, deps)
     await result.load()
 
-    expect(repo.latestExecutedBefore).toHaveBeenCalledWith('benchPress', 2000)
+    expect(repo.latestCompleteBefore).toHaveBeenCalledWith('benchPress', 2000)
     // 120 − 97.5 × 1.2 = 120 − 117 = +3
     expect(result.delta.value).toBeCloseTo(3)
   })
 
-  test('前回 executed が無ければ delta は undefined', async () => {
+  test('前回の完遂セッションが無ければ delta は undefined', async () => {
     const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
     const result = useResultSession('session', undefined, deps)
     await result.load()
@@ -105,10 +100,10 @@ describe('session origin', () => {
   })
 
   test('完遂セッションは lpPreview に今回 → 増量後の重量ペアを返し、未達は undefined', () => {
-    const { deps: executedDeps } = makeDeps({
+    const { deps: completeDeps } = makeDeps({
       storeSession: makeSession({ actualReps: [8, 8, 8] }),
     })
-    expect(useResultSession('session', undefined, executedDeps).lpPreview.value).toEqual({
+    expect(useResultSession('session', undefined, completeDeps).lpPreview.value).toEqual({
       from: 100,
       to: 102.5,
     })
