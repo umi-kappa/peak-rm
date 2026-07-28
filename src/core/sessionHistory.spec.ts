@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 
-import { dedupeHistoryByDay, formatLocalDay, localDayKey } from '@/core/sessionHistory'
+import {
+  dedupeHistoryByDay,
+  formatLocalDay,
+  formatLocalMonthDay,
+  localDayKey,
+} from '@/core/sessionHistory'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function reps(actualReps: number): SetResult {
@@ -45,6 +50,13 @@ describe('localDayKey', () => {
 describe('formatLocalDay', () => {
   test('ローカル日付を YYYY/MM/DD 形式で返す（月日はゼロ詰め）', () => {
     expect(formatLocalDay(day1Morning)).toBe('2026/01/01')
+  })
+})
+
+describe('formatLocalMonthDay', () => {
+  test('ローカル日付を MM/DD 形式で返す（年を落とし、1 桁はゼロ詰め・2 桁はそのまま）', () => {
+    expect(formatLocalMonthDay(day1Morning)).toBe('01/01')
+    expect(formatLocalMonthDay(new Date(2026, 11, 25, 9, 0).getTime())).toBe('12/25')
   })
 })
 

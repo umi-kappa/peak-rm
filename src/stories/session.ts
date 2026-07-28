@@ -5,6 +5,14 @@ import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Menu, Session } from '@/core/types'
 
 /**
+ * fixture の startedAt をローカル日付から作る（月は 1 始まりで渡す）。
+ * 日付表示・並び順を見る stories は CI の TZ に依存させないためこれを使う。
+ */
+export function localStartedAt(year: number, month: number, date: number): number {
+  return new Date(year, month - 1, date, 9, 0).getTime()
+}
+
+/**
  * 実 DB へ書かない fake repo を作る（stories の loaders / provide decorator から使う）。
  * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
@@ -43,12 +51,19 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
  * 全セットの実績を先頭セット以上（例: [8, 8, 8]）にすると完遂（executed）となり
  * linear progression のトリガーとしても使える。届かないセットがあれば aborted。
  * id / startedAt の既定は種目名 / 0。複数 fixture の並存や日付表示が要る stories だけ上書きする。
+ * menu の reps / sets も上書きでき、目標未達（実績 < reps）や未実施セットあり
+ * （results.length < sets = 中断）といった状態を実績と独立に作れる。
  */
 export function makeSession(
   exercise: Exercise,
   weight: number,
   actualReps: number[],
-  { id = exercise, startedAt = 0 }: { id?: string; startedAt?: number } = {},
+  {
+    id = exercise,
+    startedAt = 0,
+    reps = actualReps[0] ?? 0,
+    sets = actualReps.length,
+  }: { id?: string; startedAt?: number; reps?: number; sets?: number } = {},
 ): Session {
   // status は menu / results が揃ってから isExecuted で導出する（'aborted' は仮値）
   const session: Session = {
@@ -56,8 +71,8 @@ export function makeSession(
     exercise,
     status: 'aborted',
     startedAt,
-    menu: { exercise, weight, reps: actualReps[0] ?? 0, sets: actualReps.length, intervalSec: 90 },
-    results: actualReps.map((reps) => ({ actualReps: reps, memo: '' })),
+    menu: { exercise, weight, reps, sets, intervalSec: 90 },
+    results: actualReps.map((actual) => ({ actualReps: actual, memo: '' })),
   }
   session.status = isExecuted(session) ? 'executed' : 'aborted'
   return session

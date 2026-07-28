@@ -17,3 +17,19 @@ export function estimateOneRm(exercise: Exercise, weight: number, reps: number):
   if (reps < 1) return 0
   return weight * (1 + reps / ONE_RM_DIVISOR[exercise])
 }
+
+/**
+ * 推定 1RM が算出できたか。sessionMaxOneRm は計算対象のセットが無いとき 0 を返すため、
+ * 「0 = 不在」というセンチネル規則の判定はこの述語に集約する（表示・比較の各所で再判定しない）。
+ */
+export function hasOneRm(oneRm: number): boolean {
+  return oneRm > 0
+}
+
+/**
+ * 推定 1RM の表示文字列。小数 1 桁で示し、算出できないときは数値を出さず `—` にする
+ * （spec「ホーム」「結果確認画面」「履歴」で共通の規則）。
+ */
+export function formatOneRm(oneRm: number): string {
+  return hasOneRm(oneRm) ? oneRm.toFixed(1) : '—'
+}

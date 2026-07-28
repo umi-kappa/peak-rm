@@ -32,22 +32,33 @@ function isHigherPriority(a: Session, b: Session): boolean {
 }
 
 /**
- * timestamp が属するローカルカレンダー日のキー。
+ * timestamp が属するローカルカレンダー日の年月日。キーと表示ラベルの共通の土台。
  * 同一日の判定はデバイスのローカルタイムゾーン基準（UTC の toISOString は使わない）。
+ * 月日をゼロ詰めするのは、ソート / 表示のどちらに流用しても破綻しない固定桁にするため。
  */
-export function localDayKey(timestamp: number): string {
+function localDayParts(timestamp: number) {
   const d = new Date(timestamp)
-  // 月は 1 始まり・ゼロ詰めし、`2026-01-09` のように整形する
-  // （ソート / 表示 / 直列化に流用しても破綻しないキー形にする）。
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${month}-${day}`
+  return {
+    year: d.getFullYear(),
+    month: String(d.getMonth() + 1).padStart(2, '0'),
+    day: String(d.getDate()).padStart(2, '0'),
+  }
 }
 
-/**
- * timestamp が属するローカルカレンダー日の表示ラベル（`2026/01/09` 形式）。
- * localDayKey と同じ日付構成から作り、キーの内部表現（`-` 区切り）を表示層に漏らさない。
- */
+/** timestamp が属するローカルカレンダー日のキー（`2026-01-09` 形式）。 */
+export function localDayKey(timestamp: number): string {
+  const { year, month, day } = localDayParts(timestamp)
+  return `${year}-${month}-${day}`
+}
+
+/** timestamp が属するローカルカレンダー日の表示ラベル（`2026/01/09` 形式）。 */
 export function formatLocalDay(timestamp: number): string {
-  return localDayKey(timestamp).replace(/-/g, '/')
+  const { year, month, day } = localDayParts(timestamp)
+  return `${year}/${month}/${day}`
+}
+
+/** ローカルカレンダー日の月日ラベル（`01/09` 形式）。履歴一覧の行に使う。 */
+export function formatLocalMonthDay(timestamp: number): string {
+  const { month, day } = localDayParts(timestamp)
+  return `${month}/${day}`
 }

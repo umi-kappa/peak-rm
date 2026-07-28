@@ -192,7 +192,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - 日付 (履歴経由のみ。mono body bold, `2025/05/12` 形式)
 - Prescription summary: `82.5 kg · 8 reps · 3 sets`
 - Status marker (3 状態・履歴経由でも表示): `SESSION ABORTED` / `SESSION EXECUTED` (完走・目標未達。fg2, no glow) / `SESSION COMPLETE` (完遂。check + accent + glow)
-- ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit
+- ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す (glow なし。Home / History と共通の規則)
 - Delta badge (前回 executed セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
 - Next weight preview (LP triggered・セッション経由のみ): `Linear Progression` 行で `82.5 → 85.0 kg` を提示
 - セットタイムライン: カード全体のタップで編集モーダル (右端の ✎ は目印。履歴詳細でも表示され、実績 read-only でもメモは編集可)。`Add note` プロンプトはインターバル中のみで、この画面では未入力メモの行を出さない
@@ -203,10 +203,12 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 ### 6. History (`M_History`)
 
 - AppBar: 中央 "History"
-- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular
+- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)
 - Est. 1RM カード: 大きく `99.0` (mono stat bold + glow), Delta `+9.0 kg`, SVG 折れ線グラフ (アクセント色のパス + dot, X 軸日付)
-- セッション行リスト: 日付 (mono body) + 推定 1RM (mono title bold) + 詳細 (重量 reps セット数 mono caption)
-- `ABORTED` バッジ (mono caption bold)
+- セッション行リスト: 日付 (mono body, fg2) + 推定 1RM (mono title bold + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す) + 詳細 (右寄せ 3 段。重量 + `kg` unit → 実績回数 `8/8/7` + `reps` unit (mono caption fg3) → ステータスバッジ)
+  - **行の日付・重量は regular**（トークンの「bold = すべての数字」の例外。行内で立てるのは推定 1RM だけ）。Home の LAST 列が重量を bold にするのは、カード内に他の数値が無く単独で読ませるため
+- ステータスバッジ (mono caption bold, uppercase。状態の区分は Result の Status marker と同じ 3 状態だが、階調は本画面独自 — Result は complete だけ accent で aborted / executed とも fg2): `COMPLETED` (accent) / `EXECUTED` (fg2) / `ABORTED` (fg3)。ステータスは実績から導出した結論なので、根拠 (実績回数) の直後に置く。完遂だけをアクセントで立て、他は本文より落とした階調にする
+- 選択種目に記録が無いときは、セッション行の代わりに `NO SESSIONS` (mono caption fg3) を 1 行。`SESSIONS` の見出しは残す (Home が `LAST` ラベルを残して `NO LOG` を出すのと同じ扱い)
 - 行タップで Result 画面 (履歴詳細モード)
 
 ### 7. Settings (`M_Settings`)
