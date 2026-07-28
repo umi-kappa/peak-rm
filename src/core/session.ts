@@ -24,11 +24,11 @@ export function formatSetReps(session: ReadonlySession): string {
 }
 
 /**
- * executed の定義: 全セットが完了（results.length === menu.sets）し、
+ * 完遂（complete）の定義: 全セットが完了（results.length === menu.sets）し、
  * かつ全セットで actualReps >= menu.reps（目標回数）を満たすか。
  * results が menu.sets に満たない（＝中断）場合は false。
  */
-export function isExecuted(session: ReadonlySession): boolean {
+export function isComplete(session: ReadonlySession): boolean {
   return (
     session.results.length === session.menu.sets &&
     session.results.every((r) => r.actualReps >= session.menu.reps)
@@ -46,5 +46,5 @@ export type SessionOutcome = 'aborted' | 'finished' | 'complete'
 /** results の実態から SessionOutcome を導出する（status フィールドは見ない）。 */
 export function sessionOutcome(session: ReadonlySession): SessionOutcome {
   if (session.results.length < session.menu.sets) return 'aborted'
-  return isExecuted(session) ? 'complete' : 'finished'
+  return isComplete(session) ? 'complete' : 'finished'
 }

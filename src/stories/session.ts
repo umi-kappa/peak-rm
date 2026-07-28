@@ -1,5 +1,5 @@
 import { useSession, type SessionStore } from '@/composables/shared/session/useSession'
-import { isExecuted } from '@/core/session'
+import { isComplete } from '@/core/session'
 import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Menu, Session } from '@/core/types'
@@ -65,7 +65,7 @@ export function makeSession(
     sets = actualReps.length,
   }: { id?: string; startedAt?: number; reps?: number; sets?: number } = {},
 ): Session {
-  // status は menu / results が揃ってから isExecuted で導出する（'aborted' は仮値）
+  // status は menu / results が揃ってから isComplete で導出する（'aborted' は仮値）
   const session: Session = {
     id,
     exercise,
@@ -74,7 +74,7 @@ export function makeSession(
     menu: { exercise, weight, reps, sets, intervalSec: 90 },
     results: actualReps.map((actual) => ({ actualReps: actual, memo: '' })),
   }
-  session.status = isExecuted(session) ? 'executed' : 'aborted'
+  session.status = isComplete(session) ? 'executed' : 'aborted'
   return session
 }
 

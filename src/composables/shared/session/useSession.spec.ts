@@ -104,7 +104,6 @@ describe('useSession', () => {
       ],
     })
     expect(session.session.value?.status).toBe('executed')
-    expect(session.isExecutedNow.value).toBe(true)
     expect(session.phase.value).toBe('done')
   })
 
@@ -289,7 +288,6 @@ describe('useSession', () => {
     // 目標未満へ編集 → aborted へ降格
     await session.patchResultAt(0, { actualReps: 5 })
     expect(session.session.value?.status).toBe('aborted')
-    expect(session.isExecutedNow.value).toBe(false)
     expect(repo.calls.at(-1)).toMatchObject({ method: 'patchResultsAndStatus', status: 'aborted' })
 
     // 目標達成へ戻す → executed へ復帰

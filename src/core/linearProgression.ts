@@ -1,4 +1,4 @@
-import { isExecuted } from '@/core/session'
+import { isComplete } from '@/core/session'
 import type { Exercise, ReadonlySession } from '@/core/types'
 
 const PROGRESSION_STEP_KG: Record<Exercise, number> = {
@@ -20,7 +20,7 @@ export function computeLinearProgression(
 ): number | undefined {
   if (prevSession === undefined) return undefined
   // status が executed かつ results も条件を満たすときだけ増量する
-  if (prevSession.status === 'executed' && isExecuted(prevSession)) {
+  if (prevSession.status === 'executed' && isComplete(prevSession)) {
     return prevSession.menu.weight + PROGRESSION_STEP_KG[prevSession.exercise]
   }
   // aborted、および両者が食い違う異常データは据え置き

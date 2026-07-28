@@ -5,7 +5,7 @@ import type { Exercise, Session } from '@/core/types'
 
 function makeSession(exercise: Exercise, status: Session['status'], weight = 100): Session {
   const menu = { exercise, weight, reps: 5, sets: 3, intervalSec: 120 }
-  // executed は全セット target 達成、aborted は途中まで（isExecuted 判定の詳細は session.spec が担う）
+  // executed は全セット target 達成、aborted は途中まで（isComplete 判定の詳細は session.spec が担う）
   const actualReps = status === 'executed' ? [5, 5, 5] : [5]
   return {
     id: 'prev',

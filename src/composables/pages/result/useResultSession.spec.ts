@@ -5,7 +5,7 @@ import {
   useResultSession,
   type ResultSessionDeps,
 } from '@/composables/pages/result/useResultSession'
-import { isExecuted } from '@/core/session'
+import { isComplete } from '@/core/session'
 import type { Session, SetResult } from '@/core/types'
 
 // 実績・メニューから status を導出した Session fixture（sets 指定で中断 = 未実施セットありを作る）
@@ -32,7 +32,7 @@ function makeSession(options: {
     },
     results: actualReps.map((reps, i) => ({ actualReps: reps, memo: memos[i] ?? '' })),
   }
-  session.status = isExecuted(session) ? 'executed' : 'aborted'
+  session.status = isComplete(session) ? 'executed' : 'aborted'
   return session
 }
 
@@ -47,7 +47,7 @@ function makeDeps(options: { storeSession?: Session; stored?: Session[]; prev?: 
       // 本番 useSession.patchResultAt と同じく results 更新後に status を再導出する
       const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
       const next = { ...current, results }
-      storeRef.value = { ...next, status: isExecuted(next) ? 'executed' : 'aborted' }
+      storeRef.value = { ...next, status: isComplete(next) ? 'executed' : 'aborted' }
     }),
   }
   const repo = {

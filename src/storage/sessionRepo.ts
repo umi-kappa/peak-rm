@@ -28,7 +28,7 @@ async function patchResults(id: string, results: SetResult[]): Promise<void> {
 
 /**
  * results と status を 1 update で同時に書き込む。実績編集（patchResultAt）で完遂条件
- * （isExecuted）の充足が変わったとき、呼び出し側が再導出した status を results と一緒に
+ * （isComplete）の充足が変わったとき、呼び出し側が再導出した status を results と一緒に
  * 確定し、「results は更新されたが status は古い」二相不整合を構造的に排除する。
  * 対象 id が無ければ update は 0 件 no-op になるため例外を投げる（patchResults と同じ理由）。
  */
@@ -44,9 +44,9 @@ async function patchResultsAndStatus(
 /**
  * 最終セット完了時の executed 確定。patchResultsAndStatus の executed 特化エントリで、
  * 「results は最終だが status は aborted」という中間状態を構造的に排除する。
- * results が完遂条件（isExecuted）を満たすかは検証しない。呼び出し側は executed 確定時
+ * results が完遂条件（isComplete）を満たすかは検証しない。呼び出し側は executed 確定時
  * （全セット完了かつ target 達成）にのみ呼ぶこと。仮に未完遂で呼ばれても、増量トリガーは
- * linearProgression 側が isExecuted で再判定する。
+ * linearProgression 側が isComplete で再判定する。
  */
 async function finalize(id: string, results: SetResult[]): Promise<void> {
   await patchResultsAndStatus(id, results, 'executed')
@@ -79,7 +79,7 @@ async function listForHistory(): Promise<Session[]> {
 
 /**
  * 同一種目の直前セッション（startedAt 最大）を返す。無ければ undefined。
- * ステータスで絞らない（ホーム表示・progression 双方で使い、executed 判定は呼び出し側）。
+ * ステータスで絞らない（ホーム表示・progression 双方で使い、完遂判定は呼び出し側）。
  * [exercise+startedAt] 複合 index の範囲末尾を DB 側で 1 件取得する（全件展開しない）。
  */
 async function latestByExercise(exercise: Exercise): Promise<Session | undefined> {

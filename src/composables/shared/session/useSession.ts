@@ -1,6 +1,6 @@
 import { computed, readonly, ref, shallowRef, toRaw, type InjectionKey } from 'vue'
 
-import { isExecuted, sessionMaxOneRm } from '@/core/session'
+import { isComplete, sessionMaxOneRm } from '@/core/session'
 import { sessionRepo } from '@/storage/sessionRepo'
 import type { Menu, SetResult, Session } from '@/core/types'
 
@@ -21,7 +21,7 @@ export type SessionDeps = {
 
 /**
  * 実行中セッション 1 つの状態機械と Dexie 増分保存を束ねるヘッドレス層。
- * 計算ルール（1RM・executed 判定）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
+ * 計算ルール（1RM・完遂判定）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
  * main.ts が単一インスタンスを生成して router のセッションガードへ渡しつつ app.provide し、
  * training / interval / result が inject で共有する。
  * deps は通常省略し、本番の sessionRepo・実時計・実 UUID を使う。テストでのみ fake repo や固定の now / createId を渡す。
@@ -74,7 +74,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
       const isFirstSet = current.results.length === 0
       const isLastSet = results.length === current.menu.sets
       // 最終セットのみ完遂判定する。全セット目標達成のときだけ executed、それ以外（未達・非最終）は aborted 据え置き
-      const status = isLastSet && isExecuted({ ...current, results }) ? 'executed' : 'aborted'
+      const status = isLastSet && isComplete({ ...current, results }) ? 'executed' : 'aborted'
       // 初回セット完了で初めて DB へ insert する（開始時には insert しない。
       // sets = 1 なら初回完了 = 最終セット完了で、insert 時点で status を確定して焼き込む）。
       // 以降は増分 patch、executed 確定時のみ finalize
@@ -132,7 +132,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
     // 実績編集で完遂条件の充足が変わりうるため status を再導出し、results と同時に確定する。
     // executed セッションを未達へ編集すれば aborted へ降格、その逆も追従し status×results の整合を保つ
-    const status = isExecuted({ ...current, results }) ? 'executed' : 'aborted'
+    const status = isComplete({ ...current, results }) ? 'executed' : 'aborted'
     await repo.patchResultsAndStatus(current.id, results, status)
     session.value = { ...current, results, status }
   }
@@ -151,7 +151,6 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     currentSetIndex: computed(() => session.value?.results.length ?? 0),
     setsTotal: computed(() => session.value?.menu.sets ?? 0),
     maxOneRm: computed(() => (session.value ? sessionMaxOneRm(session.value) : 0)),
-    isExecutedNow: computed(() => (session.value ? isExecuted(session.value) : false)),
     start,
     completeSet,
     nextSet,
