@@ -8,7 +8,7 @@ import type { Session } from '@/core/types'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import CardButton from '@/components/shared/ui/buttons/CardButton.vue'
 
-// ステータスバッジの表示。ラベルは結果確認画面のマーカーと同じ 3 状態の短縮形（design「05 History」）。
+// ステータスバッジの表示。ラベルは結果確認画面のマーカーと同じ 3 状態に対応する。
 // tone は色クラス名で、core の union 名を CSS に直結させない（値名を変えても壊れるのはこの表だけ）。
 // 色は 3 状態の区別だけに使い、完遂だけをアクセントで立てて他は本文より落とす
 const BADGE = {
@@ -76,21 +76,15 @@ const reps = computed(() => formatSetReps(session))
   line-height: var(--line-height-tight);
 }
 
-/* 行内テキストは mono で統一し、各クラスには差分（色・サイズ・太さ）だけ置く */
+/* 行内テキストは mono で統一し、各クラスには差分（色・サイズ・太さ）だけ置く。
+   太さを立てるのは推定 1RM とバッジだけで、日付・重量・実績回数は数字でも
+   body 既定の regular に留める */
 .date,
 .one-rm-value,
 .weight,
 .reps,
 .badge {
   font-family: var(--font-family-mono);
-}
-
-/* 行内で bold にするのは推定 1RM とバッジだけ（design「6. History」の「行の日付・重量は regular」）。
-   共有ルール側に regular を置くと、bold 側が同一 specificity の後勝ちに依存してしまう */
-.date,
-.weight,
-.reps {
-  font-weight: var(--font-weight-regular);
 }
 
 /* 桁揃えは数値だけ（バッジは文字のみで効かない） */
@@ -110,7 +104,7 @@ const reps = computed(() => formatSetReps(session))
   gap: var(--space-4);
 }
 
-/* 行内で立てるのは推定 1RM だけなので、日付と重量は一段落とす（design「6. History」） */
+/* 値のうち色で立てるのは推定 1RM だけなので、日付と重量は一段落とす */
 .date,
 .weight {
   color: var(--color-text-secondary);

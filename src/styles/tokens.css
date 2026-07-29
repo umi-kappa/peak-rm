@@ -30,7 +30,7 @@
   /* ===== font weight ===== */
   --font-weight-regular: 500; /* このアプリの既定の太さ（本文・ラベル等） */
   --font-weight-semibold: 600; /* sans 見出し・× 8 reps・secondary ボタン大文字 */
-  --font-weight-bold: 700; /* すべての数字・brand・CTA・active */
+  --font-weight-bold: 700; /* 数字・brand・CTA・active・mono caps の見出しとステータスラベル（例: AppBar タイトル・training の SET 行・badge・marker） */
 
   /* ===== line height（既定は bare・例外のみ接尾辞） ===== */
   --line-height: 1.4; /* デフォルト: 本文・ラベル・caption */
