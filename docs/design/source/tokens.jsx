@@ -19,7 +19,7 @@ const C = {
 const PhoneFrame = ({ children, label, h = 800, w = 390, bg, style }) => (
   <div data-screen-label={label} style={{
     width: w, height: h, background: bg || C.bg, color: C.fg,
-    fontFamily: FONT_SANS, lineHeight: 1.4, overflow: 'hidden',
+    fontFamily: FONT_SANS, fontWeight: W.regular, lineHeight: 1.4, overflow: 'hidden',
     display: 'flex', flexDirection: 'column',
     position: 'relative', ...style,
   }}>
