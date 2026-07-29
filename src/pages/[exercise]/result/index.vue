@@ -28,7 +28,7 @@ import TimelineSetCard from '@/components/shared/session/TimelineSetCard.vue'
 import type { ResultOrigin } from '@/router'
 
 // セッション結果 3 状態の表示ラベル（spec「結果確認画面」）。
-// EXECUTED は「全セット完走・目標未達」で、Session.status の executed（完遂）とは別の表示軸
+// EXECUTED は「全セットを実行した（目標未達）」、COMPLETE は「目標にも到達した」を指す
 const MARKER_LABELS = {
   aborted: 'SESSION ABORTED',
   finished: 'SESSION EXECUTED',

@@ -18,13 +18,11 @@ function makeSession(
   id: string,
   exercise: Exercise,
   startedAt: number,
-  status: Session['status'] = 'aborted',
   results: SetResult[] = [reps(8)],
 ): Session {
   return {
     id,
     exercise,
-    status,
     startedAt,
     menu: { exercise, weight: 100, reps: 8, sets: 3, intervalSec: 90 },
     results,
@@ -61,53 +59,56 @@ describe('formatLocalMonthDay', () => {
 })
 
 describe('dedupeHistoryByDay', () => {
-  test('同日同種目で executed があれば、後発の aborted より executed を優先する', () => {
+  test('同日同種目で完遂があれば、後発の未完遂より完遂を優先する', () => {
     const result = dedupeHistoryByDay([
-      makeSession('done', 'benchPress', day1Morning, 'executed', [reps(8), reps(8), reps(8)]),
-      makeSession('reopenedAborted', 'benchPress', day1Evening, 'aborted'),
+      makeSession('done', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
+      makeSession('reopenedAborted', 'benchPress', day1Evening),
     ])
     expect(result.map((s) => s.id)).toEqual(['done'])
   })
 
-  test('同日同種目・同 status では、最新ではなく推定 1RM が最大のものを残す', () => {
+  // 未完遂には「未実施セットあり」と「全セット完走・目標未達」の 2 経路があり、優先判定が
+  // results の件数だけを見る実装に退化しても前者では気づけないため後者も固定する。
+  // 両者の推定 1RM は同値（最大 reps が 8 で並ぶ）なので、完遂優先が壊れると後発が残って落ちる
+  test('同日同種目で完遂と全セット完走・目標未達なら完遂を優先する', () => {
+    const result = dedupeHistoryByDay([
+      makeSession('done', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
+      makeSession('finishedLater', 'benchPress', day1Evening, [reps(8), reps(8), reps(7)]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['done'])
+  })
+
+  test('同日同種目でともに完遂なら、最新ではなく推定 1RM が最大のものを残す', () => {
     // 早い方が高 reps（高 1RM）、遅い方が低 reps（低 1RM）。ベスト記録の earlyBest を採用する。
     const result = dedupeHistoryByDay([
-      makeSession('earlyBest', 'benchPress', day1Morning, 'executed', [
-        reps(10),
-        reps(10),
-        reps(10),
-      ]),
-      makeSession('lateWorse', 'benchPress', day1Evening, 'executed', [reps(8), reps(8), reps(8)]),
+      makeSession('earlyBest', 'benchPress', day1Morning, [reps(10), reps(10), reps(10)]),
+      makeSession('lateWorse', 'benchPress', day1Evening, [reps(8), reps(8), reps(8)]),
     ])
     expect(result.map((s) => s.id)).toEqual(['earlyBest'])
   })
 
-  test('executed が無く全 aborted なら、最新ではなく推定 1RM が最大の aborted を残す', () => {
-    // 早い方が高 reps（高 1RM）。executed が 1 件も無い場合の「aborted の中で 1RM 最大」分岐。
+  test('完遂が無く全て未完遂なら、最新ではなく推定 1RM が最大の未完遂を残す', () => {
+    // 早い方が高 reps（高 1RM）。完遂が 1 件も無い場合の「未完遂の中で 1RM 最大」分岐。
     const result = dedupeHistoryByDay([
-      makeSession('abortedBest', 'benchPress', day1Morning, 'aborted', [reps(10)]),
-      makeSession('abortedWorse', 'benchPress', day1Evening, 'aborted', [reps(5)]),
+      makeSession('abortedBest', 'benchPress', day1Morning, [reps(10)]),
+      makeSession('abortedWorse', 'benchPress', day1Evening, [reps(5)]),
     ])
     expect(result.map((s) => s.id)).toEqual(['abortedBest'])
   })
 
-  test('入力順に依らず executed を優先する（aborted が先・executed が後でも executed を残す）', () => {
-    // DB が startedAt 昇順で渡すケース。先に Map へ入った aborted を後続 executed が置き換える分岐。
+  test('入力順に依らず完遂を優先する（未完遂が先・完遂が後でも完遂を残す）', () => {
+    // DB が startedAt 昇順で渡すケース。先に Map へ入った未完遂を後続の完遂が置き換える分岐。
     const result = dedupeHistoryByDay([
-      makeSession('abortedFirst', 'benchPress', day1Morning, 'aborted'),
-      makeSession('executedLater', 'benchPress', day1Evening, 'executed', [
-        reps(8),
-        reps(8),
-        reps(8),
-      ]),
+      makeSession('abortedFirst', 'benchPress', day1Morning),
+      makeSession('completeLater', 'benchPress', day1Evening, [reps(8), reps(8), reps(8)]),
     ])
-    expect(result.map((s) => s.id)).toEqual(['executedLater'])
+    expect(result.map((s) => s.id)).toEqual(['completeLater'])
   })
 
-  test('同日同種目・同 status・1RM 同値なら最新（startedAt 最大）を残す', () => {
+  test('同日同種目でともに完遂・1RM 同値なら最新（startedAt 最大）を残す', () => {
     const result = dedupeHistoryByDay([
-      makeSession('early', 'benchPress', day1Morning, 'executed', [reps(8), reps(8), reps(8)]),
-      makeSession('late', 'benchPress', day1Evening, 'executed', [reps(8), reps(8), reps(8)]),
+      makeSession('early', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
+      makeSession('late', 'benchPress', day1Evening, [reps(8), reps(8), reps(8)]),
     ])
     expect(result.map((s) => s.id)).toEqual(['late'])
   })

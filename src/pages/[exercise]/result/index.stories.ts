@@ -8,7 +8,7 @@ import { localStartedAt, makeSession, makeSessionRepo, makeSessionStore } from '
 import { storybookRouter as router } from '@/stories/router'
 
 // セッション経由（完了・中断直後）の loaders。route を先に確定してから store / repo を用意する。
-// prevWeight を渡すと前回 executed の fixture が入り、前回比 delta が表示される
+// prevWeight を渡すと前回の完遂セッションの fixture が入り、前回比 delta が表示される
 const sessionOriginLoader = (completedReps: number[], prevWeight?: number) => async () => {
   await router.push('/benchPress/result?origin=session')
   return {
@@ -31,7 +31,7 @@ const makePastSession = (memo = '') => {
   return past
 }
 
-// 履歴経由の loaders。route を確定し、repo に past（withPrev で前回 executed も）を置く。
+// 履歴経由の loaders。route を確定し、repo に past（withPrev で前回の完遂セッションも）を置く。
 // wrapRepo は Behavior が repo 関数を fn() スパイへ差し替えるための seam
 const historyOriginLoader =
   (
@@ -95,8 +95,8 @@ export const Aborted: Story = {
   loaders: [sessionOriginLoader([8], 85)],
 }
 
-// 完走・目標未達（SESSION EXECUTED。全セット done だが status は executed にならず、
-// マーカーが status ではなく results 由来であることを示す。次回増量プレビューは出ない）
+// 完走・目標未達（SESSION EXECUTED。全セット done だが最終セットが目標未達で完遂にならない。
+// 次回増量プレビューは出ない）
 export const Finished: Story = {
   loaders: [sessionOriginLoader([8, 8, 7], 80)],
 }

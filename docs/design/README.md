@@ -193,7 +193,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - Prescription summary: `82.5 kg · 8 reps · 3 sets`
 - Status marker (3 状態・履歴経由でも表示): `SESSION ABORTED` / `SESSION EXECUTED` (完走・目標未達。fg2, no glow) / `SESSION COMPLETE` (完遂。check + accent + glow)
 - ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す (glow なし。Home / History と共通の規則)
-- Delta badge (前回 executed セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
+- Delta badge (前回の完遂 (`SESSION COMPLETE`) セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
 - Next weight preview (LP triggered・セッション経由のみ): `Linear Progression` 行で `82.5 → 85.0 kg` を提示
 - セットタイムライン: カード全体のタップで編集モーダル (右端の ✎ は目印。履歴詳細でも表示され、実績 read-only でもメモは編集可)。`Add note` プロンプトはインターバル中のみで、この画面では未入力メモの行を出さない
 - 下部:
@@ -258,7 +258,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### Linear Progression アクセント (M_Menu)
 
-- 前回 executed セッションがあれば `Last session completed!` バナー + 重量 diff 表示
+- 直前セッションが完遂していれば `Last session completed!` バナー + 重量 diff 表示
 - 増量幅: Bench `+2.5 kg` / Squat・Deadlift `+5 kg` (`spec.md` §2)
 
 ### Set Edit Modal (M_Modal)

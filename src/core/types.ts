@@ -16,7 +16,6 @@ export type SetResult = {
 export type Session = {
   id: string
   exercise: Exercise
-  status: 'executed' | 'aborted'
   startedAt: number // unix ms
   menu: Readonly<Menu> // 開始時点の deep copy を焼き込み、Readonly で変更を禁止
   results: SetResult[]

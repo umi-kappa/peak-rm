@@ -16,12 +16,10 @@ function makeSession(
   exercise: Exercise,
   startedAt: number,
   results: SetResult[] = [reps(8)],
-  status: Session['status'] = 'aborted',
 ): Session {
   return {
     id,
     exercise,
-    status,
     startedAt,
     menu: { exercise, weight: 100, reps: 8, sets: 3, intervalSec: 90 },
     results,
@@ -33,21 +31,16 @@ function reps(actualReps: number): SetResult {
 }
 
 describe('永続化シーケンス', () => {
-  test('初回セット完了の insert → 増分 patch → finalize で executed と全 results が揃う', async () => {
+  test('初回セット完了の insert → 増分 patch で全セットの results が揃う', async () => {
     await sessionRepo.insert(makeSession('s1', 'benchPress', 1000, [reps(8)]))
-    const inserted = await db.sessions.get('s1')
-    expect(inserted?.status).toBe('aborted')
-    expect(inserted?.results).toHaveLength(1)
+    expect((await db.sessions.get('s1'))?.results).toHaveLength(1)
 
     await sessionRepo.patchResults('s1', [reps(8), reps(8)])
-    const mid = await db.sessions.get('s1')
-    expect(mid?.status).toBe('aborted')
-    expect(mid?.results).toHaveLength(2)
+    expect((await db.sessions.get('s1'))?.results).toHaveLength(2)
 
-    await sessionRepo.finalize('s1', [reps(8), reps(8), reps(8)])
-    const done = await db.sessions.get('s1')
-    expect(done?.status).toBe('executed')
-    expect(done?.results).toHaveLength(3)
+    // 最終セット完了も同じ patchResults で足りる（完遂確定のための特別な書き込みは無い）
+    await sessionRepo.patchResults('s1', [reps(8), reps(8), reps(8)])
+    expect((await db.sessions.get('s1'))?.results).toHaveLength(3)
   })
 
   test('results が空のセッションは insert を拒否する（不変条件: 実績のあるセッションのみ保存）', async () => {
@@ -72,10 +65,6 @@ describe('永続化シーケンス', () => {
 
   test('patchResults を存在しない id に呼ぶと例外を投げる（サイレント no-op を防ぐ）', async () => {
     await expect(sessionRepo.patchResults('missing', [reps(8)])).rejects.toThrow()
-  })
-
-  test('finalize を存在しない id に呼ぶと例外を投げる', async () => {
-    await expect(sessionRepo.finalize('missing', [reps(8)])).rejects.toThrow()
   })
 })
 
@@ -108,17 +97,11 @@ describe('listForHistory', () => {
   const day1Evening = new Date(2026, 0, 1, 18, 0).getTime()
   const day2 = new Date(2026, 0, 2, 9, 0).getTime()
 
-  test('DB 経由で取得し、同日同種目は集約規則（executed 優先 → 1RM 最大 → startedAt 最大）で 1 件に絞り startedAt 降順で返す', async () => {
-    // 朝 executed・夜 aborted を同日同種目で insert。後発 aborted が完遂記録を上書きせず
-    // executed の benchMorning が残ることを DB → list() → dedupeHistoryByDay の統合パスで確認する。
+  test('DB 経由で取得し、同日同種目は集約規則（完遂優先 → 1RM 最大 → startedAt 最大）で 1 件に絞り startedAt 降順で返す', async () => {
+    // 朝は完遂・夜は中断を同日同種目で insert。後発の中断が完遂記録を上書きせず
+    // 完遂の benchMorning が残ることを DB → list() → dedupeHistoryByDay の統合パスで確認する。
     await sessionRepo.insert(
-      makeSession(
-        'benchMorning',
-        'benchPress',
-        day1Morning,
-        [reps(8), reps(8), reps(8)],
-        'executed',
-      ),
+      makeSession('benchMorning', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
     )
     await sessionRepo.insert(makeSession('benchEvening', 'benchPress', day1Evening))
     await sessionRepo.insert(makeSession('squatDay2', 'squat', day2))
@@ -140,37 +123,47 @@ describe('get', () => {
   })
 })
 
-describe('latestExecutedBefore', () => {
-  const executedResults = [reps(8), reps(8), reps(8)]
+describe('latestCompleteBefore', () => {
+  // menu.sets = 3 に対して 3 セットすべて target 達成 = 完遂
+  const completeResults = [reps(8), reps(8), reps(8)]
 
-  test('startedAt より前の直近 executed を返す（当該セッション自身は含めない）', async () => {
-    await sessionRepo.insert(makeSession('older', 'benchPress', 1000, executedResults, 'executed'))
-    await sessionRepo.insert(makeSession('prev', 'benchPress', 2000, executedResults, 'executed'))
+  test('startedAt より前の直近の完遂セッションを返す（当該セッション自身は含めない）', async () => {
+    await sessionRepo.insert(makeSession('older', 'benchPress', 1000, completeResults))
+    await sessionRepo.insert(makeSession('prev', 'benchPress', 2000, completeResults))
     // 当該セッション（結果確認中の本人）。上限排他で除外される
-    await sessionRepo.insert(makeSession('self', 'benchPress', 3000, executedResults, 'executed'))
+    await sessionRepo.insert(makeSession('self', 'benchPress', 3000, completeResults))
 
-    expect((await sessionRepo.latestExecutedBefore('benchPress', 3000))?.id).toBe('prev')
+    expect((await sessionRepo.latestCompleteBefore('benchPress', 3000))?.id).toBe('prev')
   })
 
-  test('aborted はスキップしてさらに前の executed を返す', async () => {
-    await sessionRepo.insert(
-      makeSession('executed', 'benchPress', 1000, executedResults, 'executed'),
-    )
+  test('未完遂はスキップしてさらに前の完遂セッションを返す', async () => {
+    await sessionRepo.insert(makeSession('complete', 'benchPress', 1000, completeResults))
     await sessionRepo.insert(makeSession('aborted', 'benchPress', 2000))
 
-    expect((await sessionRepo.latestExecutedBefore('benchPress', 3000))?.id).toBe('executed')
+    expect((await sessionRepo.latestCompleteBefore('benchPress', 3000))?.id).toBe('complete')
   })
 
-  test('他種目の executed は無視する', async () => {
-    await sessionRepo.insert(makeSession('squat', 'squat', 1000, executedResults, 'executed'))
+  // 未完遂には「未実施セットあり」と「全セット完走・目標未達」の 2 経路があり、filter が
+  // results の件数だけを見る実装に退化しても前者では気づけないため後者も固定する
+  test('全セット完走・目標未達もスキップしてさらに前の完遂セッションを返す', async () => {
+    await sessionRepo.insert(makeSession('complete', 'benchPress', 1000, completeResults))
+    await sessionRepo.insert(
+      makeSession('finished', 'benchPress', 2000, [reps(8), reps(8), reps(7)]),
+    )
 
-    expect(await sessionRepo.latestExecutedBefore('benchPress', 3000)).toBeUndefined()
+    expect((await sessionRepo.latestCompleteBefore('benchPress', 3000))?.id).toBe('complete')
   })
 
-  test('前に executed が無ければ undefined（初回セッション）', async () => {
-    await sessionRepo.insert(makeSession('self', 'benchPress', 1000, executedResults, 'executed'))
+  test('他種目の完遂セッションは無視する', async () => {
+    await sessionRepo.insert(makeSession('squat', 'squat', 1000, completeResults))
 
-    expect(await sessionRepo.latestExecutedBefore('benchPress', 1000)).toBeUndefined()
+    expect(await sessionRepo.latestCompleteBefore('benchPress', 3000)).toBeUndefined()
+  })
+
+  test('前に完遂セッションが無ければ undefined（初回セッション）', async () => {
+    await sessionRepo.insert(makeSession('self', 'benchPress', 1000, completeResults))
+
+    expect(await sessionRepo.latestCompleteBefore('benchPress', 1000)).toBeUndefined()
   })
 })
 
@@ -193,8 +186,8 @@ describe('latestByExercise', () => {
     expect((await sessionRepo.latestByExercise('benchPress'))?.id).toBe('bench')
   })
 
-  test('aborted でも直前なら返す（ステータスで絞らない）', async () => {
-    await sessionRepo.insert(makeSession('aborted', 'benchPress', 1000, [reps(8)], 'aborted'))
+  test('未完遂でも直前なら返す（完遂で絞らない）', async () => {
+    await sessionRepo.insert(makeSession('aborted', 'benchPress', 1000))
     expect((await sessionRepo.latestByExercise('benchPress'))?.id).toBe('aborted')
   })
 })

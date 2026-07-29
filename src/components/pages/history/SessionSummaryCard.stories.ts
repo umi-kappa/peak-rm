@@ -32,8 +32,8 @@ export const Default: Story = {
   args: { session: makeSession('benchPress', 80, [8, 8, 8], { startedAt: may12 }) },
 }
 
-// 全セット完走・目標未達（EXECUTED）
-export const Executed: Story = {
+// 全セット完走・目標未達（バッジ表示は EXECUTED）
+export const Finished: Story = {
   args: { session: makeSession('benchPress', 82.5, [8, 8, 7], { startedAt: may12 }) },
 }
 
@@ -44,7 +44,6 @@ export const Aborted: Story = {
 
 // 全セットスキップ（目標 5 回・実績 0 回）。推定 1RM が算出できないため数値の代わりに — を出す。
 // 3 セット分の実績が残っているため未実施セットは無く、バッジは目標未達の EXECUTED になる
-// （Session.status は aborted。バッジは status ではなく sessionOutcome から引く別軸）
 export const NoOneRm: Story = {
   args: { session: makeSession('deadlift', 150, [0, 0, 0], { startedAt: may12, reps: 5 }) },
 }

@@ -18,7 +18,6 @@ function makeSession(id: string, exercise: Exercise, startedAt: number): Session
   return {
     id,
     exercise,
-    status: 'executed',
     startedAt,
     menu: { exercise, weight: 100, reps: 8, sets: 1, intervalSec: 90 },
     results: [{ actualReps: 8, memo: '' }],

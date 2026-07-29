@@ -3,16 +3,14 @@ import { describe, expect, test } from 'vitest'
 import { resolveInitialMenu } from '@/core/menu'
 import type { Exercise, Session } from '@/core/types'
 
-function makeSession(exercise: Exercise, status: Session['status'], weight = 100): Session {
-  const menu = { exercise, weight, reps: 5, sets: 3, intervalSec: 120 }
-  // executed は全セット target 達成、aborted は途中まで（isExecuted 判定の詳細は session.spec が担う）
-  const actualReps = status === 'executed' ? [5, 5, 5] : [5]
+// menu.sets = 3 なので [5, 5, 5] が完遂、[5] は未実施セットありの中断になる
+// （完遂判定の詳細は session.spec が担う）
+function makeSession(exercise: Exercise, actualReps: number[], weight = 100): Session {
   return {
     id: 'prev',
     exercise,
-    status,
     startedAt: 0,
-    menu,
+    menu: { exercise, weight, reps: 5, sets: 3, intervalSec: 120 },
     results: actualReps.map((n) => ({ actualReps: n, memo: '' })),
   }
 }
@@ -24,27 +22,27 @@ describe('resolveInitialMenu', () => {
     })
   })
 
-  test('直前が aborted なら直前セッションの menu を据え置きで初期表示（プレビューなし）', () => {
-    const prev = makeSession('benchPress', 'aborted')
+  test('直前が中断（未実施セットあり）なら直前セッションの menu を据え置きで初期表示（プレビューなし）', () => {
+    const prev = makeSession('benchPress', [5])
     expect(resolveInitialMenu('benchPress', prev)).toEqual({ menu: prev.menu })
   })
 
-  test('直前が executed なら直前セッションの menu.weight に増量を適用し lpPreview を返す', () => {
-    expect(resolveInitialMenu('benchPress', makeSession('benchPress', 'executed'))).toEqual({
+  test('直前が完遂なら直前セッションの menu.weight に増量を適用し lpPreview を返す', () => {
+    expect(resolveInitialMenu('benchPress', makeSession('benchPress', [5, 5, 5]))).toEqual({
       menu: { exercise: 'benchPress', weight: 102.5, reps: 5, sets: 3, intervalSec: 120 },
       lpPreview: { from: 100, to: 102.5 },
     })
   })
 
   test('スクワットの増量幅は +5kg', () => {
-    expect(resolveInitialMenu('squat', makeSession('squat', 'executed'))).toEqual({
+    expect(resolveInitialMenu('squat', makeSession('squat', [5, 5, 5]))).toEqual({
       menu: { exercise: 'squat', weight: 105, reps: 5, sets: 3, intervalSec: 120 },
       lpPreview: { from: 100, to: 105 },
     })
   })
 
   test('返す menu は prevSession.menu のコピー（画面編集で履歴を汚さない）', () => {
-    const prev = makeSession('benchPress', 'aborted')
+    const prev = makeSession('benchPress', [5])
     const { menu } = resolveInitialMenu('benchPress', prev)
     menu.weight = 60
     expect(prev.menu.weight).toBe(100)
