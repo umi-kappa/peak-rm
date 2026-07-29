@@ -99,4 +99,4 @@ GitHub Actions（`.github/workflows/`）で次を実行する。
 
 ## 規約
 
-ファイル命名・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。
+ファイル命名・アクセシビリティ・テスト・スタイル・ドキュメント表記の規約は [docs/conventions.md](docs/conventions.md) を参照する。

@@ -1,6 +1,6 @@
 # コーディング規約
 
-PeakRM のコーディング・命名・テスト・ドキュメント表記の規約をここに集約する。実装前後で必ず参照する。技術スタック・仕様の詳細は `docs/spec.md` を、デザイントークンは `docs/design/README.md` を参照する。
+PeakRM のコーディング・命名・アクセシビリティ・テスト・スタイル・ドキュメント表記の規約をここに集約する。実装前後で必ず参照する。技術スタック・仕様の詳細は `docs/spec.md` を、デザイントークンは `docs/design/README.md` を参照する。
 
 ## ディレクトリ構成
 
@@ -101,16 +101,16 @@ src/
 
 - **名前付け（必須）**: 可視テキストを持たないコントロールに `aria-label`（`IconButton` の `label`、`NumberStepper` の Decrease / Increase）、装飾 SVG に `aria-hidden="true"`（`BaseIcon`）、ダイアログ・入力とラベルの紐付け（`BaseDialog` の `title` → `aria-labelledby`、`SetEditDialog` の NOTE）。**可視テキストを持つ要素には `aria-label` を付けない**（画面の文字列とアクセシブルネームが食い違うと音声コントロールが壊れる。WCAG 2.5.3 Label in Name）
 - **名前の渡し方は対象で決める**: ネイティブ要素（`textarea` など）は見出しに `id` を振って `aria-labelledby` で指す（`SetEditDialog` の NOTE）。コンポーネントは名前を prop で受ける（`IconButton` / `NumberStepper` の `label`）。プリミティブは自分が何の値かを知らないため、名前の決定は呼び出し側に置く
-- **グループ化（必須）**: 複数のコントロールが 1 つの意味単位を成すときだけ `role="group"` + 名前を付ける。対象は `ExerciseTabs`（種目の絞り込み）と `NumberStepper`（−／値／＋ で 1 つの数値入力）の 2 つに限る
+- **グループ化（必須）**: 複数のコントロールが 1 つの意味単位を成すときだけ `role="group"` + 名前を付ける。対象は `ExerciseTabs`（種目の絞り込み）と `NumberStepper`（- / 値 / + で 1 つの数値入力）の 2 つに限る
 - **複合 role は作らない**: `tablist` / `radiogroup` / `spinbutton` などに上げない。`ExerciseTabs` のタブは URL query に載る絞り込み条件でパネルの表示切替ではないため `tablist` は実態と合わず、`radiogroup` / `spinbutton` は矢印キー移動を実装契約として要求する
 - **選択状態は `aria-current`**（`aria-pressed` は使わない）。`ExerciseTabs` は常に 1 つが選択されている集合であり、「独立したトグルが全 off になり得る」という `aria-pressed` の含意と合わない
-- **ランドマークは `ScreenFrame` が持つ**。本文領域が `<main>` なので画面側で足さない（`ErrorScreen` を含む全画面に一括で効く）
-- **`<section>` は名前を付けられる領域にだけ使う**: `aria-labelledby` で見出し（`BaseLabel`）の静的な `id` を指す（`id` は `<画面 or コンポーネント>-<領域>-label`。衝突しない範囲で短縮してよい）。名前の無い `section` は region にならず見出しが視覚的な装飾で終わるため、名前を付けないなら `div` にする（カード内・ダイアログ内の見出し付き領域は `div` のまま）
-- **件数が可変な一覧は `<ul>` / `<li>` で書く**（セット一覧・履歴一覧・ホームの種目カード）。件数と位置（「3 件中 2 件目」）が読まれる。固定個数の設定行・stat 行は `div` のままにする（件数が意味を持たない）。`v-for` は `<li>` に置き、`ul` には `role="list"` を明示する（Safari は `list-style: none` で list セマンティクスを外す）。余白・マーカーのリセットは `global.css` が持つため、各画面では並べ方（`display` / `gap`）だけ書く
-- **キーボードはネイティブの範囲まで保証する**: DOM 順のフォーカス移動（独自の `tabindex` は足さない）・Enter / Space でのアクティベーション・フォーカスの可視化（UA 既定の outline を消さない。面に乗るコントロールは `&:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }` のリングで揃える）。矢印キー移動・roving tabindex・ショートカットは作らない（Tab で辿れれば操作は完結する）。**pointer イベントだけで操作を組むと Enter / Space で動かない**ため、`@pointerdown` 系のハンドラを足すときは同じ操作がキーボードでも成立するか確認する（`NumberStepper` は `@keydown.enter` / `@keydown.space.prevent` で 1 step 適用し、長押しリピートは OS のキーリピートに任せる）
-- **毎秒書き換わる値に `aria-live` / `role="timer"` を付けない**（インターバルの残り時間）。読み上げが暴走するだけで、0 秒到達の通知は音のみという spec の決定とも整合する
+- **本文の `<main>` は `ScreenFrame` が持つ**。画面側で `<main>` を書かない（`ErrorScreen` を含む全画面に一括で効く）。banner は `AppBar` / `BrandBar` の `<header>`、navigation はホーム footer の `<nav>` がそれぞれ持つ（`#header` スロットは `div` なので、中の `<header>` がそのまま banner になる）。footer のアクションバーはランドマークにしない（`contentinfo` は主 CTA と意味が合わない）
+- **`<section>` は名前を付けられる領域にだけ使う**: `aria-labelledby` で見出し（`BaseLabel`）の静的な `id` を指す（`id` は `<画面 or コンポーネント>-<領域>-label`。衝突しない範囲で短縮してよい）。名前の無い `section` は region にならず見出しが視覚的な装飾で終わるため、名前を付けないなら `div` にする（カード内・ダイアログ内の見出し付き領域は `div` のまま）。静的な `id` を使えるのは 1 画面に 1 度しか描画されない領域（`v-for` の外）だけで、同一ドキュメントに複数インスタンスが立ち得る再利用プリミティブは `useId()` で振る（`BaseDialog` の `title`）。region の名前は `BaseLabel`（`<span>`）が出すため本文に見出し要素は無く、見出しナビゲーションでは辿れない（`BaseLabel` はカード内でも使う汎用プリミティブなので `<h2>` に上げられない。region ナビゲーションで辿れることを前提にする）
+- **同種の項目が反復する一覧は `<ul>` / `<li>` で書く**（セット一覧・履歴一覧・ホームの種目カード）。件数と位置（「3 件中 2 件目」）が読まれる。反復しない設定行・stat 行は `div` のままにする（件数が意味を持たない）。同じコレクションを回していても、項目自身がコントロールで 1 つの意味単位を成すものは list にしない（`ExerciseTabs` は `EXERCISE_ORDER` を回すが絞り込みコントロール群なので、上記「グループ化」の `role="group"` 側）。`v-for` は `<li>` に置き、`ul` には `role="list"` を明示する（Safari は `list-style: none` で list セマンティクスを外す）。余白・マーカーのリセットは `global.css` が持つため、各画面では並べ方（`display` / `gap`）だけ書く
+- **キーボードはネイティブの範囲まで保証する**: DOM 順のフォーカス移動（独自の `tabindex` は足さない）・Enter / Space でのアクティベーション・フォーカスの可視化（UA 既定の outline を消さない。ボタン・リンクは `&:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }` のリングで揃える。入力欄（`SetEditDialog` の `textarea`）はキャレットでフォーカスが分かるため UA 既定に任せる）。矢印キー移動・roving tabindex・ショートカットは作らない（Tab で辿れれば操作は完結する）。**スクロールコンテナ（`ScreenFrame` の `<main>`）に `tabindex="0"` は足さない**（モバイル前提のため、キーボードのみで長文をスクロールする経路は対象外。`ErrorScreen` の長い例外メッセージが該当しうる）。**pointer イベントだけで操作を組むと Enter / Space で動かない**ため、`@pointerdown` 系のハンドラを足すときは同じ操作がキーボードでも成立するか確認する（`NumberStepper` は `@keydown.enter` / `@keydown.space.prevent` で 1 step 適用し、長押しリピートは OS のキーリピートに任せる）
+- **毎秒書き換わる値に `aria-live` / `role="timer"` を付けない**（インターバルの残り時間）。読み上げが暴走するだけで、0 秒到達の通知は音のみという spec の決定とも整合する。**ステッパーの値の変化も読み上げない**（`spinbutton` を避けた代償。`aria-live` を足すと 100ms 間隔の長押しリピートで同じく暴走するため付けない）
 - **`prefers-reduced-motion` は対応しない**。現状の `transition` は背景色・文字色の短い変化のみで視差・移動・拡大がなく、プログレスバーも `width` の直接更新（`transition` 無し）で動き自体が進捗という機能表現。将来アニメーションを足すときはこの基準で再判定する
-- **読み上げ専用の文言は英語で書く**（`Back` / `Settings` / `Delete` / `Decrease` / `Increase` / `Exercise`）。可視文言が「ラベル・見出し・ボタンキャプションは英語大文字、文章になる確認ダイアログだけ日本語」なので、ラベル系である `aria-label` もそれに揃える。stories が渡すラベルも同じ規則に従う
+- **名前の字形は 2 種類に分ける**: 可視テキストを持たないコントロールの名前は **Title Case の英語**（`Back` / `Settings` / `Delete` / `Decrease` / `Increase` / `Exercise`）。画面に同じ文字列が出ているものをミラーする名前は**可視文字列そのまま**（`NumberStepper` の `label` = `REPS DONE` / `WEIGHT`。可視テキストと食い違わせない WCAG 2.5.3 の要請）。可視文言は大文字を文字列で書くため（`START SESSION` / `KG`。「スタイル（CSS）」節の `text-transform` 禁止を参照）後者は大文字になる。stories が渡すラベルも同じ規則に従う
 - **`@storybook/addon-a11y` は入れない**。方針が名前付け + グループ化に閉じており、依存と CI 時間の追加に見合わない
 
 ## 型定義（TypeScript）
@@ -239,7 +239,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **ヘッダーバー（`AppBar` / `BrandBar` など）は `ScreenFrame` の `#header` スロットに入れる**。高さは固定せず `padding-block`（`--space-8`）で作り、`padding-inline` は画面外周（`--space-24`）に揃えて本文（ScreenBody）と左右の縦ラインを合わせる
 - **`text-transform: uppercase` は使わない**。大文字で見せたいテキストは呼び出し側がラベル文字列そのものを大文字で書く（例: `START SESSION`・`KG`）。表示とソース文字列（コピー・読み上げ内容）を一致させる
 - **非対称な余白・寸法は論理プロパティで書く**（`padding: 0 20px` ではなく `padding-block: 0; padding-inline: 20px`）。四辺均等・全辺ゼロ（`padding: 24px`、`margin: 0`）は物理表記と意味が変わらないため shorthand のままでよい
-- **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない。**`ul` の余白・マーカーのリセット**（`margin` / `padding` / `list-style`）も同じ扱いで `global.css` に置く（一覧はすべて読み上げのための list で、箇条書きとしては使わない）
+- **ボタン共通の interaction reset**（`cursor: pointer`・`-webkit-tap-highlight-color: transparent`）は `global.css` の `button` ルールに置く。レシピ（見た目）と違い全ボタン無条件のリセットなので、各コンポーネントで繰り返さない。**`ul` の余白のリセット**（`margin` / `padding`）も同じ扱いで `global.css` に置く（一覧はすべて読み上げのための list で、箇条書きとしては使わない）。マーカーのリセットは `ul[role='list']` に絞り、`role` を書き忘れた `ul` にマーカーが残るようにする（セマンティクスの欠落を見た目に出す）
 - **`transition` は対象プロパティを明示する**（`transition: background-color var(--transition), color var(--transition)`）。プロパティ省略（= `all`）は全プロパティが変更監視され、意図しない変化（レイアウト系含む）までアニメーションされるため使わない
 - **親の scoped CSS から子コンポーネントのクラス名を直接指定しない**（`.diff .base-icon { … }` のような子のルートクラスへの結合は禁止）。子コンポーネントに手を入れたい場合は呼び出し側で class を渡し（`<BaseIcon class="chevron" />` → `.chevron { … }`）、自分が付けた名前に対してスタイルを書く
 - **アイコンサイズは 3 値（12 / 16 / 24）に絞る**（スペーシングと同じ 4px グリッド上。14・18・20・22 などの中間値は使わない）。12 = 行内の差分 chevron・インラインマーカー、16 = 行の先頭アイコン（`BaseIcon` のデフォルトなので `size` を省略する）、24 = 大型コントロール（ステッパー large・`IconButton`）。用途に対応するサイズは `docs/design/README.md` の Assets 節と同期する
