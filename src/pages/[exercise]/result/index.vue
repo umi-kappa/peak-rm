@@ -172,18 +172,20 @@ onMounted(initialize)
         message="SESSION COMPLETED!"
       />
 
-      <section class="sets">
-        <BaseLabel>SETS</BaseLabel>
-        <TimelineSetCard
-          v-for="card in cards"
-          :key="card.setNumber"
-          :set-number="card.setNumber"
-          :state="card.state"
-          :target-reps="session.menu.reps"
-          :actual-reps="card.actualReps"
-          :memo="card.memo"
-          @edit="openSetEdit(card.index)"
-        />
+      <section class="sets" aria-labelledby="result-sets-label">
+        <BaseLabel id="result-sets-label">SETS</BaseLabel>
+        <ul class="list" role="list">
+          <li v-for="card in cards" :key="card.setNumber">
+            <TimelineSetCard
+              :set-number="card.setNumber"
+              :state="card.state"
+              :target-reps="session.menu.reps"
+              :actual-reps="card.actualReps"
+              :memo="card.memo"
+              @edit="openSetEdit(card.index)"
+            />
+          </li>
+        </ul>
       </section>
     </template>
 
@@ -308,7 +310,8 @@ onMounted(initialize)
   font-weight: var(--font-weight-bold);
 }
 
-.sets {
+.sets,
+.list {
   display: flex;
   flex-direction: column;
   gap: var(--space-12);

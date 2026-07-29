@@ -108,19 +108,21 @@ function confirmAbort() {
         </div>
       </BaseCard>
 
-      <section class="sets">
-        <BaseLabel>SETS</BaseLabel>
-        <TimelineSetCard
-          v-for="card in cards"
-          :key="card.setNumber"
-          :set-number="card.setNumber"
-          :state="card.state"
-          :target-reps="menu.reps"
-          :actual-reps="card.actualReps"
-          :memo="card.memo"
-          memo-prompt
-          @edit="openSetEdit(card.index)"
-        />
+      <section class="sets" aria-labelledby="interval-sets-label">
+        <BaseLabel id="interval-sets-label">SETS</BaseLabel>
+        <ul class="list" role="list">
+          <li v-for="card in cards" :key="card.setNumber">
+            <TimelineSetCard
+              :set-number="card.setNumber"
+              :state="card.state"
+              :target-reps="menu.reps"
+              :actual-reps="card.actualReps"
+              :memo="card.memo"
+              memo-prompt
+              @edit="openSetEdit(card.index)"
+            />
+          </li>
+        </ul>
       </section>
     </template>
 
@@ -198,6 +200,7 @@ function confirmAbort() {
 }
 
 .sets,
+.list,
 .actions {
   display: flex;
   flex-direction: column;

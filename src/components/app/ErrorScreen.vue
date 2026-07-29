@@ -15,8 +15,8 @@ const emit = defineEmits<{
 
 <template>
   <ScreenFrame>
-    <section class="section">
-      <BaseLabel>ERROR</BaseLabel>
+    <section class="section" aria-labelledby="error-label">
+      <BaseLabel id="error-label">ERROR</BaseLabel>
       <p class="message">{{ message }}</p>
     </section>
 

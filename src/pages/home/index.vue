@@ -35,14 +35,11 @@ onMounted(loadSessions)
       <BrandBar />
     </template>
 
-    <div class="exercises">
-      <ExerciseCard
-        v-for="exercise in EXERCISE_ORDER"
-        :key="exercise"
-        :exercise
-        :session="sessions[exercise]"
-      />
-    </div>
+    <ul class="exercises" role="list">
+      <li v-for="exercise in EXERCISE_ORDER" :key="exercise">
+        <ExerciseCard :exercise :session="sessions[exercise]" />
+      </li>
+    </ul>
 
     <template #footer>
       <nav class="nav">

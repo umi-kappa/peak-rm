@@ -51,11 +51,11 @@ export const Behavior: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'SQUAT' }))
     await expect(canvas.getByRole('button', { name: 'SQUAT' })).toHaveAttribute(
-      'aria-pressed',
+      'aria-current',
       'true',
     )
     await expect(canvas.getByRole('button', { name: 'BENCH PRESS' })).toHaveAttribute(
-      'aria-pressed',
+      'aria-current',
       'false',
     )
   },

@@ -83,8 +83,8 @@ onMounted(async () => {
     </template>
 
     <template v-if="menu">
-      <section class="section">
-        <BaseLabel>WEIGHT</BaseLabel>
+      <section class="section" aria-labelledby="menu-weight-label">
+        <BaseLabel id="menu-weight-label">WEIGHT</BaseLabel>
         <WeightStepper v-model="menu.weight" />
         <LpIndicator
           v-if="lpPreview"
@@ -94,8 +94,8 @@ onMounted(async () => {
         />
       </section>
 
-      <section class="section">
-        <BaseLabel>PLAN</BaseLabel>
+      <section class="section" aria-labelledby="menu-plan-label">
+        <BaseLabel id="menu-plan-label">PLAN</BaseLabel>
         <BaseCard>
           <div class="row">
             <span class="row-label">REPS</span>

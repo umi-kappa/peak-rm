@@ -31,11 +31,13 @@ onMounted(load)
     <!-- 選択種目は URL が唯一のソースなので、v-model ではなく値と更新を分けて渡す -->
     <ExerciseTabs :model-value="exercise" @update:model-value="selectExercise" />
 
-    <section class="sessions">
-      <BaseLabel>SESSIONS</BaseLabel>
-      <div v-if="sessions.length > 0" class="list">
-        <SessionSummaryCard v-for="session in sessions" :key="session.id" :session />
-      </div>
+    <section class="sessions" aria-labelledby="history-sessions-label">
+      <BaseLabel id="history-sessions-label">SESSIONS</BaseLabel>
+      <ul v-if="sessions.length > 0" class="list" role="list">
+        <li v-for="session in sessions" :key="session.id">
+          <SessionSummaryCard :session />
+        </li>
+      </ul>
       <!-- 選択中の種目に記録が無い場合（spec「履歴」）。見出しは残し、行の位置に 1 行で示す
            （ホームが LAST ラベルを残して NO LOG を出すのと同じ扱い）。
            load 完了前も同じ表示になるが、これもホームと揃えてフラッシュを許容する
