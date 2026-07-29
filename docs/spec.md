@@ -177,7 +177,7 @@
 #### 自動実行完了
 
 - 最終セット完了で自動的にセッションを保存し、**結果確認画面** へ遷移
-- セッションの結果: `results` から導出する（全セット目標達成なら完遂、目標未達のセットがあれば完走・目標未達）
+- セッションの結果: `results` と `menu` から導出する（全セット目標達成なら完遂、目標未達のセットがあれば完走・目標未達）
 
 #### 中断
 
@@ -255,7 +255,7 @@
   - **日付**（`MM/DD`・ローカルタイムゾーン基準）
   - **そのセッションの推定 1RM**（「1RM グラフ」節の式で算出した最大値。対象セットが無く 0 の場合は数値を出さず `—` 表示）
   - **メニューの重量**と**各セットの実績回数**（`/` 連結、例: `8/8/7`）
-  - **ステータス**: 結果確認画面のステータスマーカーと同じ 3 状態（中断 / 完走・目標未達 / 完遂）を `results` の実態から導出して示す
+  - **ステータス**: 結果確認画面のステータスマーカーと同じ 3 状態（中断 / 完走・目標未達 / 完遂）を `results` と `menu` の実態から導出して示す
 - 選択中の種目に記録が無い場合は、セッション行の代わりに `NO SESSIONS` を表示する
 - セッションを開くと結果確認画面と同じ詳細を表示（セットメモもこの画面で閲覧・編集できる）。**ただし実績回数は読み専用**（設計方針「実績値の編集ポリシー」参照）
 - 履歴詳細では当該セッションを削除できる（§5「結果確認画面」のセッション削除を参照）。**一覧画面から直接の削除導線は設けない**（削除は詳細を開いた上での明示操作に限定）
@@ -397,6 +397,11 @@ type Session = {
   results: SetResult[]
 }
 
+// 読むだけの純関数（1RM 算出・完遂判定）の入力型。実績の書き換えを型で禁止する
+type ReadonlySession = Readonly<Omit<Session, 'results'>> & {
+  readonly results: readonly Readonly<SetResult>[]
+}
+
 // FWJ 換算式 1RM = w × (1 + r / divisor) の種目別 divisor
 const ONE_RM_DIVISOR: Record<Exercise, number> = {
   benchPress: 40,
@@ -411,7 +416,7 @@ function estimateOneRm(exercise: Exercise, weight: number, reps: number): number
 
 // 完遂の判定: 全セットの記録があり、かつ全セットで目標回数以上。
 // results が menu.sets に満たない（= 中断）場合は常に false
-function isComplete(session: Session): boolean {
+function isComplete(session: ReadonlySession): boolean {
   return (
     session.results.length === session.menu.sets &&
     session.results.every((r) => r.actualReps >= session.menu.reps)
@@ -427,7 +432,7 @@ function isComplete(session: Session): boolean {
 - **テーブル設計**:
   - `sessions`: `Session` をそのまま保存。主キー `id`、`startedAt` 単独インデックス（全件降順一覧用）、`[exercise+startedAt]` 複合インデックス（同種目の直前 1 件を末尾取得用）
   - メニュー設定画面の初期表示値・linear progression のベースラインは、同一種目の直前セッションの `menu` から導出する（専用テーブルは持たない）
-- **永続化のタイミング**: 最初のセット完了時に実績 1 件込みで 1 回 insert する（セッション開始時には保存しない）。以降はセット完了ごとに `results` を増分 update するだけでよい（セッションの結果は `results` から導出されるため、最終セット完了・中断でも確定用の追加書き込みは不要）。タブクローズ / クラッシュ / SW autoUpdate 経由のリロードでも、それまでの実績は中断セッションとして履歴に残る
+- **永続化のタイミング**: 最初のセット完了時に実績 1 件込みで 1 回 insert する（セッション開始時には保存しない）。以降はセット完了ごとに `results` を増分 update するだけでよい（セッションの結果は `results` と `menu` から導出され、`menu` は insert 時に焼き込み済みで不変のため、最終セット完了・中断でも確定用の追加書き込みは不要）。タブクローズ / クラッシュ / SW autoUpdate 経由のリロードでも、それまでの実績は中断セッションとして履歴に残る
 - **不変条件**: 1 セットも完了せず離脱・クラッシュした場合は何も保存されず、DB には実績のあるセッション（`results.length ≥ 1`）しか存在しない
 - **スキーマバージョン**: 初版は v1。スキーマ変更時は Dexie の `version()` チェーンで明示的にマイグレーションを宣言する
 
