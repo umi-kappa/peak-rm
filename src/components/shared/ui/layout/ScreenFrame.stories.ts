@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { expect, within } from 'storybook/test'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
@@ -60,6 +61,23 @@ export const WithFooter: Story = {
         <template #footer><BaseButton>START SESSION</BaseButton></template>
       </ScreenFrame>`,
   }),
+}
+
+// 本文領域が main ランドマークとして出ることだけを確認する（全画面のランドマークをここが一元的に持つ）
+export const Behavior: Story = {
+  parameters: { chromatic: { disableSnapshot: true } },
+  render: () => ({
+    components: { ScreenFrame, AppBar, BaseCard },
+    template: `
+      <ScreenFrame>
+        <template #header><AppBar title="HISTORY" /></template>
+        <BaseCard>Session 05/12</BaseCard>
+      </ScreenFrame>`,
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('main')).toBeVisible()
+  },
 }
 
 // flushBottom: footer 下端の padding を落とし、ナビ行などを画面下端まで詰める

@@ -12,7 +12,7 @@ const meta: Meta<typeof NumberStepper> = {
     docs: {
       description: {
         component:
-          '汎用ステッパー（reps / sets / interval 用）。± ボタンで `step` 刻みに増減し、長押しでリピートする。キーボードは Enter / Space で 1 step 動く（リピートは OS のキーリピート）。`min` / `max` 到達時はボタンを無効化せず no-op（clamp）で受け流す。−／値／＋ は `label` を名前に持つ 1 つの数値入力グループ（`role="group"`）として読み上げられる。',
+          '汎用ステッパー（reps / sets / interval 用）。± ボタンで `step` 刻みに増減し、長押しでリピートする。キーボードは Enter / Space で 1 step 動く（リピートは OS のキーリピート）。`min` / `max` 到達時はボタンを無効化せず no-op（clamp）で受け流す。- / 値 / + は `label` を名前に持つ 1 つの数値入力グループ（`role="group"`）として読み上げられる。',
       },
     },
   },
@@ -92,6 +92,9 @@ export const Behavior: Story = {
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    // label が group 名として出る配線の退行検出（role / aria-label の消失は型では捕まらない）
+    await expect(canvas.getByRole('group', { name: 'REPS' })).toBeVisible()
+
     // キーボード経路の退行検出（pointer ハンドラだけでは Enter / Space で増減しない）。
     // Tab の到達順に依存するため、フォーカスが動く pointer 経路より先に置く
     await userEvent.tab()
