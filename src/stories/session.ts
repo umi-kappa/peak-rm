@@ -1,5 +1,5 @@
 import { useSession, type SessionStore } from '@/composables/shared/session/useSession'
-import { isExecuted } from '@/core/session'
+import { isComplete } from '@/core/session'
 import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Menu, Session } from '@/core/types'
@@ -16,7 +16,7 @@ export function localStartedAt(year: number, month: number, date: number): numbe
  * 実 DB へ書かない fake repo を作る（stories の loaders / provide decorator から使う）。
  * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
- * （get = id 一致、latestByExercise = 同種目の直近、latestExecutedBefore = 同種目・executed・
+ * （get = id 一致、latestByExercise = 同種目の直近、latestCompleteBefore = 同種目・完遂・
  * startedAt がより前の直近、一覧系 = startedAt 降順 / 同日同種目の集約）。
  */
 export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
@@ -24,21 +24,17 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
   return {
     insert: async () => {},
     patchResults: async () => {},
-    patchResultsAndStatus: async () => {},
-    finalize: async () => {},
     remove: async () => {},
     get: async (id) => sessions.find((session) => session.id === id),
     list: async () => [...byStartedAt].reverse(),
     listForHistory: async () => dedupeHistoryByDay(sessions),
     latestByExercise: async (exercise) =>
       byStartedAt.filter((session) => session.exercise === exercise).at(-1),
-    latestExecutedBefore: async (exercise, startedAt) =>
+    latestCompleteBefore: async (exercise, startedAt) =>
       byStartedAt
         .filter(
           (session) =>
-            session.exercise === exercise &&
-            session.status === 'executed' &&
-            session.startedAt < startedAt,
+            session.exercise === exercise && isComplete(session) && session.startedAt < startedAt,
         )
         .at(-1),
   }
@@ -47,9 +43,8 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
 /**
  * 表示確認用の最小 Session fixture。weight と各セットの実績回数（actualReps）が
  * そのまま 1RM / 前回記録の表示を決める。
- * menu.reps には先頭セットの実績が入り、status は results から導出する。
- * 全セットの実績を先頭セット以上（例: [8, 8, 8]）にすると完遂（executed）となり
- * linear progression のトリガーとしても使える。届かないセットがあれば aborted。
+ * menu.reps には先頭セットの実績が入る。全セットの実績を先頭セット以上（例: [8, 8, 8]）に
+ * すると完遂となり linear progression のトリガーとしても使える。届かないセットがあれば未完遂。
  * id / startedAt の既定は種目名 / 0。複数 fixture の並存や日付表示が要る stories だけ上書きする。
  * menu の reps / sets も上書きでき、目標未達（実績 < reps）や未実施セットあり
  * （results.length < sets = 中断）といった状態を実績と独立に作れる。
@@ -65,17 +60,13 @@ export function makeSession(
     sets = actualReps.length,
   }: { id?: string; startedAt?: number; reps?: number; sets?: number } = {},
 ): Session {
-  // status は menu / results が揃ってから isExecuted で導出する（'aborted' は仮値）
-  const session: Session = {
+  return {
     id,
     exercise,
-    status: 'aborted',
     startedAt,
     menu: { exercise, weight, reps, sets, intervalSec: 90 },
     results: actualReps.map((actual) => ({ actualReps: actual, memo: '' })),
   }
-  session.status = isExecuted(session) ? 'executed' : 'aborted'
-  return session
 }
 
 /**

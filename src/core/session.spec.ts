@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { formatSetReps, isExecuted, sessionMaxOneRm, sessionOutcome } from '@/core/session'
+import { formatSetReps, isComplete, sessionMaxOneRm, sessionOutcome } from '@/core/session'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
 function makeSession(
@@ -9,12 +9,10 @@ function makeSession(
   reps: number,
   sets: number,
   results: SetResult[],
-  status: Session['status'] = 'executed',
 ): Session {
   return {
     id: 'test',
     exercise,
-    status,
     startedAt: 0,
     menu: { exercise, weight, reps, sets, intervalSec: 90 },
     results,
@@ -36,8 +34,8 @@ describe('sessionMaxOneRm', () => {
     expect(sessionMaxOneRm(session)).toBe(112.5)
   })
 
-  test('aborted でも実施済みセットがあれば算出する', () => {
-    const session = makeSession('squat', 100, 8, 3, [reps(8)], 'aborted')
+  test('中断（未実施セットあり）でも実施済みセットがあれば算出する', () => {
+    const session = makeSession('squat', 100, 8, 3, [reps(8)])
     expect(sessionMaxOneRm(session)).toBeCloseTo(100 * (1 + 8 / 33.3))
   })
 
@@ -74,25 +72,25 @@ describe('formatSetReps', () => {
   })
 })
 
-describe('isExecuted', () => {
+describe('isComplete', () => {
   test('全セット完了かつ全セット target 達成なら true', () => {
     const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(9), reps(8)])
-    expect(isExecuted(session)).toBe(true)
+    expect(isComplete(session)).toBe(true)
   })
 
   test('1 セットでも target を下回れば false', () => {
     const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(7), reps(8)])
-    expect(isExecuted(session)).toBe(false)
+    expect(isComplete(session)).toBe(false)
   })
 
   test('results が menu.sets に満たない（中断）なら false', () => {
     const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(8)])
-    expect(isExecuted(session)).toBe(false)
+    expect(isComplete(session)).toBe(false)
   })
 
   test('results が空なら false', () => {
     const session = makeSession('benchPress', 100, 8, 3, [])
-    expect(isExecuted(session)).toBe(false)
+    expect(isComplete(session)).toBe(false)
   })
 })
 
@@ -107,7 +105,7 @@ describe('sessionOutcome', () => {
     expect(sessionOutcome(session)).toBe('finished')
   })
 
-  test('完遂（isExecuted）なら complete', () => {
+  test('完遂（isComplete）なら complete', () => {
     const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(8), reps(8)])
     expect(sessionOutcome(session)).toBe('complete')
   })

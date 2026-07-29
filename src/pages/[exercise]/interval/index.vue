@@ -41,7 +41,7 @@ if (menu.value) timer.start(menu.value.intervalSec)
 
 const abortConfirmOpen = ref(false)
 
-// セット編集モーダルの配線（SAVE の status 再導出は useSession.patchResultAt が担う）
+// セット編集モーダルの配線（SAVE の results 再保存は useSession.patchResultAt が担う）
 const { editingSet, openSetEdit, closeSetEdit, saveSetEdit } = useSetEdit(
   () => session.session.value,
   session.patchResultAt,
@@ -75,7 +75,7 @@ function closeAbortConfirm() {
   abortConfirmOpen.value = false
 }
 
-// 中断を確定して結果確認へ。完了済みセットは aborted のまま都度保存済みのため追加書き込みは無い
+// 中断を確定して結果確認へ。完了済みセットは都度保存済みのため追加書き込みは無い
 function confirmAbort() {
   abortConfirmOpen.value = false
   session.abort()
