@@ -30,10 +30,14 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 一覧は読み上げに項目数と位置を伝えるための list で、箇条書きとしては使わないため余白・マーカーを落とす。
-   Safari は list-style: none で list セマンティクスを外すため、使用側が role="list" を明示する */
+/* 一覧は読み上げに項目数と位置を伝えるための list で、箇条書きとしては使わないため余白を落とす */
 ul {
   margin: 0;
   padding: 0;
+}
+
+/* Safari は list-style: none で list セマンティクスを外すため、role="list" を明示した ul にだけマーカーを落とす。
+   role を書き忘れた ul にはマーカーが残るので、セマンティクスの欠落が見た目に出る */
+ul[role='list'] {
   list-style: none;
 }
