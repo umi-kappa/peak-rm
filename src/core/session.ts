@@ -28,7 +28,7 @@ export function formatSetReps(session: ReadonlySession): string {
  * かつ全セットで actualReps >= menu.reps（目標回数）を満たすか。
  * results が menu.sets に満たない（＝中断）場合は false。
  * ドメイン規則（増量トリガー・同日集約・repo の絞り込み）が参照する基底述語で、
- * セッションの成否はこれを唯一の source とする。
+ * 完遂判定はこれを唯一の source とする。
  */
 export function isComplete(session: ReadonlySession): boolean {
   return (
@@ -39,7 +39,8 @@ export function isComplete(session: ReadonlySession): boolean {
 
 /**
  * セッション結果の 3 状態（spec「結果確認画面」のステータスマーカー）。
- * isComplete に「未実施セットあり」を足した表示専用の投影で、ドメイン規則はこちらを参照しない:
+ * 「未実施セットあり」を先に切り出し、残りを isComplete で 2 分する表示専用の投影。
+ * 3 状態の導出規則はこの型と sessionOutcome が持ち、ドメイン規則はこちらを参照しない:
  * aborted = 未実施セットあり（中断）/ finished = 全セット完走・目標未達（SESSION EXECUTED）/
  * complete = 完遂（SESSION COMPLETE）。ラベルへの写像は画面側が担う。
  */

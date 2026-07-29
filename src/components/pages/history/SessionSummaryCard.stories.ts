@@ -32,8 +32,8 @@ export const Default: Story = {
   args: { session: makeSession('benchPress', 80, [8, 8, 8], { startedAt: may12 }) },
 }
 
-// 全セット完走・目標未達（EXECUTED）
-export const Executed: Story = {
+// 全セット完走・目標未達（バッジ表示は EXECUTED）
+export const Finished: Story = {
   args: { session: makeSession('benchPress', 82.5, [8, 8, 7], { startedAt: may12 }) },
 }
 

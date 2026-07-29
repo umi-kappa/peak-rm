@@ -5,7 +5,7 @@ import { sessionRepo } from '@/storage/sessionRepo'
 import type { Menu, SetResult, Session } from '@/core/types'
 
 // トレーニングフローの内部フェーズ。done は「フローが終端に達した」ことのみを表し、
-// 成否は results から導出する（core/session の isComplete / 表示用の sessionOutcome）。
+// 成否は results と menu から導出する（core/session の isComplete / 表示用の sessionOutcome）。
 export type TrainingPhase = 'setActive' | 'interval' | 'done'
 
 // 依存は sessionRepo のみ注入する。start() には menu 画面で確定済みの Menu を渡す。
