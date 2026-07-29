@@ -11,6 +11,7 @@ const model = defineModel<number>({ required: true })
   <BaseCard class="weight-stepper">
     <NumberStepper
       v-model="model"
+      label="WEIGHT"
       large
       accent
       unit="KG"

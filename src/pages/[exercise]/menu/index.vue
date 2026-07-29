@@ -100,7 +100,13 @@ onMounted(async () => {
           <div class="row">
             <span class="row-label">REPS</span>
             <div class="stepper">
-              <NumberStepper v-model="menu.reps" :min="1" :max="MENU_MAX.reps" unit="REPS" />
+              <NumberStepper
+                v-model="menu.reps"
+                label="REPS"
+                :min="1"
+                :max="MENU_MAX.reps"
+                unit="REPS"
+              />
             </div>
           </div>
         </BaseCard>
@@ -108,7 +114,13 @@ onMounted(async () => {
           <div class="row">
             <span class="row-label">SETS</span>
             <div class="stepper">
-              <NumberStepper v-model="menu.sets" :min="1" :max="MENU_MAX.sets" unit="SETS" />
+              <NumberStepper
+                v-model="menu.sets"
+                label="SETS"
+                :min="1"
+                :max="MENU_MAX.sets"
+                unit="SETS"
+              />
             </div>
           </div>
         </BaseCard>
@@ -118,6 +130,7 @@ onMounted(async () => {
             <div class="stepper">
               <NumberStepper
                 v-model="menu.intervalSec"
+                label="INTERVAL"
                 :step="10"
                 :min="0"
                 :max="MENU_MAX.intervalSec"

@@ -30,12 +30,14 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
   const value = ref(initial)
   const stepper = scope.run(() => useNumberStepper(value, options))
   if (!stepper) throw new Error('effectScope.run が undefined を返しました')
-  const { startIncrement, startDecrement, stop } = stepper
+  const { startIncrement, startDecrement, stepUp, stepDown, stop } = stepper
   return {
     scope,
     value,
     startIncrement: (button?: number) => startIncrement(pointerDown(button)),
     startDecrement: (button?: number) => startDecrement(pointerDown(button)),
+    stepUp,
+    stepDown,
     stop,
   }
 }
@@ -51,6 +53,22 @@ describe('useNumberStepper', () => {
     const { value, startDecrement } = setup(8, ref({ step: 10 }))
     startDecrement()
     expect(value.value).toBe(-2)
+  })
+
+  test('stepUp は 1 step 増やすだけでリピートを始めない', () => {
+    const { value, stepUp } = setup(8)
+    stepUp()
+    expect(value.value).toBe(9)
+    vi.advanceTimersByTime(10_000)
+    expect(value.value).toBe(9)
+  })
+
+  test('stepDown は 1 step 減らすだけでリピートを始めない', () => {
+    const { value, stepDown } = setup(8)
+    stepDown()
+    expect(value.value).toBe(7)
+    vi.advanceTimersByTime(10_000)
+    expect(value.value).toBe(7)
   })
 
   test('長押し判定前に stop すると 1 step のみで止まる', () => {

@@ -78,6 +78,7 @@ async function completeSet() {
         <span class="row-label">REPS DONE</span>
         <div class="stepper">
           <NumberStepper
+            label="REPS DONE"
             large
             :min="0"
             :max="MENU_MAX.reps"
