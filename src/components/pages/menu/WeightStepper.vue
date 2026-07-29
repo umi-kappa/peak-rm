@@ -9,6 +9,7 @@ const model = defineModel<number>({ required: true })
 
 <template>
   <BaseCard class="weight-stepper">
+    <!-- label は menu 画面の可視見出し（BaseLabel の WEIGHT）と一致させる。食い違うと音声コントロールが壊れる -->
     <NumberStepper
       v-model="model"
       label="WEIGHT"

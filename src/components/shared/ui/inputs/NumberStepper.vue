@@ -16,7 +16,7 @@ const {
   unit,
   accent = false,
 } = defineProps<{
-  /** −／値／＋ をまとめた数値入力（role="group"）の名前。何の値かを読み上げで示す */
+  /** - / 値 / + をまとめた数値入力（role="group"）の名前。何の値かを読み上げで示す */
   label: string
   large?: boolean
   step?: number
@@ -40,8 +40,9 @@ watchEffect(() => {
 
 <template>
   <div class="number-stepper" :class="{ large }" role="group" :aria-label="label">
-    <!-- click にハンドラを置かないので Enter が合成する click は空振りし、二重適用にならない。
-         Space の .prevent はページスクロールの抑止（同時にネイティブの click 合成も止まる） -->
+    <!-- Enter / Space は keydown で 1 step 適用する。click にハンドラを置かないので、
+         どちらが合成する click も空振りし二重適用にならない。
+         Space の .prevent は合成 click 自体を止める（ボタン上の Space はスクロールしないので抑止対象ではない） -->
     <button
       class="button"
       type="button"
