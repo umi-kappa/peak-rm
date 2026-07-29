@@ -143,6 +143,17 @@ describe('latestCompleteBefore', () => {
     expect((await sessionRepo.latestCompleteBefore('benchPress', 3000))?.id).toBe('complete')
   })
 
+  // 未完遂には「未実施セットあり」と「全セット完走・目標未達」の 2 経路があり、filter が
+  // results の件数だけを見る実装に退化しても前者では気づけないため後者も固定する
+  test('全セット完走・目標未達もスキップしてさらに前の完遂セッションを返す', async () => {
+    await sessionRepo.insert(makeSession('complete', 'benchPress', 1000, completeResults))
+    await sessionRepo.insert(
+      makeSession('finished', 'benchPress', 2000, [reps(8), reps(8), reps(7)]),
+    )
+
+    expect((await sessionRepo.latestCompleteBefore('benchPress', 3000))?.id).toBe('complete')
+  })
+
   test('他種目の完遂セッションは無視する', async () => {
     await sessionRepo.insert(makeSession('squat', 'squat', 1000, completeResults))
 

@@ -80,6 +80,8 @@ describe('useSession', () => {
     await session.completeSet()
     session.nextSet()
     await session.completeSet()
+    // 1 セット = 1 書き込み（初回セットの insert と中間セットの patchResults の 2 回だけ）
+    expect(repo.calls).toHaveLength(2)
     expect(repo.calls.at(-1)).toMatchObject({
       method: 'patchResults',
       id: 'sess-1',
@@ -96,6 +98,8 @@ describe('useSession', () => {
     await session.completeSet()
     session.nextSet()
     await session.completeSet()
+    // 初回セットの insert と最終セットの patchResults の 2 回だけ（確定用の追加書き込みは無い）
+    expect(repo.calls).toHaveLength(2)
     expect(repo.calls.at(-1)).toMatchObject({
       method: 'patchResults',
       id: 'sess-1',
@@ -115,6 +119,8 @@ describe('useSession', () => {
     session.nextSet()
     session.editCurrentReps(5)
     await session.completeSet()
+    // 初回セットの insert と最終セットの patchResults の 2 回だけ（確定用の追加書き込みは無い）
+    expect(repo.calls).toHaveLength(2)
     expect(repo.calls.at(-1)).toMatchObject({
       method: 'patchResults',
       id: 'sess-1',
@@ -310,6 +316,19 @@ describe('useSession', () => {
       method: 'patchResults',
       results: [{ actualReps: 5, memo: '4回目からフォームが乱れた' }],
     })
+  })
+
+  test('patchResultAt による実績編集は完遂判定を反転させ、目標達成へ戻すと復帰する', async () => {
+    const { session } = setup()
+    session.start(menu({ sets: 1, reps: 8 }))
+    await session.completeSet()
+    expect(completed(session)).toBe(true)
+
+    await session.patchResultAt(0, { actualReps: 5 })
+    expect(completed(session)).toBe(false)
+
+    await session.patchResultAt(0, { actualReps: 8 })
+    expect(completed(session)).toBe(true)
   })
 
   test('patchResultAt は範囲外 index では何もせず永続化もしない', async () => {

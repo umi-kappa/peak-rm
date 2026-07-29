@@ -67,6 +67,17 @@ describe('dedupeHistoryByDay', () => {
     expect(result.map((s) => s.id)).toEqual(['done'])
   })
 
+  // 未完遂には「未実施セットあり」と「全セット完走・目標未達」の 2 経路があり、優先判定が
+  // results の件数だけを見る実装に退化しても前者では気づけないため後者も固定する。
+  // 両者の推定 1RM は同値（最大 reps が 8 で並ぶ）なので、完遂優先が壊れると後発が残って落ちる
+  test('同日同種目で完遂と全セット完走・目標未達なら完遂を優先する', () => {
+    const result = dedupeHistoryByDay([
+      makeSession('done', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
+      makeSession('finishedLater', 'benchPress', day1Evening, [reps(8), reps(8), reps(7)]),
+    ])
+    expect(result.map((s) => s.id)).toEqual(['done'])
+  })
+
   test('同日同種目でともに完遂なら、最新ではなく推定 1RM が最大のものを残す', () => {
     // 早い方が高 reps（高 1RM）、遅い方が低 reps（低 1RM）。ベスト記録の earlyBest を採用する。
     const result = dedupeHistoryByDay([
