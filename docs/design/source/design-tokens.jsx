@@ -73,7 +73,7 @@ const DesignTokens = () => {
   return (
     <div style={{
       width: 1100, minHeight: 1340, padding: 32, background: C.bg, color: C.fg,
-      fontFamily: FONT_SANS,
+      fontFamily: FONT_SANS, fontWeight: W.regular,
       display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 24,
     }}>
       {/* COLORS */}

@@ -107,6 +107,7 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   gap: var(--space-4);
 }
 
+/* LAST 列はカード内に他の数値が無く単独で読ませるため、履歴一覧の行内の重量（regular）と違い bold にする */
 .weight {
   color: var(--color-text-secondary);
   font-family: var(--font-family-mono);
@@ -119,7 +120,6 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   font-family: var(--font-family-mono);
   font-size: var(--font-size-caption);
   font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-regular);
   /* 折り返しうるのでルートの tight ではなく既定の行間（conventions「line-height の使い分け」） */
   line-height: var(--line-height);
   text-align: right;

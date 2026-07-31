@@ -39,6 +39,5 @@ import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
 .tagline {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-regular);
 }
 </style>

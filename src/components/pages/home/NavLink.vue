@@ -56,7 +56,6 @@ const { to, icon, label } = defineProps<{
 
 .text {
   color: var(--color-text);
-  font-weight: var(--font-weight-regular);
   transition: color var(--transition);
 }
 
