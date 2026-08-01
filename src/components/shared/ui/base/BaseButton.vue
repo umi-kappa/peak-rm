@@ -24,6 +24,11 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
     border-color var(--transition),
     color var(--transition);
 
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
   /* primary: アクセント色の塗りで主アクションを担う */
   &.primary {
     background: var(--color-accent);

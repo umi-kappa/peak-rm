@@ -112,5 +112,5 @@ PeakRM は「1RM の成長を可視化する筋トレアプリ」だが、UI/UX 
 ## ドキュメント・規約
 
 - [docs/spec.md](docs/spec.md) — 唯一の仕様ソース。実装前後で必ず参照・更新する
-- [docs/conventions.md](docs/conventions.md) — コーディング・命名・テスト・スタイル・ドキュメント表記の規約。実装・ドキュメント編集の前に必ず参照する
+- [docs/conventions.md](docs/conventions.md) — コーディング・命名・アクセシビリティ・テスト・スタイル・ドキュメント表記の規約。実装・ドキュメント編集の前に必ず参照する
 - [docs/design/README.md](docs/design/README.md) — デザイントークン（色・タイポグラフィ・スペーシング）

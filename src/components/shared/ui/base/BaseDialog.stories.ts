@@ -52,7 +52,7 @@ export const Behavior: Story = {
     // ドラッグはみ出し検証用に slot へ入力要素を置く
     template: `
       <BaseDialog v-bind="args">
-        <textarea aria-label="サンプル入力" />
+        <textarea aria-label="Sample input" />
       </BaseDialog>`,
   }),
   play: async ({ canvasElement, args }) => {
@@ -68,7 +68,7 @@ export const Behavior: Story = {
     await fireEvent.click(dialog)
     await expect(args.onCancel).toHaveBeenCalledTimes(2)
     // 入力要素からのドラッグはみ出し（押下は textarea・click は共通祖先の dialog に解決）では発火しない
-    await fireEvent.pointerDown(canvas.getByRole('textbox', { name: 'サンプル入力' }))
+    await fireEvent.pointerDown(canvas.getByRole('textbox', { name: 'Sample input' }))
     await fireEvent.click(dialog)
     await expect(args.onCancel).toHaveBeenCalledTimes(2)
   },

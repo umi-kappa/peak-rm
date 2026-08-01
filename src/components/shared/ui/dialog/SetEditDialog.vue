@@ -71,7 +71,14 @@ function onCancel() {
     <div class="field">
       <BaseLabel>REPS DONE</BaseLabel>
       <div v-if="!repsReadonly" class="stepper-box">
-        <NumberStepper v-model="draftReps" large :min="0" :max="MENU_MAX.reps" unit="REPS" />
+        <NumberStepper
+          v-model="draftReps"
+          label="REPS DONE"
+          large
+          :min="0"
+          :max="MENU_MAX.reps"
+          unit="REPS"
+        />
       </div>
       <!-- read-only は入力 UI を出さない（spec「実績値の編集ポリシー」実装記）。ステッパーの値表示と同じ体裁で据える -->
       <div v-else class="stat">

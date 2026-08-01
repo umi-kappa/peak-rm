@@ -8,6 +8,7 @@ import { useNumberStepper } from '@/composables/shared/ui/inputs/useNumberSteppe
 const model = defineModel<number>({ required: true })
 
 const {
+  label,
   large = false,
   step = 1,
   min,
@@ -15,6 +16,8 @@ const {
   unit,
   accent = false,
 } = defineProps<{
+  /** - / 値 / + をまとめた数値入力（role="group"）の名前。何の値かを読み上げで示す */
+  label: string
   large?: boolean
   step?: number
   min?: number
@@ -26,7 +29,7 @@ const {
 const options = computed(() => ({ step, min, max }))
 const iconSize = computed(() => (large ? 24 : 16))
 
-const { startIncrement, startDecrement, stop } = useNumberStepper(model, options)
+const { startIncrement, startDecrement, stepUp, stepDown, stop } = useNumberStepper(model, options)
 
 // 範囲外の初期値・外部更新を min / max 内へ丸める
 watchEffect(() => {
@@ -36,7 +39,10 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="number-stepper" :class="{ large }">
+  <div class="number-stepper" :class="{ large }" role="group" :aria-label="label">
+    <!-- Enter / Space は keydown で 1 step 適用する。click にハンドラを置かないので、
+         どちらが合成する click も空振りし二重適用にならない。
+         Space の .prevent は合成 click 自体を止める（ボタン上の Space はスクロールしないので抑止対象ではない） -->
     <button
       class="button"
       type="button"
@@ -44,6 +50,8 @@ watchEffect(() => {
       @pointerdown="startDecrement"
       @pointerup="stop"
       @pointercancel="stop"
+      @keydown.enter="stepDown"
+      @keydown.space.prevent="stepDown"
     >
       <BaseIcon name="minus" :size="iconSize" />
     </button>
@@ -57,6 +65,8 @@ watchEffect(() => {
       @pointerdown="startIncrement"
       @pointerup="stop"
       @pointercancel="stop"
+      @keydown.enter="stepUp"
+      @keydown.space.prevent="stepUp"
     >
       <BaseIcon name="plus" :size="iconSize" />
     </button>
@@ -97,6 +107,11 @@ watchEffect(() => {
   user-select: none;
   -webkit-touch-callout: none;
   transition: background-color var(--transition);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 
   @media (hover: hover) {
     &:hover {

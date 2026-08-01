@@ -30,7 +30,7 @@ const meta: Meta<typeof IconButton> = {
       description: '指定すると <router-link> として描画する遷移先',
     },
   },
-  args: { name: 'plus', label: 'セットを追加' },
+  args: { name: 'plus', label: 'Add set' },
 }
 
 export default meta
@@ -41,7 +41,7 @@ export const Default: Story = {}
 
 // to を渡すと <router-link> として描画される
 export const Link: Story = {
-  args: { name: 'settings', label: '設定', to: '/settings' },
+  args: { name: 'settings', label: 'Settings', to: '/settings' },
 }
 
 // button 版が click を emit する配線だけを確認する
@@ -50,19 +50,19 @@ export const Behavior: Story = {
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'セットを追加' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Add set' }))
     await expect(args.onClick).toHaveBeenCalledOnce()
   },
 }
 
 // to 版はクリックで router が遷移し、click は emit しない（to 時の onClick ガード）
 export const LinkBehavior: Story = {
-  args: { name: 'settings', label: '設定', to: '/settings', onClick: fn() },
+  args: { name: 'settings', label: 'Settings', to: '/settings', onClick: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, args }) => {
     await router.push('/')
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('link', { name: '設定' }))
+    await userEvent.click(canvas.getByRole('link', { name: 'Settings' }))
     await waitFor(() => expect(router.currentRoute.value.path).toBe('/settings'))
     await expect(args.onClick).not.toHaveBeenCalled()
   },

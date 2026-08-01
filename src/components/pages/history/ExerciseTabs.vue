@@ -17,7 +17,7 @@ function select(exercise: Exercise) {
       type="button"
       class="tab"
       :class="{ active: exercise === model }"
-      :aria-pressed="exercise === model"
+      :aria-current="exercise === model || undefined"
       @click="select(exercise)"
     >
       {{ EXERCISE_LABELS[exercise] }}

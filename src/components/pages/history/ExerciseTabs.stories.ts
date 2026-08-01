@@ -49,14 +49,17 @@ export const Behavior: Story = {
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    // タブ群が 1 つの絞り込みグループとして名前を持つ配線の退行検出
+    await expect(canvas.getByRole('group', { name: 'Exercise' })).toBeVisible()
+
     await userEvent.click(canvas.getByRole('button', { name: 'SQUAT' }))
     await expect(canvas.getByRole('button', { name: 'SQUAT' })).toHaveAttribute(
-      'aria-pressed',
+      'aria-current',
       'true',
     )
-    await expect(canvas.getByRole('button', { name: 'BENCH PRESS' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
+    // 非選択は属性なし（aria-current="false" は属性なしと等価なので出さない）
+    await expect(canvas.getByRole('button', { name: 'BENCH PRESS' })).not.toHaveAttribute(
+      'aria-current',
     )
   },
 }

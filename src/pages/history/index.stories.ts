@@ -81,6 +81,10 @@ export const Behavior: Story = {
       expect(canvas.getByText('05/12')).toBeVisible()
     })
 
+    // 見出しが region 名になる配線（aria-labelledby の id）と list セマンティクスの退行検出
+    await expect(canvas.getByRole('region', { name: 'SESSIONS' })).toBeVisible()
+    await expect(canvas.getByRole('list')).toBeVisible()
+
     // タブ選択は router 遷移（非同期）を経て一覧に反映されるため、こちらも waitFor で待つ
     await userEvent.click(canvas.getByRole('button', { name: 'SQUAT' }))
     await waitFor(() => {

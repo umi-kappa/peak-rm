@@ -10,9 +10,10 @@ const { flushBottom = false } = defineProps<{
     <div v-if="$slots.header" class="header">
       <slot name="header" />
     </div>
-    <div class="body">
+    <!-- 全画面（ErrorScreen 含む）のランドマークをここ 1 箇所で出す。画面側では <main> を書かない -->
+    <main class="body">
       <slot />
-    </div>
+    </main>
     <div v-if="$slots.footer" class="footer" :class="{ 'flush-bottom': flushBottom }">
       <slot name="footer" />
     </div>
