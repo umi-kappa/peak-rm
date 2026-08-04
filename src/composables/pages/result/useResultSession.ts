@@ -1,9 +1,9 @@
 import { computed, shallowRef } from 'vue'
 
 import { computeLpPreview } from '@/core/linearProgression'
+import { formatLocalDay } from '@/core/localDay'
 import { hasOneRm } from '@/core/oneRm'
 import { sessionMaxOneRm, sessionOutcome } from '@/core/session'
-import { formatLocalDay } from '@/core/sessionHistory'
 import type { SessionStore } from '@/composables/shared/session/useSession'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { ResultOrigin } from '@/router'

@@ -18,7 +18,7 @@ const meta: Meta<typeof SessionSummaryCard> = {
     },
   },
   argTypes: {
-    session: { description: '表示するセッション（集約済み一覧の 1 件）' },
+    session: { description: '表示するセッション（履歴一覧の 1 件）' },
   },
   decorators: [() => ({ template: '<div style="width: 342px;"><story /></div>' })],
 }

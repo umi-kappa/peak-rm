@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { formatLocalMonthDay } from '@/core/localDay'
 import { formatOneRm, hasOneRm } from '@/core/oneRm'
 import { formatSetReps, sessionMaxOneRm, sessionOutcome } from '@/core/session'
-import { formatLocalMonthDay } from '@/core/sessionHistory'
 import type { SessionOutcome } from '@/core/session'
 import type { Session } from '@/core/types'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'

@@ -24,9 +24,9 @@ function makeSession(id: string, exercise: Exercise, startedAt: number): Session
   }
 }
 
-// listForHistory は集約・並びを済ませた一覧を返す（本物と同じ startedAt 降順で渡す）
+// list は全セッションを並び済みで返す（本物と同じ startedAt 降順で渡す）
 function makeRepo(sessions: Session[] = []) {
-  return { listForHistory: vi.fn(async () => sessions) }
+  return { list: vi.fn(async () => sessions) }
 }
 
 beforeEach(() => {
@@ -62,10 +62,11 @@ test('種目の切り替えは replace で URL に反映する（履歴を積ま
   expect(router.replace).toHaveBeenCalledWith({ query: { exercise: 'squat' } })
 })
 
-test('load 後は選択中の種目のセッションだけを repo の並び順で返す', async () => {
-  const bench2 = makeSession('bench2', 'benchPress', 3000)
-  const squat = makeSession('squat', 'squat', 2000)
-  const bench1 = makeSession('bench1', 'benchPress', 1000)
+// bench1 が朝・bench2 が夕方で同一ローカル日。同日同種目を畳まないことも兼ねて守る
+test('load 後は選択中の種目のセッションだけを repo の並び順で返す（同日 2 件も畳まない）', async () => {
+  const bench2 = makeSession('bench2', 'benchPress', new Date(2026, 0, 1, 18, 0).getTime())
+  const squat = makeSession('squat', 'squat', new Date(2026, 0, 1, 12, 0).getTime())
+  const bench1 = makeSession('bench1', 'benchPress', new Date(2026, 0, 1, 9, 0).getTime())
   const { sessions, load } = useHistory({ repo: makeRepo([bench2, squat, bench1]) })
 
   await load()
@@ -103,5 +104,5 @@ test('load は種目ごとに呼び直さない（一覧は 1 回の取得を絞
   selectExercise('squat')
   selectExercise('benchPress')
 
-  expect(repo.listForHistory).toHaveBeenCalledOnce()
+  expect(repo.list).toHaveBeenCalledOnce()
 })
