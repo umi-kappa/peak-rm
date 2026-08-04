@@ -9,7 +9,7 @@ PeakRM のコーディング・命名・アクセシビリティ・テスト・�
 ```
 src/
   core/                # 純ロジック（副作用なし・I/O なし・型・計算・ルール）※フラット
-    constants.ts  duration.ts  linearProgression.ts  menu.ts  oneRm.ts  session.ts  sessionHistory.ts  stepper.ts  types.ts
+    constants.ts  deltaBadge.ts  duration.ts  linearProgression.ts  localDay.ts  menu.ts  oneRm.ts  session.ts  stepper.ts  types.ts
   storage/             # 永続化（Dexie / IndexedDB・リポジトリ・persist・backup）※フラット
     db.ts  sessionRepo.ts  backup.ts
   composables/
@@ -136,6 +136,8 @@ src/
 Vitest を projects 構成で動かし、ロジック層の単体テスト（`unit` project、`happy-dom`）と、Storybook の play 関数によるコンポーネントのインタラクションテスト（`storybook` project、`@storybook/addon-vitest` + **headless Chromium**）の両方を実行する。`npm test` で両 project が走る。ロジックとコンポーネントで役割を分担し、同じ振る舞いを両方で書かない。
 
 `storage/` のテストも `unit` project で動かす。happy-dom は IndexedDB を持たないため、`unit` project の `setupFiles` に `fake-indexeddb/auto` を読み込んでグローバルを補う。リポジトリのテストは `beforeEach` で `db.delete()` → `db.open()` してケース間の状態を分離する。
+
+`unit` project の `env` で `TZ` を `Asia/Tokyo`（DST の無い UTC+9）に固定する。CI 既定の UTC ではローカル日付と UTC 日付が一致してしまい、`core/localDay` の「ローカル基準で日を判定する」保証（UTC の `toISOString` への退化）をテストが検出できないため。UTC+9 で両者がずれるのはローカル 0〜8 時だけなので、**日付ラベルのローカル / UTC を判別するテストはその時間帯の時刻を使う**（例: `new Date(2026, 0, 2, 0, 0)`）。`storybook` project は browser 実行のため `env` が `import.meta.env` にしか届かず TZ を変えられず、host の TZ のまま走る。**どちらの project でも、日付を扱う fixture は TZ オフセットを前提にせず** `new Date(2026, 0, 1, 9, 0)` のようにローカル日付の構成要素から組み立てる（TZ を固定した `unit` 側でも、オフセットを織り込んだエポック値は使わない）。
 
 コンポーネントのインタラクションは原則 Storybook の play が担うが、例外として **`RouterView`（route outlet）を内包するため Storybook で Story 化できないルートコンポーネント（`App.vue` など）は `@vue/test-utils` の `mount` で `unit` project のマウントテストを書いてよい**。
 
