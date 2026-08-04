@@ -16,6 +16,11 @@ export default defineConfig({
           name: 'unit',
           environment: 'happy-dom',
           include: ['src/**/*.spec.ts'],
+          // TZ を非 UTC かつ DST の無いものに固定する。CI 既定の UTC ではローカル日付と
+          // UTC 日付が一致するため、core/localDay の「ローカル基準で日を判定する」保証
+          // （toISOString への退化）をテストが検出できない。DST のある TZ は
+          // new Date(y, m, d, h, 0) が存在しない時刻・重複する時刻に当たりうるため避ける。
+          env: { TZ: 'Asia/Tokyo' },
           // happy-dom は IndexedDB を持たないため fake-indexeddb で global を補う。
           setupFiles: ['fake-indexeddb/auto'],
         },

@@ -27,7 +27,7 @@ export function formatSetReps(session: ReadonlySession): string {
  * 完遂（complete）の定義: 全セットが完了（results.length === menu.sets）し、
  * かつ全セットで actualReps >= menu.reps（目標回数）を満たすか。
  * results が menu.sets に満たない（＝中断）場合は false。
- * ドメイン規則（増量トリガー・同日集約・repo の絞り込み）が参照する基底述語で、
+ * ドメイン規則（増量トリガー・repo の絞り込み）が参照する基底述語で、
  * 完遂判定はこれを唯一の source とする。
  */
 export function isComplete(session: ReadonlySession): boolean {

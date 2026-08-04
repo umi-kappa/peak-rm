@@ -76,7 +76,7 @@ UI コンポーネントは Storybook でカタログ化し、`main` への push
 
 ```
 src/
-├─ core/          純ロジック（型・1RM 計算・linear progression・集約）。副作用なし
+├─ core/          純ロジック（型・1RM 計算・linear progression・日付整形）。副作用なし
 ├─ storage/       永続化（Dexie / IndexedDB・リポジトリ・Export / Import）
 ├─ composables/   Vue composable
 │  ├─ shared/<分類>/      横断の composable（session / error / navigation / ui など）

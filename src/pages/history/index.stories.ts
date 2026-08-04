@@ -34,6 +34,19 @@ const sessions = [
   }),
 ]
 
+// 同日同種目に 2 セッションがある稀なケース。夕方の中断と朝の完遂が同じ日付ラベルで 2 行並ぶ
+const sameDaySessions = [
+  makeSession('benchPress', 80, [8, 8, 8], {
+    id: 'bench-0512-morning',
+    startedAt: localStartedAt(2026, 5, 12, 9),
+  }),
+  makeSession('benchPress', 85, [8], {
+    id: 'bench-0512-evening',
+    startedAt: localStartedAt(2026, 5, 12, 18),
+    sets: 3,
+  }),
+]
+
 const meta: Meta<typeof HistoryPage> = {
   component: HistoryPage,
   tags: ['autodocs'],
@@ -41,7 +54,7 @@ const meta: Meta<typeof HistoryPage> = {
     docs: {
       description: {
         component:
-          '履歴画面。種目タブで絞り込んだセッション一覧（日付降順・同日同種目は 1 件に集約）を表示し、行タップで結果確認画面の履歴詳細へ遷移する。データ源は provide された sessionRepo の `listForHistory` から読むため、stories は fake repo を provide して記録の有無を再現する。1RM グラフは #40 で追加する。',
+          '履歴画面。種目タブで絞り込んだセッション一覧（日付降順・実績のあるセッションを全件表示）を表示し、行タップで結果確認画面の履歴詳細へ遷移する。データ源は provide された sessionRepo の `list` から読むため、stories は fake repo を provide して記録の有無を再現する。1RM グラフは #40 で追加する。',
       },
     },
   },
@@ -69,8 +82,16 @@ export const Empty: Story = {
   loaders: [historyLoader([])],
 }
 
+// 同日同種目の 2 セッションを集約せず両方表示する（どの実績も履歴詳細＝削除導線へ到達できる）。
+// 行の見た目は Default と同じなので snapshot は取らない（repo 層の無集約は sessionRepo.spec、
+// 一覧の素通しは useHistory.spec が守る）
+export const SameDay: Story = {
+  loaders: [historyLoader(sameDaySessions)],
+  parameters: { chromatic: { disableSnapshot: true } },
+}
+
 // repo の一覧が行に反映され（inject → load）、タブ選択で絞り込みが切り替わる配線を確認する。
-// 集約・並び順は sessionHistory.spec、絞り込みそのものは useHistory.spec が担う
+// 並び順は sessionRepo.spec、絞り込みそのものは useHistory.spec が担う
 export const Behavior: Story = {
   loaders: [historyLoader(sessions)],
   parameters: { chromatic: { disableSnapshot: true } },

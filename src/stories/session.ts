@@ -1,15 +1,15 @@
 import { useSession, type SessionStore } from '@/composables/shared/session/useSession'
 import { isComplete } from '@/core/session'
-import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Menu, Session } from '@/core/types'
 
 /**
  * fixture の startedAt をローカル日付から作る（月は 1 始まりで渡す）。
  * 日付表示・並び順を見る stories は CI の TZ に依存させないためこれを使う。
+ * 時刻の既定は 9 時。同日内の前後関係が要る stories だけ hour を渡す。
  */
-export function localStartedAt(year: number, month: number, date: number): number {
-  return new Date(year, month - 1, date, 9, 0).getTime()
+export function localStartedAt(year: number, month: number, date: number, hour = 9): number {
+  return new Date(year, month - 1, date, hour, 0).getTime()
 }
 
 /**
@@ -17,7 +17,7 @@ export function localStartedAt(year: number, month: number, date: number): numbe
  * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
  * （get = id 一致、latestByExercise = 同種目の直近、latestCompleteBefore = 同種目・完遂・
- * startedAt がより前の直近、一覧系 = startedAt 降順 / 同日同種目の集約）。
+ * startedAt がより前の直近、list = startedAt 降順）。
  */
 export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
   const byStartedAt = [...sessions].sort((a, b) => a.startedAt - b.startedAt)
@@ -27,7 +27,6 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
     remove: async () => {},
     get: async (id) => sessions.find((session) => session.id === id),
     list: async () => [...byStartedAt].reverse(),
-    listForHistory: async () => dedupeHistoryByDay(sessions),
     latestByExercise: async (exercise) =>
       byStartedAt.filter((session) => session.exercise === exercise).at(-1),
     latestCompleteBefore: async (exercise, startedAt) =>

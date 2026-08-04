@@ -81,33 +81,23 @@ describe('remove', () => {
 })
 
 describe('list', () => {
-  test('startedAt 降順で返す', async () => {
-    await sessionRepo.insert(makeSession('a', 'benchPress', 1000))
-    await sessionRepo.insert(makeSession('c', 'squat', 3000))
-    await sessionRepo.insert(makeSession('b', 'deadlift', 2000))
-
-    const sessions = await sessionRepo.list()
-    expect(sessions.map((s) => s.id)).toEqual(['c', 'b', 'a'])
-  })
-})
-
-describe('listForHistory', () => {
-  // ローカル日付の構成要素から startedAt を作り、CI の TZ に依存しないようにする。
+  // ローカル日付の構成要素から startedAt を作り、TZ オフセットを前提にしない。
   const day1Morning = new Date(2026, 0, 1, 9, 0).getTime()
   const day1Evening = new Date(2026, 0, 1, 18, 0).getTime()
   const day2 = new Date(2026, 0, 2, 9, 0).getTime()
 
-  test('DB 経由で取得し、同日同種目は集約規則（完遂優先 → 1RM 最大 → startedAt 最大）で 1 件に絞り startedAt 降順で返す', async () => {
-    // 朝は完遂・夜は中断を同日同種目で insert。後発の中断が完遂記録を上書きせず
-    // 完遂の benchMorning が残ることを DB → list() → dedupeHistoryByDay の統合パスで確認する。
+  // 朝は完遂・夕方は中断。かつて完遂優先で 1 件に集約していた組み合わせを回帰ガードにする
+  test('同日同種目も集約せず startedAt 降順で全件返す', async () => {
+    // insert 順は id の辞書順（= 主キー順）にも startedAt 順にも揃えない。期待値と一致するのは
+    // startedAt 降順だけになる
+    await sessionRepo.insert(makeSession('squatDay2', 'squat', day2))
     await sessionRepo.insert(
       makeSession('benchMorning', 'benchPress', day1Morning, [reps(8), reps(8), reps(8)]),
     )
     await sessionRepo.insert(makeSession('benchEvening', 'benchPress', day1Evening))
-    await sessionRepo.insert(makeSession('squatDay2', 'squat', day2))
 
-    const sessions = await sessionRepo.listForHistory()
-    expect(sessions.map((s) => s.id)).toEqual(['squatDay2', 'benchMorning'])
+    const sessions = await sessionRepo.list()
+    expect(sessions.map((s) => s.id)).toEqual(['squatDay2', 'benchEvening', 'benchMorning'])
   })
 })
 

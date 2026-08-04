@@ -2,7 +2,6 @@ import Dexie from 'dexie'
 import type { InjectionKey } from 'vue'
 
 import { isComplete } from '@/core/session'
-import { dedupeHistoryByDay } from '@/core/sessionHistory'
 import { db } from '@/storage/db'
 import type { Exercise, SetResult, Session } from '@/core/types'
 
@@ -41,14 +40,12 @@ async function get(id: string): Promise<Session | undefined> {
   return db.sessions.get(id)
 }
 
-/** 全セッションを startedAt 降順で返す（履歴一覧の生データ）。 */
+/**
+ * 全セッションを startedAt 降順で返す。
+ * 同日同種目でも集約しない（履歴一覧は実績の台帳であり、全レコードが削除導線へ到達できる必要がある）。
+ */
 async function list(): Promise<Session[]> {
   return db.sessions.orderBy('startedAt').reverse().toArray()
-}
-
-/** 履歴一覧用。同日同種目は完遂優先で 1 件に集約した降順リストを返す。 */
-async function listForHistory(): Promise<Session[]> {
-  return dedupeHistoryByDay(await list())
 }
 
 /**
@@ -86,7 +83,6 @@ export const sessionRepo = {
   remove,
   get,
   list,
-  listForHistory,
   latestByExercise,
   latestCompleteBefore,
 }
