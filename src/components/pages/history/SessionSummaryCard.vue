@@ -110,7 +110,8 @@ const reps = computed(() => formatSetReps(session))
 }
 
 /* 行内の title サイズは BigNumber の size union（stat / hero / display）に無いため、
-   ここは BigNumber を使わず自前でタイポグラフィと階調を持つ */
+   推定 1RM は BigNumber を使わず自前で持つ（mono と桁揃えは上の共通セレクタ、
+   サイズ・太さ・階調はこのブロック） */
 .one-rm-value {
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-bold);
