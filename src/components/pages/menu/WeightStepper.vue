@@ -14,7 +14,7 @@ const model = defineModel<number>({ required: true })
       v-model="model"
       label="WEIGHT"
       large
-      accent
+      tone="accent"
       unit="KG"
       :step="0.25"
       :min="0"
