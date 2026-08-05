@@ -224,7 +224,8 @@ onMounted(initialize)
   font-weight: var(--font-weight-bold);
 }
 
-/* カードの padding 16px に上 12px / 下 8px を足し、設計のヒーロー上 28px / 下 24px に合わせる */
+/* ステータスマーカー・推定 1RM・前回比バッジを縦に中央揃えで積む。
+   上下の余白は BaseCard の padding 16px に委ね、この要素では持たない */
 .hero-stack {
   display: flex;
   flex-direction: column;

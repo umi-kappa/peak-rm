@@ -157,7 +157,8 @@ function confirmAbort() {
 </template>
 
 <style scoped>
-/* カードの padding 16px に 12px を足し、設計のタイマーヒーロー上下 28px に合わせる */
+/* ラベル行・タイマー・進捗バーを縦に中央揃えで積む。
+   上の余白は BaseCard の padding 16px に委ね、下だけ 8px 足して 24px にする */
 .timer {
   display: flex;
   flex-direction: column;
