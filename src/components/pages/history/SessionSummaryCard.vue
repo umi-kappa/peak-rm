@@ -27,8 +27,7 @@ const { session } = defineProps<{
 const dayLabel = computed(() => formatLocalMonthDay(session.startedAt))
 const oneRm = computed(() => sessionMaxOneRm(session))
 const oneRmText = computed(() => formatOneRm(oneRm.value))
-// — は数値より階調を落とすため、算出できたかを別に持つ（ホームの ExerciseCard と同じ扱い）
-const oneRmEmpty = computed(() => !hasOneRm(oneRm.value))
+const oneRmTone = computed(() => (hasOneRm(oneRm.value) ? 'default' : 'tertiary'))
 const badge = computed(() => BADGE[sessionOutcome(session)])
 const reps = computed(() => formatSetReps(session))
 </script>
@@ -46,7 +45,7 @@ const reps = computed(() => formatSetReps(session))
       <span class="date">{{ dayLabel }}</span>
 
       <div class="one-rm">
-        <span class="one-rm-value" :class="{ empty: oneRmEmpty }">{{ oneRmText }}</span>
+        <span class="one-rm-value" :class="oneRmTone">{{ oneRmText }}</span>
         <BaseUnit>KG</BaseUnit>
       </div>
 
@@ -110,12 +109,14 @@ const reps = computed(() => formatSetReps(session))
   color: var(--color-text-secondary);
 }
 
+/* 行内の title サイズは BigNumber の size union（stat / hero / display）に無いため、
+   ここは BigNumber を使わず自前でタイポグラフィと階調を持つ */
 .one-rm-value {
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-bold);
 
   /* 算出できない（全セットスキップ）ときの — は、実績値と同じ重みで並ばないよう階調を落とす */
-  &.empty {
+  &.tertiary {
     color: var(--color-text-tertiary);
   }
 }
