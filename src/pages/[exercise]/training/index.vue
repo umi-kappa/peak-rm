@@ -53,7 +53,7 @@ async function completeSet() {
       <AppBar :title="EXERCISE_LABELS[exercise]" @back="goBack" />
     </template>
 
-    <div v-if="menu" class="hero">
+    <div v-if="menu" class="hero-stack">
       <div class="context" :class="{ final: isFinalSet }">
         <span class="rule" />
         <span class="context-label">{{ isFinalSet ? 'FINAL SET' : 'SET' }}</span>
@@ -100,7 +100,7 @@ async function completeSet() {
 
 <style scoped>
 /* 処方（このセットでやること）を画面中央に大きく据える */
-.hero {
+.hero-stack {
   display: flex;
   flex: 1;
   min-height: 0;

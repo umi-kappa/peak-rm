@@ -54,12 +54,12 @@ function onCancel() {
   <BaseDialog :title="exerciseLabel" @cancel="onCancel">
     <template #header>
       <div class="prescription">
-        <div class="stat">
+        <div class="value-line">
           <BigNumber :value="weight" />
           <BaseUnit>KG</BaseUnit>
         </div>
         <span class="dot">·</span>
-        <div class="stat">
+        <div class="value-line">
           <BaseUnit>SET</BaseUnit>
           <BigNumber :value="setNumber" />
         </div>
@@ -81,7 +81,7 @@ function onCancel() {
         />
       </div>
       <!-- read-only は入力 UI を出さない（spec「実績値の編集ポリシー」実装記）。ステッパーの値表示と同じ体裁で据える -->
-      <div v-else class="stat">
+      <div v-else class="value-line">
         <BigNumber :value="actualReps" />
         <BaseUnit>REPS</BaseUnit>
       </div>
@@ -108,7 +108,7 @@ function onCancel() {
   gap: var(--space-12);
 }
 
-.stat {
+.value-line {
   display: flex;
   align-items: baseline;
   gap: var(--space-8);

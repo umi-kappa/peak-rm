@@ -138,7 +138,7 @@ onMounted(initialize)
       />
 
       <BaseCard :border="cardBorder">
-        <div class="hero">
+        <div class="hero-stack">
           <div v-if="marker" class="marker" :class="{ complete: marker === 'complete' }">
             <span class="rule" />
             <span class="marker-body">
@@ -225,7 +225,7 @@ onMounted(initialize)
 }
 
 /* カードの padding 16px に上 12px / 下 8px を足し、設計のヒーロー上 28px / 下 24px に合わせる */
-.hero {
+.hero-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
