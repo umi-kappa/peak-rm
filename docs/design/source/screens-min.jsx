@@ -260,7 +260,7 @@ const M_Interval = () => {
 
       {/* Timer hero */}
       <div style={{
-          marginTop: 4, padding: '28px 16px', borderRadius: 4,
+          marginTop: 4, padding: '16px 16px 24px', borderRadius: 4,
           background: C.surface, border: `1px solid ${C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
         }}>
@@ -381,7 +381,7 @@ const M_Result = ({ fromHistory = false, aborted = false, perfect = false }) => 
 
       {/* Est 1RM hero — also the completion celebration moment */}
       <div style={{
-          padding: '28px 16px 24px', borderRadius: 4,
+          padding: 16, borderRadius: 4,
           background: C.surface, border: `1px solid ${aborted ? C.line : C.lineSoft}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16
         }}>

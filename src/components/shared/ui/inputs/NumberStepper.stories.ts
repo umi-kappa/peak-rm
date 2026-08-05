@@ -40,10 +40,11 @@ const meta: Meta<typeof NumberStepper> = {
     min: { control: 'number', description: '下限（省略時は無制限）' },
     max: { control: 'number', description: '上限（省略時は無制限）' },
     unit: { control: 'text', description: '値の右に添える単位' },
-    accent: {
-      control: 'boolean',
-      description: '値をアクセント色で表示',
-      table: { defaultValue: { summary: 'false' } },
+    tone: {
+      control: 'inline-radio',
+      options: ['default', 'accent'],
+      description: '階調（default=本文色 / accent=アクセント色）',
+      table: { defaultValue: { summary: 'default' } },
     },
   },
 }
@@ -80,7 +81,7 @@ export const Large: Story = {
 }
 
 export const LargeAccent: Story = {
-  args: { label: 'WEIGHT', large: true, accent: true, unit: 'KG', step: 0.25, min: 0 },
+  args: { label: 'WEIGHT', large: true, tone: 'accent', unit: 'KG', step: 0.25, min: 0 },
   render: renderWithModel(82.5),
 }
 

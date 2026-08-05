@@ -179,8 +179,7 @@ const DesignTokens = () => {
         <SpaceRow value={20} label="ScreenBody gap · 本文 padding-y" />
         <SpaceRow value={24} label="screen pad · stage gap" />
 
-        <Label style={{ marginBottom: 4, marginTop: 16 }}>Hero</Label>
-        <SpaceRow value={28} label="result hero padding y top" />
+        <Label style={{ marginBottom: 4, marginTop: 16 }}>Large</Label>
         <SpaceRow value={32} label="design tokens card outer pad" />
 
         <Label style={{ marginBottom: 4, marginTop: 16 }}>Radius</Label>

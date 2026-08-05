@@ -14,7 +14,7 @@ const {
   min,
   max,
   unit,
-  accent = false,
+  tone = 'default',
 } = defineProps<{
   /** - / 値 / + をまとめた数値入力（role="group"）の名前。何の値かを読み上げで示す */
   label: string
@@ -23,7 +23,7 @@ const {
   min?: number
   max?: number
   unit?: string
-  accent?: boolean
+  tone?: 'default' | 'accent'
 }>()
 
 const options = computed(() => ({ step, min, max }))
@@ -55,7 +55,7 @@ watchEffect(() => {
     >
       <BaseIcon name="minus" :size="iconSize" />
     </button>
-    <div class="value" :class="{ accent }">
+    <div class="value" :class="tone">
       {{ model }}<BaseUnit v-if="unit">{{ unit }}</BaseUnit>
     </div>
     <button

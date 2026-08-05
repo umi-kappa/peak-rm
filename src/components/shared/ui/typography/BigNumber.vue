@@ -2,18 +2,18 @@
 const {
   value,
   size = 'stat',
-  accent = false,
+  tone = 'default',
 } = defineProps<{
   /** 表示する数値。整形済みの文字列も渡せる（例: '0:47'・'82.5'） */
   value: string | number
   size?: 'stat' | 'hero' | 'display'
-  /** アクセント扱い（アクセント色 + glow）で強調する */
-  accent?: boolean
+  /** 階調。accent はアクセント色 + glow で強調し、tertiary は一段落とす */
+  tone?: 'default' | 'accent' | 'tertiary'
 }>()
 </script>
 
 <template>
-  <span class="big-number" :class="[size, { accent }]">{{ value }}</span>
+  <span class="big-number" :class="[size, tone]">{{ value }}</span>
 </template>
 
 <style scoped>
@@ -39,6 +39,10 @@ const {
   &.accent {
     color: var(--color-accent);
     text-shadow: var(--shadow-glow);
+  }
+
+  &.tertiary {
+    color: var(--color-text-tertiary);
   }
 }
 </style>
