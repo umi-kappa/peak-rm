@@ -99,7 +99,7 @@ function confirmAbort() {
             <BaseLabel>TARGET {{ formatClock(menu.intervalSec * 1000) }}</BaseLabel>
           </div>
           <div class="clock">
-            <BigNumber :value="clockText" size="hero" accent />
+            <BigNumber :value="clockText" size="hero" tone="accent" />
             <span class="centis">{{ centisText }}</span>
           </div>
           <div class="track">

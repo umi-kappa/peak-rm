@@ -79,8 +79,8 @@ const { cards } = useSetTimeline(() => session.value, { live: false })
 
 const deleteConfirmOpen = ref(false)
 
-// 数値は accent + glow、— は tertiary と色が異なるため要素も分ける（home の ExerciseCard と同じ扱い）
-const showOneRm = computed(() => hasOneRm(maxOneRm.value))
+// 算出できないときの `—` は formatOneRm が返す。数値と同じ重みで並ばないよう階調も落とす
+const oneRmTone = computed(() => (hasOneRm(maxOneRm.value) ? 'accent' : 'tertiary'))
 const oneRmText = computed(() => formatOneRm(maxOneRm.value))
 
 // 前回比バッジ（整形は formatDeltaBadge。増減で矢印を出し分け、差 0 は矢印なしの ±0.0）
@@ -151,8 +151,7 @@ onMounted(initialize)
           <div class="one-rm">
             <BaseLabel>EST. 1RM</BaseLabel>
             <div class="one-rm-value">
-              <BigNumber v-if="showOneRm" :value="oneRmText" size="hero" accent />
-              <span v-else class="one-rm-empty">{{ oneRmText }}</span>
+              <BigNumber :value="oneRmText" size="hero" :tone="oneRmTone" />
               <BaseUnit>KG</BaseUnit>
             </div>
           </div>
@@ -281,16 +280,6 @@ onMounted(initialize)
   display: flex;
   align-items: baseline;
   gap: var(--space-8);
-}
-
-/* 算出できない（全セットスキップ）ときの — は、実績値と同じ重みで並ばないよう階調を落とす
-   （home の ExerciseCard・履歴の SessionSummaryCard と同じ規則） */
-.one-rm-empty {
-  color: var(--color-text-tertiary);
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-hero);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
 }
 
 /* 前回比のピル。増減の事実提示に留める（丸枠 + 矢印 + 差分） */

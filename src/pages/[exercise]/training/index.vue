@@ -63,7 +63,7 @@ async function completeSet() {
 
       <div class="prescription">
         <div class="weight">
-          <BigNumber :value="menu.weight" size="display" accent />
+          <BigNumber :value="menu.weight" size="display" tone="accent" />
           <BaseUnit size="body">KG</BaseUnit>
         </div>
         <div class="target">

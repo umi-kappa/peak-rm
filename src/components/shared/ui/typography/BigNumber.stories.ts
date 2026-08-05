@@ -8,7 +8,7 @@ const meta: Meta<typeof BigNumber> = {
     docs: {
       description: {
         component:
-          '主役となる数値の表示（1RM・重量・タイマーなど）。mono / bold / tabular-nums で桁幅を固定し、`accent` でアクセント色＋発光に切り替える。`value` は整形済み文字列も受け付ける。',
+          '主役となる数値の表示（1RM・重量・タイマーなど）。mono / bold / tabular-nums で桁幅を固定し、`tone` で階調を切り替える。`value` は整形済み文字列も受け付ける。',
       },
     },
   },
@@ -20,10 +20,11 @@ const meta: Meta<typeof BigNumber> = {
       description: 'サイズ（stat=32px / hero=64px / display=96px）',
       table: { defaultValue: { summary: 'stat' } },
     },
-    accent: {
-      control: 'boolean',
-      description: 'アクセント扱い（アクセント色 + glow）で強調する',
-      table: { defaultValue: { summary: 'false' } },
+    tone: {
+      control: 'inline-radio',
+      options: ['default', 'accent', 'tertiary'],
+      description: '階調（default=本文色 / accent=アクセント色 + glow / tertiary=一段落とした色）',
+      table: { defaultValue: { summary: 'default' } },
     },
   },
   args: { value: '99.0' },
@@ -44,5 +45,9 @@ export const Display: Story = {
 }
 
 export const Accent: Story = {
-  args: { accent: true },
+  args: { tone: 'accent' },
+}
+
+export const Tertiary: Story = {
+  args: { value: '—', tone: 'tertiary' },
 }

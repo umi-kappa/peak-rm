@@ -92,6 +92,7 @@ src/
 - **`computed` の writable 形（`get` / `set` を渡す形）は使わない**。読み取り専用の `computed` と、更新する名前付き関数に分ける（例: `useHistory` の `exercise`（URL から導出）と `selectExercise()`（`router.replace` で URL を書き換え））。代入式の裏に副作用（router 遷移・永続化）が隠れると、書いた直後に読めない・呼び出し側が同期的な更新だと誤解するため。使用側は `v-model` の代わりに `:model-value` と `@update:model-value` を分けて渡す
 - **template にインライン式で処理を書かない**（`@back="router.push({ name: 'home' })"` 禁止）。イベントハンドラは script の名前付き関数に切り出す（`@back="goHome"`）。presentational コンポーネント内の単純な emit 転送（`@click="emit('confirm')"`）は例外
 - **同名の prop バインドは same-name shorthand（Vue 3.4+）で書く**（`:open="open"` ではなく `:open`。`:to` / `:name` / `:border` も同様）。バインド先が同名の単純な変数のときだけ使え、別名・メンバー式・リテラル（`:inset="24"`）は通常の記法のまま
+- **色の階調を切り替える prop は `tone` に統一し、値はトークン名から採る**（`BigNumber` の `tone: 'default' | 'accent' | 'tertiary'`、`SessionSummaryCard` のステータスバッジの `tone: 'accent' | 'secondary' | 'tertiary'`）。`muted` のようなトークンに無い視覚語を新しく作らない。boolean（`accent: true`）にはしない — 階調は排他なので、union なら「accent かつ tertiary」という矛盾を型で防げる
 - props は型引数つき `defineProps` を **reactive props destructure**（Vue 3.5+）で受け、デフォルト値は分割代入のデフォルト値で書く（`const { size = 16 } = defineProps<{ size?: number }>()`）。`withDefaults` は使わない
   - destructure した props を `<script setup>` 直下の式で使うとリアクティビティを失う（setup は 1 回しか走らない）。派生値は `computed` かテンプレート内の式にする
 

@@ -16,8 +16,8 @@ const { exercise, session } = defineProps<{
 }>()
 
 const oneRm = computed(() => (session ? sessionMaxOneRm(session) : 0))
-// 数値は accent + glow、— は tertiary と色が異なるため要素も分ける（文字列自体は formatOneRm が決める）
-const showOneRm = computed(() => hasOneRm(oneRm.value))
+// 算出できないときの `—` は formatOneRm が返す。数値と同じ重みで並ばないよう階調も落とす
+const oneRmTone = computed(() => (hasOneRm(oneRm.value) ? 'accent' : 'tertiary'))
 const oneRmText = computed(() => formatOneRm(oneRm.value))
 const reps = computed(() => (session ? formatSetReps(session) : ''))
 </script>
@@ -30,8 +30,7 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
         <div class="est">
           <BaseLabel>EST. 1RM</BaseLabel>
           <div class="est-value">
-            <BigNumber v-if="showOneRm" :value="oneRmText" size="stat" accent />
-            <span v-else class="est-empty">{{ oneRmText }}</span>
+            <BigNumber :value="oneRmText" size="stat" :tone="oneRmTone" />
             <BaseUnit>KG</BaseUnit>
           </div>
         </div>
@@ -82,14 +81,6 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   display: flex;
   align-items: baseline;
   gap: var(--space-4);
-}
-
-.est-empty {
-  color: var(--color-text-tertiary);
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-stat);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
 }
 
 .last {
