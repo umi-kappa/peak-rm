@@ -66,7 +66,7 @@ UI コンポーネントは Storybook でカタログ化し、`main` への push
 | [docs/spec.md](docs/spec.md)                   | 仕様の唯一のソース。コンセプト・機能仕様・1RM 計算式・データモデル・エラーハンドリング方針 |
 | [docs/conventions.md](docs/conventions.md)     | コーディング・命名・アクセシビリティ・テスト・スタイル・ドキュメント表記の規約             |
 | [docs/design/README.md](docs/design/README.md) | デザイントークン（色・タイポグラフィ・スペーシング）・画面リファレンス・トーンガイド       |
-| [CLAUDE.md](CLAUDE.md)                         | AI コーディングエージェント向けのリポジトリガイド                                          |
+| [AGENTS.md](AGENTS.md)                         | AI コーディングエージェント向けのリポジトリガイド                                          |
 
 `docs/design/preview.html` をブラウザで開くと、全画面を 1 枚のキャンバスに並べた HTML プロトタイプを閲覧できる。
 
