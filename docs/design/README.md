@@ -73,11 +73,12 @@ text-shadow:
 
 ```css
 --font-sans: system-ui, -apple-system, sans-serif;
---font-mono: ui-monospace, monospace;
+--font-mono: ui-monospace, Menlo, Consolas, monospace;
 ```
 
 - **Sans**: 本文・タイトル・ヘッドライン
 - **Mono**: すべての数字・大文字ラベル (タブラー数字必須: `font-variant-numeric: tabular-nums`)
+- **Mono の `Menlo` / `Consolas` は省略しない**: `ui-monospace` は WebKit 系のみで Chrome では無視され、generic `monospace` の実体はブラウザの固定幅フォント設定次第でプロポーショナル体になり得る。そうなると tabular-nums の桁揃えと `−` (U+2212) の字幅が崩れる。`Menlo` が Apple・`Consolas` が Windows を受け、Android は generic が確実に等幅なので名前を挙げず任せる
 - **web font は読み込まない**: スタックは `system-ui` 始まりで、iOS=SF / macOS=SF / Windows=Segoe UI / Android=Roboto の各システムフォントを使う。日本語は OS のグリフ補完 (Hiragino / Yu Gothic / Noto CJK) に任せる。PWA の軽量・オフライン性を優先し `@font-face` / Google Fonts は使わない
 
 ### Font Weight (3段階)

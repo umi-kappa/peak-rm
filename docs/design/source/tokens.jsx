@@ -2,7 +2,10 @@
 // Two directions share the base palette; accent differs.
 
 const FONT_SANS = 'system-ui, -apple-system, sans-serif';
-const FONT_MONO = 'ui-monospace, monospace';
+// Keep Menlo (Apple) and Consolas (Windows): ui-monospace is WebKit-only, and Chrome falls
+// through to generic monospace, whose actual face can be proportional — breaking tabular-nums
+// and the width of − (U+2212). Android is left to the generic, which is reliably monospaced.
+const FONT_MONO = 'ui-monospace, Menlo, Consolas, monospace';
 
 // Base dark palette · monotone scale (dark → light)
 const C = {
