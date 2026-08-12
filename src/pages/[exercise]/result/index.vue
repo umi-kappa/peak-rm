@@ -83,7 +83,7 @@ const deleteConfirmOpen = ref(false)
 const oneRmTone = computed(() => (hasOneRm(maxOneRm.value) ? 'accent' : 'tertiary'))
 const oneRmText = computed(() => formatOneRm(maxOneRm.value))
 
-// 前回比バッジ（整形は formatDeltaBadge。増減で矢印を出し分け、差 0 は矢印なしの ±0.0）
+// 前回比バッジ（整形は formatDeltaBadge。増減で矢印を出し分け、表示上 0 は矢印なしの ±0.0）
 const deltaBadge = computed(() => formatDeltaBadge(delta.value))
 
 // 中断は通常境界の枠でわずかに強調する（design: aborted のみ line）
