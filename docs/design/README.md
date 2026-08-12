@@ -207,7 +207,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - Est. 1RM カード (surface, `lineSoft` 枠, radius 4, padding 16)
   - ヘッダー左: `Est. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `kg` unit
   - ヘッダー右: `Last 8 sessions` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `kg` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
-  - 折れ線グラフ (高さ 118, 上 margin 16): `line` の baseline 1 本のみで grid・目盛は出さない。両端に破線の縦ヘルパー (`lineSoft`, dash `2 3`)
+  - 折れ線グラフ (高さ 118): `line` の baseline 1 本のみで grid・目盛は出さない。両端に破線の縦ヘルパー (`lineSoft`, dash `2 3`)。ヘッダー・グラフ・日付軸の間に余白は取らず、グラフ内部の padding が間隔を作る
   - パスは accent 2 px (round join / cap)。dot は中間が r2.5 (bg 塗り + fg 枠 1.5 px)、両端が r3.5 (accent 塗り + bg 枠)
   - 両端の点の**上に値テキスト** (mono 14 bold, accent。始点は左寄せ、終点は右寄せ)
   - 日付軸はグラフ下に**両端 2 つだけ** (mono caption fg3, `MM/DD`)
