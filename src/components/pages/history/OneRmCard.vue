@@ -33,7 +33,7 @@ const dayLabels = computed(() => {
 </script>
 
 <template>
-  <BaseCard>
+  <BaseCard class="one-rm-card">
     <div class="header">
       <div class="headline">
         <BaseLabel>EST. 1RM</BaseLabel>
@@ -57,7 +57,7 @@ const dayLabels = computed(() => {
     <div class="chart">
       <OneRmChart :values />
       <div class="days" :class="{ single: singlePoint }">
-        <span v-for="label in dayLabels" :key="label" class="day">{{ label }}</span>
+        <span v-for="(label, index) in dayLabels" :key="index" class="day">{{ label }}</span>
       </div>
     </div>
   </BaseCard>
