@@ -2,8 +2,9 @@
 export type DeltaBadge = { text: string; icon: 'arrow-up' | 'arrow-down' | undefined }
 
 /**
- * 前回の完遂セッションとの推定 1RM 差分を前回比バッジへ整形する。
- * 比較不能（前回無し・当日 1RM が 0）は呼び出し側が undefined を渡し、そのまま undefined を返す。
+ * 推定 1RM の差分を前回比バッジへ整形する。差分の意味は呼び出し側が決める
+ * （結果確認画面は直前の完遂セッションとの差、履歴の 1RM グラフは表示区間の「終点 − 始点」）。
+ * 比較不能（前回無し・当日 1RM が 0・点が 1 つのみ）は呼び出し側が undefined を渡し、そのまま undefined を返す。
  * 差 0 は矢印なしの ±0.0、増減は符号（+ / −）付きの 1 桁と上下矢印（design には増減の 2 例のみ）。
  */
 export function formatDeltaBadge(delta: number | undefined): DeltaBadge | undefined {

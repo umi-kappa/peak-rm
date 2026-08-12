@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { formatLocalDay, formatLocalMonthDay } from '@/core/localDay'
+import { formatLocalDay, formatLocalMonthDay, localDayKey } from '@/core/localDay'
 
 // ローカル日付の構成要素から timestamp を作り、CI の TZ に依存しないようにする。
 // アサーション自体はどの TZ でも通るが、UTC 実装（toISOString）への退化を検出する力は
@@ -16,4 +16,10 @@ test('formatLocalMonthDay は年を落として MM/DD にする（1 桁はゼロ
   expect(formatLocalMonthDay(new Date(2026, 0, 1, 9, 0).getTime())).toBe('01/01')
   expect(formatLocalMonthDay(new Date(2026, 11, 25, 9, 0).getTime())).toBe('12/25')
   expect(formatLocalMonthDay(new Date(2026, 0, 2, 0, 0).getTime())).toBe('01/02')
+})
+
+test('localDayKey は同じ日の時刻を同一キーにし、日をまたぐとローカル基準で変わる', () => {
+  expect(localDayKey(new Date(2026, 0, 9, 9, 0).getTime())).toBe('2026-01-09')
+  expect(localDayKey(new Date(2026, 0, 9, 23, 59).getTime())).toBe('2026-01-09')
+  expect(localDayKey(new Date(2026, 0, 10, 0, 0).getTime())).toBe('2026-01-10')
 })

@@ -1,6 +1,7 @@
 import { computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { buildOneRmChartData } from '@/core/chartData'
 import { EXERCISE_ORDER, isExercise } from '@/core/constants'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Session } from '@/core/types'
@@ -11,7 +12,7 @@ export type HistoryDeps = {
 }
 
 /**
- * 履歴一覧のデータ供給（種目タブの選択と一覧の絞り込み）を担うヘッドレス層。
+ * 履歴画面のデータ供給（種目タブの選択・一覧の絞り込み・1RM グラフの変換）を担うヘッドレス層。
  * 一覧は repo の list（全セッションの startedAt 降順）をそのまま使う。
  */
 export function useHistory(deps: HistoryDeps) {
@@ -30,6 +31,10 @@ export function useHistory(deps: HistoryDeps) {
 
   const sessions = computed(() => all.value.filter((s) => s.exercise === exercise.value))
 
+  // グラフは一覧と同じ絞り込み結果から作る（日付集約と区間の切り出しは chartData に閉じている）。
+  // 記録が 1 点も無い種目では undefined になり、画面はカードごと出さない
+  const chart = computed(() => buildOneRmChartData(sessions.value))
+
   // 種目の切り替えで履歴を積まない（← が種目切り替えの巻き戻しにならないようにする）
   function selectExercise(value: Exercise) {
     router.replace({ query: { exercise: value } })
@@ -40,5 +45,5 @@ export function useHistory(deps: HistoryDeps) {
     all.value = await repo.list()
   }
 
-  return { exercise, sessions, selectExercise, load }
+  return { exercise, sessions, chart, selectExercise, load }
 }
