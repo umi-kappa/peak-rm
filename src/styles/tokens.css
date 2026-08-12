@@ -17,7 +17,11 @@
 
   /* ===== font family（system フォント運用・web font 非読込） ===== */
   --font-family-sans: system-ui, -apple-system, sans-serif;
-  --font-family-mono: ui-monospace, monospace;
+  /* Menlo（Apple）と Consolas（Windows）は消さない。ui-monospace は WebKit 系のみで、
+     Chrome では無視されて generic monospace に落ちる。generic の実体はブラウザの固定幅フォント
+     設定次第でプロポーショナル体になり得るため、等幅が崩れて tabular-nums の桁揃えと
+     − (U+2212) の字幅が壊れる。Android は generic が確実に等幅なので名前を挙げず任せる */
+  --font-family-mono: ui-monospace, Menlo, Consolas, monospace;
 
   /* ===== font size（type scale・サイズのみ。rem = デザイン px ÷ 10。global.css の html { font-size: 62.5% } が前提） ===== */
   --font-size-display: 9.6rem; /* 96px 最大: training で持ち上げる重量（1画面1つ） */

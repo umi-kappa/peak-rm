@@ -73,11 +73,12 @@ text-shadow:
 
 ```css
 --font-sans: system-ui, -apple-system, sans-serif;
---font-mono: ui-monospace, monospace;
+--font-mono: ui-monospace, Menlo, Consolas, monospace;
 ```
 
 - **Sans**: 本文・タイトル・ヘッドライン
 - **Mono**: すべての数字・大文字ラベル (タブラー数字必須: `font-variant-numeric: tabular-nums`)
+- **Mono の `Menlo` / `Consolas` は省略しない**: `ui-monospace` は WebKit 系のみで Chrome では無視され、generic `monospace` の実体はブラウザの固定幅フォント設定次第でプロポーショナル体になり得る。そうなると tabular-nums の桁揃えと `−` (U+2212) の字幅が崩れる。`Menlo` が Apple・`Consolas` が Windows を受け、Android は generic が確実に等幅なので名前を挙げず任せる
 - **web font は読み込まない**: スタックは `system-ui` 始まりで、iOS=SF / macOS=SF / Windows=Segoe UI / Android=Roboto の各システムフォントを使う。日本語は OS のグリフ補完 (Hiragino / Yu Gothic / Noto CJK) に任せる。PWA の軽量・オフライン性を優先し `@font-face` / Google Fonts は使わない
 
 ### Font Weight (3段階)
@@ -203,7 +204,13 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 - AppBar: 中央 "History"
 - 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)
-- Est. 1RM カード: 大きく `99.0` (mono stat bold + glow), Delta `+9.0 kg`, SVG 折れ線グラフ (アクセント色のパス + dot, X 軸日付)
+- Est. 1RM カード (surface, `lineSoft` 枠, radius 4, padding 16)
+  - ヘッダー左: `Est. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `kg` unit
+  - ヘッダー右: `Last 8 sessions` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `kg` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
+  - 折れ線グラフ (高さ 118): `line` の baseline 1 本のみで grid・目盛は出さない。両端に破線の縦ヘルパー (`lineSoft`, dash `2 3`)。ヘッダー・グラフ・日付軸の間に余白は取らず、グラフ内部の padding が間隔を作る
+  - パスは accent 2 px (round join / cap)。dot は中間が r2.5 (bg 塗り + fg 枠 1.5 px)、両端が r3.5 (accent 塗り + bg 枠)
+  - 両端の点の**上に値テキスト** (mono 14 bold, accent。始点は左寄せ、終点は右寄せ)
+  - 日付軸はグラフ下に**両端 2 つだけ** (mono caption fg3, `MM/DD`)
 - セッション行リスト: 日付 (mono body, fg2) + 推定 1RM (mono title bold + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す) + 詳細 (右寄せ 3 段。重量 + `kg` unit → 実績回数 `8/8/7` + `reps` unit (mono caption fg3) → ステータスバッジ)
   - **行の日付・重量は regular**（トークンの「bold = すべての数字」の例外。行内で立てるのは推定 1RM だけ）。Home の LAST 列が重量を bold にするのは、カード内に他の数値が無く単独で読ませるため
 - ステータスバッジ (mono caption bold, uppercase。状態の区分は Result の Status marker と同じ 3 状態だが、階調は本画面独自 — Result は complete だけ accent で aborted / executed とも fg2): `COMPLETED` (accent) / `EXECUTED` (fg2) / `ABORTED` (fg3)。ステータスは実績から導出した結論なので、根拠 (実績回数) の直後に置く。完遂だけをアクセントで立て、他は本文より落とした階調にする

@@ -23,3 +23,9 @@ export function formatLocalMonthDay(timestamp: number): string {
   const { month, day } = localDayParts(timestamp)
   return `${month}/${day}`
 }
+
+/** ローカルカレンダー日のキー（`2026-01-09` 形式）。同じ日のセッションをまとめる判定に使う。 */
+export function localDayKey(timestamp: number): string {
+  const { year, month, day } = localDayParts(timestamp)
+  return `${year}-${month}-${day}`
+}

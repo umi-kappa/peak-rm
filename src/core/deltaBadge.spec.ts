@@ -14,6 +14,14 @@ test('差 0 は矢印なしの ±0.0 を返す', () => {
   expect(formatDeltaBadge(0)).toEqual({ text: '±0.0', icon: undefined })
 })
 
+test('小数 1 桁に丸めると 0 になる微小な増加は矢印なしの ±0.0 を返す', () => {
+  expect(formatDeltaBadge(0.031_25)).toEqual({ text: '±0.0', icon: undefined })
+})
+
+test('小数 1 桁に丸めると 0 になる微小な減少は矢印なしの ±0.0 を返す', () => {
+  expect(formatDeltaBadge(-0.031_25)).toEqual({ text: '±0.0', icon: undefined })
+})
+
 test('比較不能（undefined）はそのまま undefined を返す', () => {
   expect(formatDeltaBadge(undefined)).toBeUndefined()
 })

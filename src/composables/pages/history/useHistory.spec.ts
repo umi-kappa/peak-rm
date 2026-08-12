@@ -96,6 +96,30 @@ test('記録が無い種目を選ぶと空の一覧になる', async () => {
   expect(sessions.value).toEqual([])
 })
 
+// グラフは一覧と同じ絞り込み結果から作る（変換規則そのものは chartData.spec が守る）
+test('グラフは選択中の種目のセッションから作り、切り替えに追従する', async () => {
+  const bench = makeSession('bench', 'benchPress', new Date(2026, 0, 1, 9, 0).getTime())
+  const deadlift = makeSession('deadlift', 'deadlift', new Date(2026, 0, 2, 9, 0).getTime())
+  const { chart, selectExercise, load } = useHistory({ repo: makeRepo([deadlift, bench]) })
+
+  await load()
+  expect(chart.value?.points).toEqual([{ oneRm: 100 * (1 + 8 / 40), dayLabel: '01/01' }])
+
+  selectExercise('deadlift')
+  expect(chart.value?.points).toEqual([{ oneRm: 100 * (1 + 8 / 33.3), dayLabel: '01/02' }])
+})
+
+test('記録が無い種目のグラフは undefined（画面はカードごと出さない）', async () => {
+  const { chart, selectExercise, load } = useHistory({
+    repo: makeRepo([makeSession('bench', 'benchPress', 1000)]),
+  })
+
+  await load()
+  selectExercise('squat')
+
+  expect(chart.value).toBeUndefined()
+})
+
 test('load は種目ごとに呼び直さない（一覧は 1 回の取得を絞り込むだけ）', async () => {
   const repo = makeRepo([makeSession('bench', 'benchPress', 1000)])
   const { selectExercise, load } = useHistory({ repo })

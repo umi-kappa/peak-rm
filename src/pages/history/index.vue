@@ -8,6 +8,7 @@ import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import BaseUnit from '@/components/shared/ui/base/BaseUnit.vue'
 import ExerciseTabs from '@/components/pages/history/ExerciseTabs.vue'
+import OneRmCard from '@/components/pages/history/OneRmCard.vue'
 import SessionSummaryCard from '@/components/pages/history/SessionSummaryCard.vue'
 
 const { goBack } = useBackNavigation()
@@ -17,7 +18,7 @@ const injectedRepo = inject(sessionRepoInjectionKey)
 if (!injectedRepo) throw new Error('session repo is not provided')
 const repo = injectedRepo
 
-const { exercise, sessions, selectExercise, load } = useHistory({ repo })
+const { exercise, sessions, chart, selectExercise, load } = useHistory({ repo })
 
 onMounted(load)
 </script>
@@ -30,6 +31,9 @@ onMounted(load)
 
     <!-- 選択種目は URL が唯一のソースなので、v-model ではなく値と更新を分けて渡す -->
     <ExerciseTabs :model-value="exercise" @update:model-value="selectExercise" />
+
+    <!-- 記録が 1 点も無ければカードごと出さない（spec「8. 1RM グラフ」の表示仕様） -->
+    <OneRmCard v-if="chart" :points="chart.points" :latest="chart.latest" :delta="chart.delta" />
 
     <section class="sessions" aria-labelledby="history-sessions-label">
       <BaseLabel id="history-sessions-label">SESSIONS</BaseLabel>

@@ -27,7 +27,7 @@
 | インターバル中 | セット間タイマー・実施済みセットのタイムライン・セットメモ                      | 実装済み                                                        |
 | 結果確認       | セッション終了後のサマリと 1RM 差分。履歴から開いた場合はセッションの削除も可能 | 実装済み                                                        |
 | 履歴           | セッション一覧                                                                  | 実装済み                                                        |
-| 履歴           | 1RM 推移グラフ                                                                  | 未実装（[#40](https://github.com/umi-kappa/peak-rm/issues/40)） |
+| 履歴           | 1RM 推移グラフ（日付ごと 1 点・直近 8 点）                                      | 実装済み                                                        |
 | インターバル中 | タイマー音 / Screen Wake Lock（iOS Safari 対応）                                | 未実装（[#41](https://github.com/umi-kappa/peak-rm/issues/41)） |
 | 設定           | データ Export / Import                                                          | 未実装（[#42](https://github.com/umi-kappa/peak-rm/issues/42)） |
 
@@ -47,7 +47,7 @@ UI コンポーネントは Storybook でカタログ化し、`main` への push
 | フレームワーク           | Vue 3 + Vite + TypeScript（Composition API + `<script setup>`）                                                 |
 | ルーティング             | vue-router                                                                                                      |
 | スタイリング             | scoped CSS + CSS カスタムプロパティ（Tailwind なし）                                                            |
-| グラフ                   | vue-chartjs（Chart.js ベース）。[#40](https://github.com/umi-kappa/peak-rm/issues/40) で導入予定                |
+| グラフ                   | vue-chartjs（Chart.js ベース）                                                                                  |
 | ストレージ               | IndexedDB（Dexie.js）                                                                                           |
 | PWA                      | vite-plugin-pwa（インストール可能・オフライン対応）                                                             |
 | コンポーネント開発       | Storybook（Vue 3 + Vite）                                                                                       |

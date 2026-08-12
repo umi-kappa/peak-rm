@@ -531,7 +531,7 @@ const M_History = () => {
         </div>
 
         {/* chart */}
-        <svg viewBox="0 0 320 140" style={{ width: '100%', height: 118, marginTop: 16 }}>
+        <svg viewBox="0 0 320 140" style={{ width: '100%', height: 118 }}>
           {/* baseline */}
           <line x1="0" y1="120" x2="320" y2="120" stroke={C.line} strokeWidth="1" />
           {/* start/end vertical helpers */}
@@ -553,7 +553,7 @@ const M_History = () => {
         </svg>
 
         {/* date axis */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ fontFamily: FONT_MONO, fontSize: T.caption, color: C.fg3, fontWeight: W.regular }}>04/04</span>
           <span style={{ fontFamily: FONT_MONO, fontSize: T.caption, color: C.fg3, fontWeight: W.regular }}>05/12</span>
         </div>
