@@ -26,7 +26,8 @@ export type OneRmChartData = {
  * 日ごとの代表セッション（その日の startedAt 最大）を選ぶ。
  * 同日に同一種目で複数セッションを行うケースは想定していないが、起きた場合の扱いを
  * 決定論にするための規則（spec §8「データルール」）。ホーム・linear progression と同じ「直近」の基準。
- * 入力の並び順には依存させない（呼び出し側の一覧が降順である事実に純関数を結合させない）。
+ * startedAt が異なる限り入力の並び順には依存させない（呼び出し側の一覧が降順である事実に
+ * 純関数を結合させない）。完全同値時の tie-break は仕様が定めていないため入力順のままにする。
  */
 function latestSessionByDay(sessions: readonly ReadonlySession[]): ReadonlySession[] {
   const byDay = new Map<string, ReadonlySession>()
