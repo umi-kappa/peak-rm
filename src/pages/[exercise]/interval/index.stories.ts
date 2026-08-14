@@ -2,9 +2,12 @@ import { provide } from 'vue'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import IntervalPage from '@/pages/[exercise]/interval/index.vue'
+import type { Menu } from '@/core/types'
 import { sessionInjectionKey, type SessionStore } from '@/composables/shared/session/useSession'
 import { intervalTimerDepsInjectionKey } from '@/composables/shared/session/useIntervalTimer'
+import { audioCueInjectionKey, type AudioCueStore } from '@/composables/shared/platform/useAudioCue'
 import { makeSessionStore } from '@/stories/session'
+import { makeAudioCue } from '@/stories/platform'
 import { storybookRouter as router } from '@/stories/router'
 
 // 実時間で進むタイマーを「開始から elapsedMs 経過」で凍結する固定時計を注入し、snapshot を決定的にする。
@@ -23,6 +26,15 @@ const freezeTimerAt = (elapsedMs: number) => () => ({
   template: '<story />',
 })
 
+// 各 story 共通の loader を作る。4 セット中 2 セット完了直後（インターバル中）の状態を作り、
+// 通知音は鳴らさない fake に差し替える
+function loadIntervalPage(menu?: Partial<Menu>) {
+  return async () => ({
+    sessionStore: await makeSessionStore({ menu: { sets: 4, ...menu }, completedReps: [8, 8] }),
+    audioCue: makeAudioCue(),
+  })
+}
+
 const meta: Meta<typeof IntervalPage> = {
   component: IntervalPage,
   tags: ['autodocs'],
@@ -38,6 +50,7 @@ const meta: Meta<typeof IntervalPage> = {
     (_story, context) => ({
       setup() {
         provide(sessionInjectionKey, context.loaded.sessionStore as SessionStore)
+        provide(audioCueInjectionKey, context.loaded.audioCue as AudioCueStore)
       },
       template: '<story />',
     }),
@@ -48,37 +61,22 @@ export default meta
 
 type Story = StoryObj<typeof IntervalPage>
 
-// 4 セット中 2 セット完了直後のインターバル中。タイマーは残り 0:56.88 で凍結する
+// 2 セット完了直後のインターバル中。タイマーは残り 0:56.88 で凍結する
 export const Default: Story = {
-  loaders: [
-    async () => ({
-      sessionStore: await makeSessionStore({ menu: { sets: 4 }, completedReps: [8, 8] }),
-    }),
-  ],
+  loaders: [loadIntervalPage()],
   decorators: [freezeTimerAt(33_120)],
 }
 
 // インターバル 0 秒到達後の超過表示（intervalSec: 0 で開始時点から超過中）。+0:12.47 で凍結する
 export const Overrun: Story = {
-  loaders: [
-    async () => ({
-      sessionStore: await makeSessionStore({
-        menu: { sets: 4, intervalSec: 0 },
-        completedReps: [8, 8],
-      }),
-    }),
-  ],
+  loaders: [loadIntervalPage({ intervalSec: 0 })],
   decorators: [freezeTimerAt(12_470)],
 }
 
 // 完了セットのカードタップ → 編集モーダル → SAVE → patchResultAt でセッションが更新され
 // モーダルが閉じる、というページ側の配線を確認する（部品単体の挙動は各コンポーネントの Behavior が担う）
 export const SetEditBehavior: Story = {
-  loaders: [
-    async () => ({
-      sessionStore: await makeSessionStore({ menu: { sets: 4 }, completedReps: [8, 8] }),
-    }),
-  ],
+  loaders: [loadIntervalPage()],
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, loaded }) => {
     // ページは遷移先の :exercise を route.params から引き継ぐため、実際のルート上に置いてから操作する
@@ -102,11 +100,7 @@ export const SetEditBehavior: Story = {
 
 // END SESSION → 確認ダイアログ → 確定で phase が done になり結果確認へ遷移する配線だけを確認する
 export const Behavior: Story = {
-  loaders: [
-    async () => ({
-      sessionStore: await makeSessionStore({ menu: { sets: 4 }, completedReps: [8, 8] }),
-    }),
-  ],
+  loaders: [loadIntervalPage()],
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, loaded }) => {
     // ページは遷移先の :exercise を route.params から引き継ぐため、実際のルート上に置いてから操作する
@@ -119,6 +113,30 @@ export const Behavior: Story = {
       expect(store.phase.value).toBe('done')
       expect(router.currentRoute.value.name).toBe('result')
       expect(router.currentRoute.value.query.origin).toBe('session')
+    })
+  },
+}
+
+// 0 秒到達でアラームを鳴らし始め、停止ボタンで止めるまでの配線を確認する
+//（鳴り方・停止の即時性は useAudioCue が担う）。
+// 90 秒のインターバルを超過後の時刻で凍結し、最初の tick で 0 秒到達させる
+export const AudioCueBehavior: Story = {
+  loaders: [loadIntervalPage()],
+  parameters: { chromatic: { disableSnapshot: true } },
+  decorators: [freezeTimerAt(95_000)],
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    const audioCue = loaded.audioCue as AudioCueStore
+    const stopAlarm = canvas.getByRole('button', { name: 'Stop alarm' })
+    await waitFor(() => {
+      expect(audioCue.start).toHaveBeenCalledTimes(1)
+      // 鳴り始めると押せるようになる
+      expect(stopAlarm).toBeEnabled()
+    })
+    await userEvent.click(stopAlarm)
+    await waitFor(() => {
+      expect(audioCue.stop).toHaveBeenCalledTimes(1)
+      expect(stopAlarm).toBeDisabled()
     })
   },
 }

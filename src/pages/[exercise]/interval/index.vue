@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, onScopeDispose, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { formatCentis, formatClock } from '@/core/duration'
@@ -8,6 +8,7 @@ import {
   intervalTimerDepsInjectionKey,
   useIntervalTimer,
 } from '@/composables/shared/session/useIntervalTimer'
+import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { useSetEdit } from '@/composables/shared/session/useSetEdit'
 import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
@@ -17,6 +18,7 @@ import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import BigNumber from '@/components/shared/ui/typography/BigNumber.vue'
+import IconButton from '@/components/shared/ui/buttons/IconButton.vue'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
 import SetEditDialog from '@/components/shared/ui/dialog/SetEditDialog.vue'
 import MenuSummary from '@/components/shared/session/MenuSummary.vue'
@@ -31,10 +33,17 @@ const injected = inject(sessionInjectionKey)
 if (!injected) throw new Error('session store is not provided')
 const session = injected
 
-const { menu, exercise } = session
+const injectedAudioCue = inject(audioCueInjectionKey)
+if (!injectedAudioCue) throw new Error('audio cue is not provided')
+const audioCue = injectedAudioCue
 
-// セット完了で自動開始（この画面のマウント = セット完了直後）。停止はスコープ破棄
-//（次のセット / 中断での遷移）のみで、0 秒到達では止めず超過を数え続ける。
+const { menu, exercise } = session
+// 停止ボタンの活性表現に使う。テンプレートで自動アンラップさせるため、ここで取り出す
+const { ringing } = audioCue
+
+// セット完了で自動開始（この画面のマウント = セット完了直後）。この画面からは止めず、
+// 0 秒到達でも止まらず超過を数え続ける。止まるのは超過上限（+3:00）到達と
+// スコープ破棄（次のセット / 中断での遷移）の 2 つ。
 // deps は stories が固定時計を注入するための seam（通常は未 provide で実時計）
 const timer = useIntervalTimer(inject(intervalTimerDepsInjectionKey, {}))
 if (menu.value) timer.start(menu.value.intervalSec)
@@ -81,6 +90,19 @@ function confirmAbort() {
   session.abort()
   router.replace({ name: 'result', params: route.params, query: { origin: 'session' } })
 }
+
+// 0 秒到達でアラームを鳴らし始め、超過上限（+3:00）でタイマーが止まったら鳴り止ませる
+//（spec: 音のみ。バイブ・画面遷移は行わない）。インターバルは 0 秒に設定でき、
+// その場合はマウント時点で到達済みなので、watch を張る前にここで拾う
+if (timer.reachedZero.value) audioCue.start()
+
+watch(timer.reachedZero, (reached) => {
+  if (reached) audioCue.start()
+  else audioCue.stop()
+})
+
+// 他画面への遷移（NEXT SET / 中断 / ブラウザの戻る）でも鳴り止ませる
+onScopeDispose(audioCue.stop)
 </script>
 
 <template>
@@ -99,8 +121,17 @@ function confirmAbort() {
             <BaseLabel>TARGET {{ formatClock(menu.intervalSec * 1000) }}</BaseLabel>
           </div>
           <div class="clock">
-            <BigNumber :value="clockText" size="hero" tone="accent" />
-            <span class="centis">{{ centisText }}</span>
+            <div class="value">
+              <BigNumber :value="clockText" size="hero" tone="accent" />
+              <span class="centis">{{ centisText }}</span>
+            </div>
+            <IconButton
+              name="volume-x"
+              label="Stop alarm"
+              class="stop-alarm"
+              :disabled="!ringing"
+              @click="audioCue.stop"
+            />
           </div>
           <div class="track">
             <div class="fill" :style="{ width: progressWidth }" />
@@ -174,9 +205,23 @@ function confirmAbort() {
   width: 100%;
 }
 
+/* 時刻を常にカードの中央に置き、停止ボタンは右側の余白へ逃がす。
+   両端を 1fr で挟むことで、ボタンの有無や活性状態で数字の中心が動かない */
 .clock {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.value {
   display: flex;
+  grid-column: 2;
   align-items: baseline;
+}
+
+.stop-alarm {
+  justify-self: end;
 }
 
 .centis {

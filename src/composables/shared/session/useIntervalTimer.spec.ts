@@ -48,13 +48,16 @@ describe('useIntervalTimer', () => {
     expect(timer.overrunMs.value).toBe(180_000)
   })
 
-  test('stop で以降の時間経過が反映されない（手動停止）', () => {
+  test('reachedZero は 0 秒到達から超過上限までの区間だけ真になる', () => {
     const timer = useIntervalTimer()
+    // start 前は残り時間も 0 だが、まだ到達していない
+    expect(timer.reachedZero.value).toBe(false)
     timer.start(90)
-    vi.advanceTimersByTime(10_000)
-    timer.stop()
-    vi.advanceTimersByTime(30_000)
-    expect(timer.remainingMs.value).toBe(80_000)
+    expect(timer.reachedZero.value).toBe(false)
+    vi.advanceTimersByTime(90_000)
+    expect(timer.reachedZero.value).toBe(true)
+    vi.advanceTimersByTime(180_000)
+    expect(timer.reachedZero.value).toBe(false)
   })
 
   test('start をやり直すと前のカウントを破棄して最初から数える', () => {
@@ -85,5 +88,16 @@ describe('useIntervalTimer', () => {
     scope.stop()
     vi.advanceTimersByTime(30_000)
     expect(timer.remainingMs.value).toBe(80_000)
+  })
+
+  test('スコープ破棄後は 0 秒到達済みでも reachedZero が落ちる', () => {
+    const scope = effectScope()
+    const timer = scope.run(() => useIntervalTimer())
+    if (!timer) throw new Error('scope.run が composable を返さなかった')
+    timer.start(90)
+    vi.advanceTimersByTime(90_000)
+    expect(timer.reachedZero.value).toBe(true)
+    scope.stop()
+    expect(timer.reachedZero.value).toBe(false)
   })
 })

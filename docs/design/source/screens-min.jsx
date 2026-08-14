@@ -268,9 +268,14 @@ const M_Interval = () => {
           <Label>Interval</Label>
           <Label color={C.fg3}>Target 1:30</Label>
         </div>
-        <div style={{ ...NumStyle, fontSize: T.hero, fontWeight: W.bold, lineHeight: 1, display: 'flex', alignItems: 'baseline' }}>
-          <span style={{ color: MA, ...g }}>0:47</span>
-          <span style={{ fontSize: T.body, color: C.fg3, fontWeight: W.bold }}>.32</span>
+        {/* 数値は中央固定。停止ボタンは右の余白へ逃がし、活性状態で数値の中心が動かないようにする */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%' }}>
+          <div style={{ ...NumStyle, gridColumn: 2, fontSize: T.hero, fontWeight: W.bold, lineHeight: 1, display: 'flex', alignItems: 'baseline' }}>
+            <span style={{ color: MA, ...g }}>0:47</span>
+            <span style={{ fontSize: T.body, color: C.fg3, fontWeight: W.bold }}>.32</span>
+          </div>
+          {/* 通知音の停止。常時表示で、鳴っていない間は fg3 に落とす（鳴ると fg2 へ戻る） */}
+          <IconButton style={{ justifySelf: 'end' }}><Ic.VolumeX color={C.fg3} size={24} /></IconButton>
         </div>
         {/* progress hairline */}
         <div style={{ width: '100%', height: 4, borderRadius: 4, background: C.line, overflow: 'hidden' }}>
