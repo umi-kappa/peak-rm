@@ -7,6 +7,9 @@ import {
   useFatalError,
 } from '@/composables/shared/error/useFatalError'
 import { sessionInjectionKey, useSession } from '@/composables/shared/session/useSession'
+import { audioCueInjectionKey, useAudioCue } from '@/composables/shared/platform/useAudioCue'
+import { useWakeLock, wakeLockInjectionKey } from '@/composables/shared/platform/useWakeLock'
+import { installSessionEndRelease } from '@/composables/shared/platform/installSessionEndRelease'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
 import { sessionRepo, sessionRepoInjectionKey } from '@/storage/sessionRepo'
@@ -24,6 +27,15 @@ app.provide(sessionInjectionKey, session)
 // 画面が直接使うリポジトリも provide で配り、home / menu が inject で受ける
 // （Storybook では provide decorator で fake repo に差し替える）
 app.provide(sessionRepoInjectionKey, sessionRepo)
+
+// タイマー音と画面スリープ抑止。どちらもセッションフロー全体で状態（AudioContext・sentinel）を
+// 保持する必要があり、セットごとに再マウントされる画面では持てないため、ここで生成して配る。
+// 取得はメニューの「開始」タップ（ユーザージェスチャ内）、解除はセッション終端の配線が担う。
+const audioCue = useAudioCue()
+const wakeLock = useWakeLock()
+app.provide(audioCueInjectionKey, audioCue)
+app.provide(wakeLockInjectionKey, wakeLock)
+installSessionEndRelease(session, wakeLock, audioCue)
 
 // 想定外エラーの境界。生成した store を App.vue へ provide し、4 配線を report へ集約する。
 const fatalError = useFatalError()
