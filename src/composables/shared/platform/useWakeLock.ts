@@ -21,31 +21,49 @@ export function useWakeLock(deps: WakeLockDeps = {}) {
     deps.requestScreenLock ??
     (navigator.wakeLock ? () => navigator.wakeLock.request('screen') : undefined)
   let sentinel: WakeLockHandle | undefined
+  // 取得の世代。release のたびに進め、取得待ちの間に終端したかを解決時に判定する
+  let generation = 0
 
   /**
-   * 画面スリープの抑止を要求する。ユーザージェスチャ内での取得が必要なため、
+   * 画面スリープの抑止を要求する。AudioContext の初期化とライフサイクルを揃えるため、
    * メニューの「開始」タップから呼ぶ（spec「Wake Lock のライフサイクル」）。
    */
   async function acquire() {
     if (!requestScreenLock || sentinel) return
+    const requested = generation
+    let acquired: WakeLockHandle
     try {
-      sentinel = await requestScreenLock()
+      acquired = await requestScreenLock()
     } catch (error) {
       console.error('Wake Lock の取得に失敗しました', error)
+      return
     }
+    // 取得を待つ間にセッションが終端していた場合、この sentinel は持ち主がいない。
+    // 保持すると次セッションの acquire が短絡し、スリープ抑止が二度と効かなくなる
+    if (requested !== generation) {
+      await releaseHandle(acquired)
+      return
+    }
+    sentinel = acquired
   }
 
   /**
-   * 抑止を解除する。実行中セッションの終端（完了・中断・フローからの離脱）で呼ぶ。
+   * 抑止を解除する。実行中セッションの終端（完了・中断・フローからの離脱・fatal error）で呼ぶ。
    * タブの背景化でブラウザが自動解除した sentinel は released を見て触らない
    * （前景復帰時の再取得は行わない）。
    */
   async function release() {
+    generation += 1
     const current = sentinel
     sentinel = undefined
-    if (!current || current.released) return
+    if (!current) return
+    await releaseHandle(current)
+  }
+
+  async function releaseHandle(handle: WakeLockHandle) {
+    if (handle.released) return
     try {
-      await current.release()
+      await handle.release()
     } catch (error) {
       console.error('Wake Lock の解除に失敗しました', error)
     }

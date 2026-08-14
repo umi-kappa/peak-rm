@@ -13,6 +13,24 @@ function setup(sentinel = makeFakeSentinel()) {
   return { wakeLock: useWakeLock({ requestScreenLock }), requestScreenLock, sentinel }
 }
 
+// 取得の解決時刻をテストから決める。終端をまたぐ順序（acquire 開始 → release → 解決）用
+function setupPending() {
+  const sentinel = makeFakeSentinel()
+  let settle = () => {}
+  const requestScreenLock = vi.fn(
+    () =>
+      new Promise<WakeLockHandle>((resolve) => {
+        settle = () => resolve(sentinel)
+      }),
+  )
+  return {
+    wakeLock: useWakeLock({ requestScreenLock }),
+    requestScreenLock,
+    sentinel,
+    settle: () => settle(),
+  }
+}
+
 describe('useWakeLock', () => {
   beforeEach(() => {
     // 縮退時の console.error はテスト出力に出さず、呼ばれたことだけを検証する
@@ -48,6 +66,26 @@ describe('useWakeLock', () => {
     await wakeLock.acquire()
     await wakeLock.release()
     await wakeLock.acquire()
+    expect(requestScreenLock).toHaveBeenCalledTimes(2)
+  })
+
+  test('取得を待つ間に終端していたら、届いた Wake Lock を保持せず解除する', async () => {
+    const { wakeLock, sentinel, settle } = setupPending()
+    const acquiring = wakeLock.acquire()
+    await wakeLock.release()
+    settle()
+    await acquiring
+    expect(sentinel.release).toHaveBeenCalledTimes(1)
+  })
+
+  test('終端をまたいで届いた Wake Lock は次の取得を妨げない', async () => {
+    const { wakeLock, requestScreenLock, settle } = setupPending()
+    const acquiring = wakeLock.acquire()
+    await wakeLock.release()
+    settle()
+    await acquiring
+    // 次セッションの取得。解決は待たず、要求が届いたことだけを見る
+    void wakeLock.acquire()
     expect(requestScreenLock).toHaveBeenCalledTimes(2)
   })
 
