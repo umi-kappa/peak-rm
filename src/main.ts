@@ -35,12 +35,14 @@ const audioCue = useAudioCue()
 const wakeLock = useWakeLock()
 app.provide(audioCueInjectionKey, audioCue)
 app.provide(wakeLockInjectionKey, wakeLock)
-installSessionEndRelease(session, wakeLock, audioCue)
 
 // 想定外エラーの境界。生成した store を App.vue へ provide し、4 配線を report へ集約する。
 const fatalError = useFatalError()
 app.provide(fatalErrorInjectionKey, fatalError)
 installErrorBoundary(app, router, fatalError.report)
+
+// 解除の配線は fatal error も終端として扱うため、境界の生成後に置く
+installSessionEndRelease(session, fatalError, wakeLock, audioCue)
 
 app.mount('#app')
 
