@@ -174,6 +174,22 @@ describe('useAudioCue', () => {
     expect(console.error).toHaveBeenCalled()
   })
 
+  test('繰り返し再生の例外も握り、鳴動を畳んで諦める', async () => {
+    const { audioCue, context, oscillator } = await preparedAudioCue()
+    audioCue.start()
+    context.createOscillator.mockImplementation(() => {
+      throw new Error('too many nodes')
+    })
+    // 繰り返しは start の外側（別タスク）で走るため、握らないとエラー境界へ漏れて
+    // 音が鳴らないだけのはずがアプリ全体の停止になる
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(audioCue.ringing.value).toBe(false)
+    expect(console.error).toHaveBeenCalled()
+    // 畳んだ後は繰り返しも止まる（1 回目の 2 連ビープだけで打ち止め）
+    await vi.advanceTimersByTimeAsync(9000)
+    expect(oscillator.start).toHaveBeenCalledTimes(2)
+  })
+
   test('AudioContext を持たない環境では何もしない', async () => {
     vi.stubGlobal('AudioContext', undefined)
     const audioCue = useAudioCue()

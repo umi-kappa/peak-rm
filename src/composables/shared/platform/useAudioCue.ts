@@ -68,7 +68,8 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
 
   /**
    * 再生できる状態を用意する。iOS Safari はユーザージェスチャ内でしか resume を許さないため、
-   * メニューの「開始」タップから呼ぶ（spec「AudioContext の初期化」）。
+   * メニューの「開始」タップと、以降のセット完了タップから呼ぶ
+   * （spec「AudioContext の初期化」「中断からの復帰」）。
    * 2 回目以降は生成済みのインスタンスを resume するだけ。
    */
   async function prepare() {
@@ -94,7 +95,7 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
       // 直前の stop でフェードアウトさせた出力段を戻す
       audio.masterGain.gain.setValueAtTime(1, audio.context.currentTime)
       ring()
-      repeatId = setInterval(ring, BEEP_REPEAT_MS)
+      repeatId = setInterval(tryRing, BEEP_REPEAT_MS)
       ringing.value = true
     } catch (error) {
       console.error('通知音の再生に失敗しました', error)
@@ -129,6 +130,20 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
       await audio.context.suspend()
     } catch (error) {
       console.error('AudioContext の停止に失敗しました', error)
+    }
+  }
+
+  /**
+   * 繰り返し用の ring。setInterval の callback は start の外側（別タスク）で走るため
+   * start の catch では捕まえられず、握らないと最善努力のはずの再生失敗が
+   * エラー境界へ漏れてアプリ全体が停止する。失敗したら鳴動を畳んで諦める
+   */
+  function tryRing() {
+    try {
+      ring()
+    } catch (error) {
+      console.error('通知音の再生に失敗しました', error)
+      stop()
     }
   }
 
