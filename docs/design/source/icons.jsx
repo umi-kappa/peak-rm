@@ -89,6 +89,12 @@ const Ic = {
       <path d="M9 5 v14 M15 5 v14" />
     </svg>
   ),
+  VolumeX: ({ size = 16, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 5 L6 9 H3 v6 h3 l5 4 z" />
+      <path d="M22 9 l-6 6 M16 9 l6 6" />
+    </svg>
+  ),
   Trash: ({ size = 16, color = 'currentColor' }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 7 h16" />

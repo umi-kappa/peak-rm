@@ -19,6 +19,7 @@ export const iconNames = [
   'trash-2',
   'trending-up',
   'upload',
+  'volume-x',
 ] as const
 
 export type IconName = (typeof iconNames)[number]
