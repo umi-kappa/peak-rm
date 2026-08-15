@@ -1,16 +1,24 @@
 import { readonly, ref, type InjectionKey } from 'vue'
 
-// 0 秒到達の通知音。ジムの環境音でも気づけるよう、短い正弦波を 2 連で鳴らす
-const BEEP_FREQUENCY_HZ = 880
-const BEEP_DURATION_SEC = 0.12
-const BEEP_GAP_SEC = 0.1
-const BEEP_PEAK_GAIN = 0.3
-// 音量を矩形に切り替えるとクリックノイズが乗るため、両端をこの時間でフェードさせる
-const BEEP_FADE_SEC = 0.01
-// 2 連ビープを繰り返す間隔。止めるまで鳴り続ける（spec「インターバルタイマー」）
-const BEEP_REPEAT_MS = 3000
+// 0 秒到達の通知音。ジムの環境音でも気づけるよう、短い矩形波を 3 連で鳴らす。
+// 正弦波は倍音を持たず単一の周波数成分しかないため、同じ帯域の騒音と重なると輪郭ごと埋もれる
+const BEEP_TYPE = 'square'
+// C6。小型スピーカーが十分な音量を出せて、人の聴覚の感度も高い帯域に置く
+const BEEP_FREQUENCY_HZ = 1046.5
+const BEEP_DURATION_SEC = 0.08
+const BEEP_GAP_SEC = 0.07
+const BEEP_COUNT = 3
+// 矩形波は倍音のぶん同じ値でも正弦波より大きく聞こえるため、振幅は低めに取る
+const BEEP_PEAK_GAIN = 0.16
+// 音量を矩形に切り替えるとクリックノイズが乗るため、両端をフェードさせる。
+// 立ち上がりは短くして音の芯を残し、終端はノイズが出ない程度に長く取る
+const BEEP_ATTACK_SEC = 0.004
+const BEEP_RELEASE_SEC = 0.008
+// 3 連ビープを繰り返す間隔。止めるまで鳴り続ける（spec「インターバルタイマー」）
+const BEEP_REPEAT_MS = 2000
 
 type AudioCueOscillator = {
+  type: OscillatorType
   readonly frequency: { value: number }
   connect(destination: unknown): void
   start(when: number): void
@@ -42,7 +50,7 @@ export type AudioCueDeps = { createContext?: () => AudioCueContext }
 
 /**
  * インターバル 0 秒到達を知らせるアラームの再生口（spec「インターバルタイマー」）。
- * start で 2 連ビープを一定間隔で鳴らし続け、stop まで止まらない。
+ * start で 3 連ビープを一定間隔で鳴らし続け、stop まで止まらない。
  *
  * すべて最善努力で、失敗（非対応環境・resume 拒否・再生時の例外）はここで握って呼び出し元へ
  * 投げない。音が鳴らなくてもタイマーとセッション記録は通常どおり動くため、エラー境界へは
@@ -112,7 +120,7 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
     ringing.value = false
     if (!audio) return
     try {
-      audio.masterGain.gain.linearRampToValueAtTime(0, audio.context.currentTime + BEEP_FADE_SEC)
+      audio.masterGain.gain.linearRampToValueAtTime(0, audio.context.currentTime + BEEP_RELEASE_SEC)
     } catch (error) {
       console.error('通知音の停止に失敗しました', error)
     }
@@ -150,19 +158,21 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
   function ring() {
     if (!audio) return
     const startAt = audio.context.currentTime
-    beep(startAt)
-    beep(startAt + BEEP_DURATION_SEC + BEEP_GAP_SEC)
+    for (let index = 0; index < BEEP_COUNT; index += 1) {
+      beep(startAt + index * (BEEP_DURATION_SEC + BEEP_GAP_SEC))
+    }
   }
 
   function beep(startAt: number) {
     if (!audio) return
     const oscillator = audio.context.createOscillator()
     const gain = audio.context.createGain()
+    oscillator.type = BEEP_TYPE
     oscillator.frequency.value = BEEP_FREQUENCY_HZ
     const endAt = startAt + BEEP_DURATION_SEC
     gain.gain.setValueAtTime(0, startAt)
-    gain.gain.linearRampToValueAtTime(BEEP_PEAK_GAIN, startAt + BEEP_FADE_SEC)
-    gain.gain.setValueAtTime(BEEP_PEAK_GAIN, endAt - BEEP_FADE_SEC)
+    gain.gain.linearRampToValueAtTime(BEEP_PEAK_GAIN, startAt + BEEP_ATTACK_SEC)
+    gain.gain.setValueAtTime(BEEP_PEAK_GAIN, endAt - BEEP_RELEASE_SEC)
     gain.gain.linearRampToValueAtTime(0, endAt)
     oscillator.connect(gain)
     gain.connect(audio.masterGain)
