@@ -7,6 +7,8 @@ import { EXERCISE_LABELS, isExercise } from '@/core/constants'
 import { MENU_MAX, resolveInitialMenu } from '@/core/menu'
 import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
+import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
+import { wakeLockInjectionKey } from '@/composables/shared/platform/useWakeLock'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
@@ -29,6 +31,14 @@ const session = injected
 const injectedRepo = inject(sessionRepoInjectionKey)
 if (!injectedRepo) throw new Error('session repo is not provided')
 const sessionRepo = injectedRepo
+
+const injectedAudioCue = inject(audioCueInjectionKey)
+if (!injectedAudioCue) throw new Error('audio cue is not provided')
+const audioCue = injectedAudioCue
+
+const injectedWakeLock = inject(wakeLockInjectionKey)
+if (!injectedWakeLock) throw new Error('wake lock is not provided')
+const wakeLock = injectedWakeLock
 
 // route param を Exercise へ絞り込む。この画面は param を Session.exercise として
 // 保存するため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす
@@ -59,10 +69,11 @@ function start() {
   // 二重起動防止。session.start 失敗時は境界へ流れページごと unmount されるため、
   // 成功時（遷移で破棄）同様このフラグは戻さない
   starting.value = true
-  // TODO(#41): AudioContext 生成・resume / Wake Lock 取得はここ
-  // （「開始」タップのユーザージェスチャ同期区間）で行う（iOS Safari 制約）。
-  // これらは縮退（最善努力）なので #41 で追加する際は個別に try/catch し、境界へ流さない
-  // （docs/conventions.md「エラーハンドリング」）
+  // AudioContext の resume と Wake Lock の取得は「開始」タップのユーザージェスチャ同期区間で
+  // 行う必要がある（iOS Safari 制約。spec「インターバルタイマー」）。どちらも最善努力で
+  // composable 内が失敗を握るため、完了を待たず投げっぱなしにして遷移を遅らせない
+  void audioCue.prepare()
+  void wakeLock.acquire()
   session.start(menu.value)
   router.replace({ name: 'training', params: { exercise } })
 }

@@ -29,6 +29,10 @@ const meta: Meta<typeof IconButton> = {
       control: 'text',
       description: '指定すると <router-link> として描画する遷移先',
     },
+    disabled: {
+      control: 'boolean',
+      description: '一時的に押せないことを示す（button 版のみ）',
+    },
   },
   args: { name: 'plus', label: 'Add set' },
 }
@@ -42,6 +46,11 @@ export const Default: Story = {}
 // to を渡すと <router-link> として描画される
 export const Link: Story = {
   args: { name: 'settings', label: 'Settings', to: '/settings' },
+}
+
+// 常設のまま一時的に押せない状態。アイコンを一段落とし、押せるようになったら既定色へ戻る
+export const Disabled: Story = {
+  args: { disabled: true },
 }
 
 // button 版が click を emit する配線だけを確認する

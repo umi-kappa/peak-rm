@@ -18,7 +18,7 @@ src/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
       session/         # useSession / useIntervalTimer（実行中セッションの状態系。useSession は main.ts が生成し router ガードと画面で共有）
-      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）
+      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）+ installSessionEndRelease（セッション終端で解除する配線）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
     app/               # App ルート（App.vue）専用のコンポーネント（ErrorScreen.vue）
@@ -41,7 +41,7 @@ src/
   assets/
     icons/             # lucide 純正アイコン（ISC）の SVG 実体 + 名前一覧 index.ts（iconNames / IconName）+ NOTICE。BaseIcon.vue が glob で読む
   styles/  tokens.css  global.css
-  stories/  router.ts  session.ts  topLayerDocs.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・fake sessionRepo / Session fixture / セッション状態を駆動する loaders 用ヘルパー・top layer に出る dialog 系 stories の Docs 描画を iframe 分離する topLayerDocs）
+  stories/  router.ts  session.ts  platform.ts  topLayerDocs.ts   # Storybook 補助（全 story で 1 度だけ install する共有 router・fake sessionRepo / Session fixture / セッション状態を駆動する loaders 用ヘルパー・音を鳴らさず Wake Lock も要求しない platform の fake・top layer に出る dialog 系 stories の Docs 描画を iframe 分離する topLayerDocs）
 ```
 
 - **画面ディレクトリ名**: `home` / `menu` / `training` / `interval` / `result` / `history` / `settings`。うち `menu` / `training` / `interval` / `result` はセッションフローとして `[exercise]/` 配下にネストし、ディレクトリ構成を URL（`/:exercise/…`）と一致させる（`[exercise]` は動的セグメント `:exercise` を表すディレクトリ名。ファイルベースルーティングではなく実際のルートは `router/index.ts` で定義する）。種目に属さない `home` / `history` / `settings` は `pages/` 直下に置く
@@ -60,6 +60,7 @@ src/
   3. `components/shared/ui/inputs/NumberStepper.vue` = 見た目（presentational）
 - **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
 - **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを共有する。component tree の外にある router のセッションガードも同じインスタンスを参照するため、`main.ts` が生成して `createAppRouter` へ渡しつつ **`app.provide()`** で供給し、画面（training / interval / result）が `inject` で受ける（`useFatalError` と同じ配線。後述）。依存リポジトリは composable の引数で注入する。
+- **ブラウザ API の glue（`composables/shared/platform/`）も同じ配線に乗せる**。`useAudioCue`（AudioContext）と `useWakeLock`（WakeLockSentinel）はセッションフロー全体で状態を保持する必要がある一方、インターバル画面はセットごとに `router.replace` で再マウントされるため画面内では保持できない。`main.ts` が単一インスタンスを生成して `app.provide()` し、メニュー / トレーニング / インターバルが `inject` で受ける（stories は `src/stories/platform.ts` の fake を provide する）。解除は画面のライフサイクルではなく実行中セッションの終端に紐づけ、その配線（`installSessionEndRelease`）は `installErrorBoundary` と同じく単体テストできるモジュールへ出す。挙動は spec「Wake Lock のライフサイクル」を参照する
 - **画面が直接使うリポジトリ（`sessionRepo`）も `main.ts` が `app.provide()` で供給し、画面は `inject` で受ける**。画面（`pages/**/index.vue`）から `@/storage/sessionRepo` の実体を直接 import しない。データ源を provide 経由に統一することで、全画面が Storybook の provide decorator で fake repo（`src/stories/session.ts` の `makeSessionRepo`）に差し替えられ、実 IndexedDB に依存せずページ stories を書ける（#82 で確立。injection key は実体を定義するファイルの末尾に置く: `sessionRepoInjectionKey` は `storage/sessionRepo.ts`、`sessionInjectionKey` は `useSession.ts`）。
 
 `@/` alias の見え方の例: `@/core/oneRm`、`@/storage/sessionRepo`、`@/composables/shared/session/useSession`、`@/components/shared/ui/base/BaseButton.vue`、`@/components/shared/ui/inputs/NumberStepper.vue`、`@/pages/home/index.vue`、`@/pages/[exercise]/menu/index.vue`。
@@ -120,6 +121,15 @@ src/
 - **名前の字形は 2 種類に分ける**: 可視テキストを持たないコントロールの名前は **Title Case の英語**（`Back` / `Settings` / `Delete` / `Decrease` / `Increase` / `Exercise`）。画面に同じ文字列が出ているものをミラーする名前は**可視文字列そのまま**（`NumberStepper` の `label` = `REPS DONE` / `WEIGHT`。可視テキストと食い違わせない WCAG 2.5.3 の要請）。可視文言は大文字を文字列で書くため（`START SESSION` / `KG`。「スタイル（CSS）」節の `text-transform` 禁止を参照）後者は大文字になる。stories が渡すラベルも同じ規則に従う
 - **`@storybook/addon-a11y` は入れない**。方針が名前付け + グループ化に閉じており、依存と CI 時間の追加に見合わない
 
+## 状態表現（操作できない状態）
+
+「今は操作できない」の表し方を 2 つに分ける。判断基準は「その画面・その文脈にいる限りずっと操作できないのか、それとも一時的に押せないだけか」。
+
+- **恒久的に操作できない（read-only な文脈）** → **入力 UI ごと出さない**。`disabled` にして残さず、静的表示へ切り替える（履歴一覧から開いた結果確認画面のセット編集。spec「実績値の編集ポリシー」）。押せないコントロールを並べても操作肢を探させるだけで、状態モデル上そもそも操作肢を持たないことを UI でも表す
+- **常設のコントロールが一時的に押せないだけ** → **ネイティブの `disabled`** で活性 / 非活性を表す（インターバル画面の通知音の停止ボタン。鳴っていない間は押せない）。位置が動くと慌てて探すことになるコントロールは、消さずに置いたまま状態だけ変える
+
+いずれの場合も**見た目だけ落として押せるままにはしない**。押せるように見えて何も起きない状態は、支援技術にも指にも嘘をつくため、ネイティブの `disabled` で「今は押せない」を正しく伝える。見た目の書き方は「スタイル（CSS）」節を参照する。
+
 ## 型定義（TypeScript）
 
 - アプリ内部の型は、オブジェクト形状も含め原則 **`type`** で定義する（`type Session = { ... }`）。ユニオン型（例: `type Exercise = 'benchPress' | 'squat' | 'deadlift'`）が `type` 必須なため、全体を `type` に揃えて表記の混在を防ぐ
@@ -133,6 +143,7 @@ src/
 想定外の失敗は境界 1 箇所で受けて全画面エラー表示にし、縮退（最善努力）だけを呼び出し元で明示的に catch する。判断基準は「**この失敗は根幹（トレーニングを実行して実績を記録し、それを正しく見せること）を壊すか？**」（spec「⚠️ エラーハンドリング」）。
 
 - **壊さない（周辺の縮退）**: Wake Lock / タイマー音 / `requestPersistentStorage` など、spec が最善努力と定めるもの。呼び出し元で catch して継続し、**spec の根拠をコメントに書く**（明示的なオプトイン）
+- 縮退が**ブラウザ API の glue に閉じ、呼び出し元に判断が要らない**場合は、catch を各呼び出し箇所へ広げず **composable 側で握り切る**（`platform/` の `useAudioCue` / `useWakeLock` は「失敗しても reject しない API」として定義し、内部で try/catch して `console.error` に留める）。呼び出し元は `void audioCue.prepare()` のように投げっぱなしでよく、同じ catch を分散させない
 - **壊す・不明（想定外）**: IndexedDB 読み書き失敗・配線バグ・未知の例外。**画面では catch せず境界へ流す**。分類に迷ったら catch しない（分類漏れは自動的にエラー画面側へ落ちるため安全側）
 - `console.error` だけの catch（握りつぶし）は書かない。「動いているが中身が事実と違う」状態（例: 読み取り失敗を「未記録」と同じ空表示にする）は縮退ではなく根幹の破壊として扱う
 - 境界の実装は `main.ts` が `installErrorBoundary`（`composables/shared/error/`）で 4 配線（`app.config.errorHandler` / `router.onError` / `unhandledrejection` / `window` の `error`）を張り、`useFatalError` へ集約 → `App.vue` が `ErrorScreen` に切り替える。Vue は async イベントハンドラ・async ライフサイクルフックの reject も `errorHandler` へ流すため、画面側は catch を書かなければ自動で境界に落ちる
@@ -255,6 +266,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 - **アイコンサイズは 3 値（12 / 16 / 24）に絞る**（スペーシングと同じ 4px グリッド上。14・18・20・22 などの中間値は使わない）。12 = 行内の差分 chevron・インラインマーカー、16 = 行の先頭アイコン（`BaseIcon` のデフォルトなので `size` を省略する）、24 = 大型コントロール（ステッパー large・`IconButton`）。用途に対応するサイズは `docs/design/README.md` の Assets 節と同期する
 - **プリミティブの外形幅は親が決める**。`ui/` プリミティブは `width: 100%` で親に追従させ、内容幅に詰める・幅を固定するなどのレイアウト都合は使用側（wrapper 要素の `width` / `min-width`）に置く。外形サイズを切り替える variant prop（`fit` など）は作らない。レイアウト用の数値（桁数変動でボタン位置がずれないための最小幅など）はマジックナンバーになるが、プリミティブに内包せず使用側のコンテキストに置く（デザインソース `primitives.jsx` の Stepper も同方針: 幅・最小幅は使用画面が `style` で渡す）。例外は `BaseDialog` の `inset` prop（`16 | 24`）: top layer に描画されるため通常フローの親が幅を決められず、画面端からの横インセットを prop で受ける
 - **state・variant はその要素のセレクタ内に `&` でネストする**。`.base-button:hover` や `.base-button.primary` を別のトップレベルルールに並べず、`.base-button { &.primary { … } &:active { … } }` のように入れ子にして同じ要素のルールを一箇所に集約する。`@media (hover: hover)` の `:hover` も対象セレクタ内に置く（`.icon-button { @media (hover: hover) { &:hover { … } } }`）。一方で**子要素を無条件に指すセレクタ（`.card` / `.button` / `.value` など単体）はネストせずトップレベルに置く**。無条件の子スタイルを親に入れ子にすると詳細度が不必要に上がり、scoped CSS では各要素が独立クラスを持つため入れ子にする利点がない。ただし**子要素のスタイルが親自身の state・variant に条件づけられる場合は、その親の `&`-state・variant 内にネストする**（例: `.number-stepper { &.large { .value { … } } }` の large 時のみの値、`.card-button { &:active .card { … } }` の押下時のみの面の色）。条件が親側にあり親を参照しないと表現できないため、トップレベルには出せない。子要素自身の state（`.card` の `:hover` など）はその子要素のルール内にネストする
+- **`disabled` の見た目は色を一段落とす（`--color-text-tertiary`）+ `cursor: default`**。あわせて hover / active を `&:not(:disabled)` で囲い、押せない間は反応しないようにする（`IconButton`）。どの状態に `disabled` を使うかの判断基準は「状態表現（操作できない状態）」節を参照する
 
 ### デザイントークン
 

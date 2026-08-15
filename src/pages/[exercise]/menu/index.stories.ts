@@ -8,18 +8,26 @@ import {
   type SessionStore,
 } from '@/composables/shared/session/useSession'
 import { sessionRepoInjectionKey, type SessionRepo } from '@/storage/sessionRepo'
+import { audioCueInjectionKey, type AudioCueStore } from '@/composables/shared/platform/useAudioCue'
+import { wakeLockInjectionKey, type WakeLockStore } from '@/composables/shared/platform/useWakeLock'
 import { makeSession, makeSessionRepo } from '@/stories/session'
+import { makeAudioCue, makeWakeLock } from '@/stories/platform'
 import { storybookRouter as router } from '@/stories/router'
 
 // 各 story 共通の loader を作る。メニュー画面は route.params.exercise を型ガードして描画する
 // （不正値はホームへ逃がす）ため、training / interval と違い visual story でも描画前に実ルートへ置く。
 // 直前セッションの有無は sessions の fixture で再現する。session store はトレーニング開始前の
-// 画面なので idle のまま渡す
+// 画面なので idle のまま渡す。開始時のブラウザ API 副作用は fake に差し替える
 function loadMenuPage(sessions?: Parameters<typeof makeSessionRepo>[0]) {
   return async () => {
     await router.push('/benchPress/menu')
     const sessionRepo = makeSessionRepo(sessions)
-    return { sessionRepo, sessionStore: useSession({ sessionRepo }) }
+    return {
+      sessionRepo,
+      sessionStore: useSession({ sessionRepo }),
+      audioCue: makeAudioCue(),
+      wakeLock: makeWakeLock(),
+    }
   }
 }
 
@@ -39,6 +47,8 @@ const meta: Meta<typeof MenuPage> = {
       setup() {
         provide(sessionInjectionKey, context.loaded.sessionStore as SessionStore)
         provide(sessionRepoInjectionKey, context.loaded.sessionRepo as SessionRepo)
+        provide(audioCueInjectionKey, context.loaded.audioCue as AudioCueStore)
+        provide(wakeLockInjectionKey, context.loaded.wakeLock as WakeLockStore)
       },
       template: '<story />',
     }),
@@ -60,7 +70,8 @@ export const FirstRun: Story = {
   loaders: [loadMenuPage()],
 }
 
-// START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線だけを確認する
+// START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線と、
+// 同じジェスチャ内で AudioContext の準備 / Wake Lock 取得を呼ぶ配線だけを確認する
 export const Behavior: Story = {
   loaders: [loadMenuPage()],
   parameters: { chromatic: { disableSnapshot: true } },
@@ -74,6 +85,8 @@ export const Behavior: Story = {
       expect(store.session.value?.menu.weight).toBe(40)
       expect(router.currentRoute.value.name).toBe('training')
       expect(router.currentRoute.value.params.exercise).toBe('benchPress')
+      expect((loaded.audioCue as AudioCueStore).prepare).toHaveBeenCalled()
+      expect((loaded.wakeLock as WakeLockStore).acquire).toHaveBeenCalled()
     })
   },
 }

@@ -251,7 +251,9 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 ### Timer (`M_Interval`)
 
 - セット完了で **自動開始**
-- 0 秒到達時: **音のみで通知**。バイブ・画面遷移・ハイライト等は禁止
+- 0 秒到達時: **音のみで通知**。バイブ・画面遷移は禁止。**通知の手段としての**ハイライトも禁止（停止ボタンの活性表現は除く）
+- 通知音は止めるまで鳴り続ける。**停止ボタン**（`VolumeX`）をタイマー数値の右横に常時置く。鳴っていない間は fg3 に落とし、鳴り始めたら通常色 (fg2) に戻す。数値は中央のまま動かさない
+- 停止するのは音だけで、タイマーは止めない (`spec.md` §4)
 - 残り時間は `0:47.32` のように分:秒 + センチ秒で表示 (センチ秒は超過中も含め常に併記)
 - 超過時間を `+0:12` のように分:秒で表示 (上限 `+3:00` で頭打ち)
 - 「次のセットへ」「中断」はタイマー中でも押下可能
@@ -283,7 +285,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ## Assets
 
-このデザインでは画像アセットは使用しない。アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行の先頭アイコン / 24 = 大型コントロール = stepper 大・AppBar 戻る)。`source/icons.jsx` にすべて含まれる:
+このデザインでは画像アセットは使用しない。アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行の先頭アイコン / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
 
 - `Chevron` (right/left/up/down)
 - `Plus` / `Minus` (Stepper)
@@ -298,5 +300,6 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - `Note`
 - `Pause`
 - `Trash`
+- `VolumeX` (通知音の停止)
 
 stroke-width はデフォルト 1.6〜2.0。色は `currentColor` なので親要素の `color` プロパティで制御。

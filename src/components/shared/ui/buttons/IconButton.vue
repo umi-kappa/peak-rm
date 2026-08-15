@@ -3,12 +3,22 @@ import { RouterLink, type RouteLocationRaw } from 'vue-router'
 import type { IconName } from '@/assets/icons'
 import BaseIcon from '@/components/shared/ui/base/BaseIcon.vue'
 
-const { name, label, to } = defineProps<{
-  name: IconName
-  label: string
-  /** 指定すると <router-link> として描画する。無ければ <button> */
-  to?: RouteLocationRaw
-}>()
+// disabled はネイティブの属性なので <button> 版にしか効かない。to との同時指定を
+// 型で弾き、黙って無視される prop を作らない
+const { name, label, to, disabled } = defineProps<
+  { name: IconName; label: string } & (
+    | {
+        /** 指定すると <router-link> として描画する */
+        to: RouteLocationRaw
+        disabled?: never
+      }
+    | {
+        to?: undefined
+        /** 常設のコントロールが一時的に押せないことを示す（docs/conventions.md「状態表現」） */
+        disabled?: boolean
+      }
+  )
+>()
 
 const emit = defineEmits<{
   click: []
@@ -25,6 +35,7 @@ function onClick() {
     :is="to ? RouterLink : 'button'"
     :to
     :type="to ? undefined : 'button'"
+    :disabled
     class="icon-button"
     :aria-label="label"
     @click="onClick"
@@ -58,15 +69,21 @@ function onClick() {
   }
 
   @media (hover: hover) {
-    &:hover {
+    &:not(:disabled):hover {
       background: var(--color-line);
       color: var(--color-text);
     }
   }
 
-  &:active {
+  &:not(:disabled):active {
     background: var(--color-line);
     color: var(--color-text);
+  }
+
+  /* 押せない間は一段落とす。押せるようになったら既定色へ戻り、それが活性の合図になる */
+  &:disabled {
+    color: var(--color-text-tertiary);
+    cursor: default;
   }
 }
 </style>

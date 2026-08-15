@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { MENU_MAX } from '@/core/menu'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
+import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
@@ -22,6 +23,10 @@ const injected = inject(sessionInjectionKey)
 if (!injected) throw new Error('session store is not provided')
 const session = injected
 
+const injectedAudioCue = inject(audioCueInjectionKey)
+if (!injectedAudioCue) throw new Error('audio cue is not provided')
+const audioCue = injectedAudioCue
+
 // 表示するのは開始時に焼き込んだ Session.menu のみ。変更 UI を持たず「トレーニング中変更不可」を担保する
 const { menu, exercise, currentReps, currentSetIndex, setsTotal } = session
 
@@ -36,6 +41,11 @@ const completing = ref(false)
 async function completeSet() {
   if (completing.value) return
   completing.value = true
+  // iOS Safari は画面消灯・着信で AudioContext を interrupted にし、resume はユーザージェスチャ内
+  // でしか許されない。ここで起こし直さないと、一度中断されるとセッションが終わるまで
+  // インターバルの通知音が鳴らなくなる（spec「中断からの復帰」）。
+  // 最善努力で composable 内が失敗を握るため、完了を待たず投げっぱなしにする
+  void audioCue.prepare()
   await session.completeSet()
   // await 中にブラウザバック等で training を離脱していたら遷移しない（離脱先から引き戻さない）
   if (route.name !== 'training') return
