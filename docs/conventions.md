@@ -145,6 +145,7 @@ src/
 - **壊さない（周辺の縮退）**: Wake Lock / タイマー音 / `requestPersistentStorage` など、spec が最善努力と定めるもの。呼び出し元で catch して継続し、**spec の根拠をコメントに書く**（明示的なオプトイン）
 - 縮退が**ブラウザ API の glue に閉じ、呼び出し元に判断が要らない**場合は、catch を各呼び出し箇所へ広げず **composable 側で握り切る**（`platform/` の `useAudioCue` / `useWakeLock` は「失敗しても reject しない API」として定義し、内部で try/catch して `console.error` に留める）。呼び出し元は `void audioCue.prepare()` のように投げっぱなしでよく、同じ catch を分散させない
 - **壊す・不明（想定外）**: IndexedDB 読み書き失敗・配線バグ・未知の例外。**画面では catch せず境界へ流す**。分類に迷ったら catch しない（分類漏れは自動的にエラー画面側へ落ちるため安全側）
+- **ユーザーが与えた入力の不正は「失敗」ではなく結果の 1 つ**として、例外ではなく値で返す（`storage/backup.ts` の `parseImport` は `{ ok: true, sessions } | { ok: false, message }` を返す）。想定内なので画面が受けて表示に落とし、`try` / `catch` で想定外と混ぜない。同じモジュール内でも I/O の失敗（`replaceAll` の書き込み）は従来どおり throw して境界へ流す
 - `console.error` だけの catch（握りつぶし）は書かない。「動いているが中身が事実と違う」状態（例: 読み取り失敗を「未記録」と同じ空表示にする）は縮退ではなく根幹の破壊として扱う
 - 境界の実装は `main.ts` が `installErrorBoundary`（`composables/shared/error/`）で 4 配線（`app.config.errorHandler` / `router.onError` / `unhandledrejection` / `window` の `error`）を張り、`useFatalError` へ集約 → `App.vue` が `ErrorScreen` に切り替える。Vue は async イベントハンドラ・async ライフサイクルフックの reject も `errorHandler` へ流すため、画面側は catch を書かなければ自動で境界に落ちる
 - `useFatalError`（`composables/shared/error/`）の共有も「状態管理」の provide/inject 方式に乗せる。配線元の `main.ts` が component tree の外にあるため、App ルートの `provide()` ではなく **`app.provide()`** で供給する（main.ts が生成したインスタンスの `report` を 4 配線へ直接渡し、読み手の `App.vue` は inject で受ける）
