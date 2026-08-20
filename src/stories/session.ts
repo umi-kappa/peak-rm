@@ -1,5 +1,7 @@
+import { fn } from 'storybook/test'
 import { useSession, type SessionStore } from '@/composables/shared/session/useSession'
 import { isComplete } from '@/core/session'
+import type { Backup, ImportParseResult } from '@/storage/backup'
 import type { SessionRepo } from '@/storage/sessionRepo'
 import type { Exercise, Menu, Session } from '@/core/types'
 
@@ -36,6 +38,20 @@ export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
             session.exercise === exercise && isComplete(session) && session.startedAt < startedAt,
         )
         .at(-1),
+  }
+}
+
+/**
+ * 実 DB へ書かない fake の Export / Import 口（stories の loaders / provide decorator から使う）。
+ * 呼び出しは fn で記録し、play 関数から配線を assert できるようにする。
+ * 検証は実装（backup.parseImport）ではなく引数の parsed をそのまま返し、
+ * stories 側が成功 / 失敗の分岐を決められるようにする（検証そのものは backup.spec が担う）。
+ */
+export function makeBackup(parsed: ImportParseResult = { ok: true, sessions: [] }): Backup {
+  return {
+    createExport: fn(async () => ({ fileName: 'peak-rm-export-2026-05-12.json', json: '{}' })),
+    parseImport: fn(() => parsed),
+    replaceAll: fn(async () => {}),
   }
 }
 

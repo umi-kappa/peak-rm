@@ -12,6 +12,7 @@ import { useWakeLock, wakeLockInjectionKey } from '@/composables/shared/platform
 import { installSessionEndRelease } from '@/composables/shared/platform/installSessionEndRelease'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
+import { backup, backupInjectionKey } from '@/storage/backup'
 import { sessionRepo, sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import '@/styles/tokens.css'
 import '@/styles/global.css'
@@ -27,6 +28,9 @@ app.provide(sessionInjectionKey, session)
 // 画面が直接使うリポジトリも provide で配り、home / menu が inject で受ける
 // （Storybook では provide decorator で fake repo に差し替える）
 app.provide(sessionRepoInjectionKey, sessionRepo)
+// Export / Import のデータ源。sessions テーブル単位の repo とは別に DB 全体の置換を担うため、
+// sessionRepo に相乗りさせず専用の key で配る（設定画面が inject で受ける）
+app.provide(backupInjectionKey, backup)
 
 // タイマー音と画面スリープ抑止。どちらもセッションフロー全体で状態（AudioContext・sentinel）を
 // 保持する必要があり、セットごとに再マウントされる画面では持てないため、ここで生成して配る。
