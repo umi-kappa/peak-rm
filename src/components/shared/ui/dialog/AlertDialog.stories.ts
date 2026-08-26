@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
 import AlertDialog from '@/components/shared/ui/dialog/AlertDialog.vue'
 import { topLayerDocs } from '@/stories/topLayerDocs'
 
@@ -45,8 +45,9 @@ export const WithMessage: Story = {
   },
 }
 
-// 閉じるボタンが emit に配線されていることを確認する
-// （ESC / backdrop の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
+// 閉じるボタンと BaseDialog の cancel が、いずれも同じ close へ配線されていることを確認する
+// （ESC / backdrop それぞれの発火パターン網羅はシェル側 BaseDialog の Behavior が担うが、
+//   その cancel を close へ転送するのはこのコンポーネントの責務なのでここで押さえる）
 export const Behavior: Story = {
   args: { onClose: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
@@ -54,5 +55,10 @@ export const Behavior: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '閉じる' }))
     await expect(args.onClose).toHaveBeenCalledOnce()
+
+    // ESC のネイティブ close request は合成キーイベントでは発火しないため、
+    // ブラウザが発火する cancel イベントを直接 dispatch して転送を確認する
+    await fireEvent(canvas.getByRole('dialog'), new Event('cancel', { cancelable: true }))
+    await expect(args.onClose).toHaveBeenCalledTimes(2)
   },
 }
