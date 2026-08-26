@@ -32,35 +32,50 @@ const pendingSessions = shallowRef<Session[]>()
 // Import の結果（検証エラー / 置換完了）を伝えるモーダルの内容。表示条件も兼ねる
 const notice = ref<Notice>()
 
+// ファイルの読み取り開始から置換完了までを 1 本に直列化する。読み取りの await 中はまだ
+// 確認ダイアログが無く Import 行が生きているため、ガードが無いと後着した検証結果が
+// 表示中のダイアログの件数と置換対象を裏で差し替える
+const importing = ref(false)
+
 async function exportData() {
   const { fileName, json } = await backup.createExport()
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
   link.download = fileName
+  // Safari は DOM に無い anchor の click を無視することがあるため、一度挿入してから押す
+  document.body.append(link)
   link.click()
-  // ダウンロード開始前に revoke するとブラウザが転送を取り消すため、次のタスクで解放する
-  setTimeout(() => URL.revokeObjectURL(url))
+  link.remove()
+  // ダウンロード開始前に revoke するとブラウザが転送を取り消すため、転送が始まるまで待って解放する
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function openFilePicker() {
+  // 置換中はピッカーを開かない。開いても prepareImport のガードで捨てられるため、
+  // ファイルを選ばせてから無視するより押せない方が正直
+  if (importing.value) return
   fileInput.value?.click()
 }
 
-async function selectFile() {
+async function prepareImport() {
   const input = fileInput.value
   if (!input) return
 
   const file = input.files?.[0]
   // 同じファイルを選び直しても change が発火するよう、読み取り前に選択を空へ戻す
   input.value = ''
-  if (!file) return
+  if (!file || importing.value) return
+  // 読み取りの失敗は境界へ流れページごと unmount されるため、その経路では戻さない
+  importing.value = true
 
   const parsed = backup.parseImport(await file.text())
   if (!parsed.ok) {
     notice.value = { title: '読み込みに失敗しました', message: parsed.message }
+    importing.value = false
     return
   }
+  // 確認ダイアログを出している間は握り続け、confirmImport / cancelImport が解く
   pendingSessions.value = parsed.sessions
 }
 
@@ -68,12 +83,15 @@ async function confirmImport() {
   const sessions = pendingSessions.value
   if (!sessions) return
   pendingSessions.value = undefined
+  // 置換の失敗も読み取りと同じく境界へ流れページごと unmount されるため、その経路では戻さない
   await backup.replaceAll(sessions)
   notice.value = { title: `${sessions.length} 件のセッションを読み込みました` }
+  importing.value = false
 }
 
 function cancelImport() {
   pendingSessions.value = undefined
+  importing.value = false
 }
 
 function dismissNotice() {
@@ -114,7 +132,7 @@ function dismissNotice() {
         type="file"
         accept="application/json,.json"
         hidden
-        @change="selectFile"
+        @change="prepareImport"
       />
     </section>
 
