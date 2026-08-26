@@ -25,7 +25,7 @@ const router = createAppRouter(session)
 
 const app = createApp(App).use(router)
 app.provide(sessionInjectionKey, session)
-// 画面が直接使うリポジトリも provide で配り、home / menu が inject で受ける
+// 画面が直接使うリポジトリも provide で配り、home / menu / history / result が inject で受ける
 // （Storybook では provide decorator で fake repo に差し替える）
 app.provide(sessionRepoInjectionKey, sessionRepo)
 // Export / Import のデータ源。sessions テーブル単位の repo とは別に DB 全体の置換を担うため、
