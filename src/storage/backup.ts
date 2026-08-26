@@ -38,13 +38,23 @@ function isCount(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0
 }
 
+/** 回数・セット数のように 1 以上の整数で表す値か（spec §2「設定項目」表の下限） */
+function isPositiveCount(value: unknown): value is number {
+  return isCount(value) && value >= 1
+}
+
+/** 重量のように 0 以上の有限小数で表す値か（spec §2「設定項目」表の下限） */
+function isNonNegativeNumber(value: unknown): value is number {
+  return isFiniteNumber(value) && value >= 0
+}
+
 function isMenu(value: unknown): value is Menu {
   if (!isRecord(value)) return false
   return (
     isExercise(value.exercise) &&
-    isFiniteNumber(value.weight) &&
-    isCount(value.reps) &&
-    isCount(value.sets) &&
+    isNonNegativeNumber(value.weight) &&
+    isPositiveCount(value.reps) &&
+    isPositiveCount(value.sets) &&
     isCount(value.intervalSec)
   )
 }
@@ -62,9 +72,15 @@ function isSession(value: unknown): value is Session {
     isExercise(value.exercise) &&
     isFiniteNumber(value.startedAt) &&
     isMenu(value.menu) &&
+    // 1 セッション = 1 種目。アプリは useSession.start が exercise: menu.exercise で書くため
+    // 常に一致するが、Import だけがこの不変条件を破れる
+    value.exercise === value.menu.exercise &&
     Array.isArray(value.results) &&
     // 実績のあるセッションのみ保存する不変条件を Import 経由のデータにも適用する（#80）
     value.results.length > 0 &&
+    // results は menu.sets のセット列を指す。超過分はタイムラインに出ずメモへ到達できない
+    // 一方で 1RM・実績表示には数え込まれる（下回るのは中断セッションなので許す）
+    value.results.length <= value.menu.sets &&
     value.results.every(isSetResult)
   )
 }

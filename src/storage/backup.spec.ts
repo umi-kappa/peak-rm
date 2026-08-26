@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { backup, BACKUP_SCHEMA_VERSION, type ExportEnvelope } from '@/storage/backup'
 import { db } from '@/storage/db'
@@ -44,15 +44,35 @@ function sessionsErrorMessage(sessions: unknown[]): string {
   return parseErrorMessage(JSON.stringify(makeEnvelope({ sessions })))
 }
 
+/** menu の値域・型を外れた上書き。型を崩した入力も混ぜるため Record で持つ */
+const invalidMenus: { label: string; menu: Record<string, unknown> }[] = [
+  { label: 'weight が負', menu: { weight: -100 } },
+  { label: 'weight が文字列', menu: { weight: '100' } },
+  { label: 'reps が 0', menu: { reps: 0 } },
+  { label: 'reps が負', menu: { reps: -1 } },
+  { label: 'reps が小数', menu: { reps: 8.5 } },
+  { label: 'sets が 0', menu: { sets: 0 } },
+  { label: 'sets が負', menu: { sets: -1 } },
+  { label: 'sets が小数', menu: { sets: 3.5 } },
+]
+
+/** 検証を通るはずの envelope を検証させ、ok かどうかを返す */
+function parsesOk(sessions: unknown[]): boolean {
+  return backup.parseImport(JSON.stringify(makeEnvelope({ sessions }))).ok
+}
+
 describe('createExport', () => {
   test('保存済みの全セッションを schemaVersion 付きの envelope で書き出す', async () => {
     await db.sessions.bulkAdd([makeSession('s1'), makeSession('s2', 'squat', 2000)])
 
+    const before = Date.now()
     const { json } = await backup.createExport()
     const envelope = JSON.parse(json) as ExportEnvelope
 
     expect(envelope.schemaVersion).toBe(BACKUP_SCHEMA_VERSION)
-    expect(envelope.exportedAt).toBeGreaterThan(0)
+    // 固定値でも通らないよう、書き出し時刻が呼び出し区間に収まることまで見る
+    expect(envelope.exportedAt).toBeGreaterThanOrEqual(before)
+    expect(envelope.exportedAt).toBeLessThanOrEqual(Date.now())
     expect(envelope.sessions.map((session) => session.id).sort()).toEqual(['s1', 's2'])
   })
 
@@ -62,8 +82,16 @@ describe('createExport', () => {
   })
 
   test('ファイル名は書き出し日のローカルカレンダー日を持つ', async () => {
-    const { fileName } = await backup.createExport()
-    expect(fileName).toMatch(/^peak-rm-export-\d{4}-\d{2}-\d{2}\.json$/)
+    // ローカル 0 時台は UTC ではまだ前日なので、toISOString への退化をここで検出できる
+    // （unit project は TZ=Asia/Tokyo 固定。Date だけ差し替えて Dexie の非同期は止めない）
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date(2026, 4, 12, 0, 30))
+      const { fileName } = await backup.createExport()
+      expect(fileName).toBe('peak-rm-export-2026-05-12.json')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   test('書き出した JSON はそのまま読み戻せる（往復）', async () => {
@@ -93,6 +121,12 @@ describe('parseImport', () => {
     )
   })
 
+  // isRecord が名指しで除外している null 分岐を含む。ガードが外れると null.schemaVersion の
+  // TypeError になり、「不正は例外ではなく値で返す」契約が壊れる
+  test.each(['null', '42', '"x"'])('オブジェクトでないルート（%s）を拒否する', (text) => {
+    expect(parseErrorMessage(text)).toBe('Export ファイルの形式ではありません')
+  })
+
   test('schemaVersion が一致しないファイルを拒否する（完全一致のみ受け入れる）', () => {
     expect(parseErrorMessage(JSON.stringify(makeEnvelope({ schemaVersion: 2 })))).toBe(
       'schemaVersion が 1 ではありません',
@@ -118,11 +152,56 @@ describe('parseImport', () => {
     )
   })
 
-  test('menu の必須フィールドが欠けたセッションを拒否する', () => {
+  test.each(['exercise', 'weight', 'reps', 'sets', 'intervalSec'])(
+    'menu.%s が欠けたセッションを拒否する',
+    (field) => {
+      const session = makeSession('s1')
+      expect(
+        sessionsErrorMessage([{ ...session, menu: { ...session.menu, [field]: undefined } }]),
+      ).toBe('sessions[0] のデータが不正です')
+    },
+  )
+
+  // 弾く側の境界を固定する。spec §2「設定項目」表の下限（重量 0 / 回数・セット数 1）が基準
+  test.each(invalidMenus)('menu の値域・型を外れたセッション（$label）を拒否する', ({ menu }) => {
     const session = makeSession('s1')
+    expect(sessionsErrorMessage([{ ...session, menu: { ...session.menu, ...menu } }])).toBe(
+      'sessions[0] のデータが不正です',
+    )
+  })
+
+  // 通る側の境界。下限そのものを弾く方向の退行（`>= 1` → `> 1` 等）はここでしか落ちない
+  test.each([
+    { label: 'weight 0・intervalSec 0', menu: { weight: 0, intervalSec: 0 } },
+    { label: 'reps 1・sets 1', menu: { reps: 1, sets: 1 } },
+  ])('menu の下限そのもの（$label）は受け入れる', ({ menu }) => {
+    const session = makeSession('s1')
+    expect(parsesOk([{ ...session, menu: { ...session.menu, ...menu } }])).toBe(true)
+  })
+
+  test('exercise と menu.exercise が食い違うセッションを拒否する（不変条件: 1 セッション = 1 種目）', () => {
+    const session = makeSession('s1', 'squat')
     expect(
-      sessionsErrorMessage([{ ...session, menu: { ...session.menu, intervalSec: undefined } }]),
+      sessionsErrorMessage([{ ...session, menu: { ...session.menu, exercise: 'benchPress' } }]),
     ).toBe('sessions[0] のデータが不正です')
+  })
+
+  test('id が文字列でないセッションを拒否する', () => {
+    expect(sessionsErrorMessage([{ ...makeSession('s1'), id: 1 }])).toBe(
+      'sessions[0] のデータが不正です',
+    )
+  })
+
+  test('id が空文字のセッションを拒否する', () => {
+    expect(sessionsErrorMessage([{ ...makeSession('s1'), id: '' }])).toBe(
+      'sessions[0] のデータが不正です',
+    )
+  })
+
+  test('results が配列でないセッションを拒否する', () => {
+    expect(sessionsErrorMessage([{ ...makeSession('s1'), results: 'abc' }])).toBe(
+      'sessions[0] のデータが不正です',
+    )
   })
 
   test('results が空のセッションを拒否する（不変条件: 実績のあるセッションのみ保存）', () => {
@@ -131,10 +210,45 @@ describe('parseImport', () => {
     )
   })
 
-  test('実績の形が不正なセッションを拒否する', () => {
-    expect(sessionsErrorMessage([{ ...makeSession('s1'), results: [{ actualReps: 8 }] }])).toBe(
+  test.each([
+    { label: 'memo が無い', result: { actualReps: 8 } },
+    { label: 'actualReps が無い', result: { memo: '' } },
+    // actualReps は 0（スキップ）が正しいので isCount のまま残している。その判断を固定する
+    { label: 'actualReps が負', result: { actualReps: -1, memo: '' } },
+    { label: 'actualReps が小数', result: { actualReps: 2.7, memo: '' } },
+  ])('実績の形が不正（$label）なセッションを拒否する', ({ result }) => {
+    expect(sessionsErrorMessage([{ ...makeSession('s1'), results: [result] }])).toBe(
       'sessions[0] のデータが不正です',
     )
+  })
+
+  test('results がちょうど menu.sets のセッション（完遂）を受け入れる', () => {
+    // 上限を `<` に狭める退行が入ると完遂セッションが 1 件も Import できなくなる
+    const session = makeSession('s1')
+    expect(
+      parsesOk([
+        {
+          ...session,
+          results: Array.from({ length: session.menu.sets }, () => ({ actualReps: 8, memo: '' })),
+        },
+      ]),
+    ).toBe(true)
+  })
+
+  test('results が menu.sets を超えるセッションを拒否する', () => {
+    // 超過分はタイムラインに出ずメモへ到達できない一方、1RM・実績表示には数え込まれる
+    const session = makeSession('s1')
+    expect(
+      sessionsErrorMessage([
+        {
+          ...session,
+          results: Array.from({ length: session.menu.sets + 1 }, () => ({
+            actualReps: 8,
+            memo: '',
+          })),
+        },
+      ]),
+    ).toBe('sessions[0] のデータが不正です')
   })
 
   test('不正なセッションの位置を message に含める', () => {
