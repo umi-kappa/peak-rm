@@ -96,10 +96,11 @@ onBeforeUnmount(() => dialogEl.value?.close())
   gap: var(--space-12);
 }
 
+/* タイトルは件数入りの文言などで折り返しうるため、body 既定の line-height を継承させる
+   （tight のままだと 2 行目が行間ゼロで詰まる） */
 .title {
   margin: 0;
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-tight);
 }
 </style>
