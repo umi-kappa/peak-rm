@@ -2,6 +2,7 @@ import type { InjectionKey } from 'vue'
 
 import { isExercise } from '@/core/constants'
 import { localDayKey } from '@/core/localDay'
+import { MENU_MAX } from '@/core/menu'
 import { db } from '@/storage/db'
 import type { Menu, Session, SetResult } from '@/core/types'
 
@@ -38,24 +39,24 @@ function isCount(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0
 }
 
-/** 回数・セット数のように 1 以上の整数で表す値か（spec §2「設定項目」表の下限） */
-function isPositiveCount(value: unknown): value is number {
-  return isCount(value) && value >= 1
+/** 重量のように小数を含む値が値域に収まるか（spec §2「設定項目」表） */
+function isNumberInRange(value: unknown, min: number, max: number): value is number {
+  return isFiniteNumber(value) && value >= min && value <= max
 }
 
-/** 重量のように 0 以上の有限小数で表す値か（spec §2「設定項目」表の下限） */
-function isNonNegativeNumber(value: unknown): value is number {
-  return isFiniteNumber(value) && value >= 0
+/** 回数・セット数・秒数のように整数で表す値が値域に収まるか（spec §2「設定項目」表） */
+function isCountInRange(value: unknown, min: number, max: number): value is number {
+  return isCount(value) && value >= min && value <= max
 }
 
 function isMenu(value: unknown): value is Menu {
   if (!isRecord(value)) return false
   return (
     isExercise(value.exercise) &&
-    isNonNegativeNumber(value.weight) &&
-    isPositiveCount(value.reps) &&
-    isPositiveCount(value.sets) &&
-    isCount(value.intervalSec)
+    isNumberInRange(value.weight, 0, MENU_MAX.weight) &&
+    isCountInRange(value.reps, 1, MENU_MAX.reps) &&
+    isCountInRange(value.sets, 1, MENU_MAX.sets) &&
+    isCountInRange(value.intervalSec, 0, MENU_MAX.intervalSec)
   )
 }
 
@@ -83,6 +84,29 @@ function isSession(value: unknown): value is Session {
     value.results.length <= value.menu.sets &&
     value.results.every(isSetResult)
   )
+}
+
+/**
+ * 検証を通った値から Session を組み直す。宣言したフィールドだけを写すことで、
+ * 手編集などで混ざった未知のプロパティを DB へ持ち込まない。
+ */
+function toSession(value: Session): Session {
+  return {
+    id: value.id,
+    exercise: value.exercise,
+    startedAt: value.startedAt,
+    menu: {
+      exercise: value.menu.exercise,
+      weight: value.menu.weight,
+      reps: value.menu.reps,
+      sets: value.menu.sets,
+      intervalSec: value.menu.intervalSec,
+    },
+    results: value.results.map((result) => ({
+      actualReps: result.actualReps,
+      memo: result.memo,
+    })),
+  }
 }
 
 /**
@@ -129,7 +153,7 @@ function parseImport(text: string): ImportParseResult {
     return { ok: false, message: `sessions[${invalidIndex}] のデータが不正です` }
   }
 
-  const sessions = parsed.sessions as Session[]
+  const sessions = (parsed.sessions as Session[]).map(toSession)
   // 重複 id は bulkAdd が例外を投げてエラー画面になるため、想定内の入力不正としてここで弾く
   if (new Set(sessions.map((session) => session.id)).size !== sessions.length) {
     return { ok: false, message: 'sessions の id が重複しています' }

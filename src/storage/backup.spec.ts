@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { backup, BACKUP_SCHEMA_VERSION, type ExportEnvelope } from '@/storage/backup'
+import { MENU_MAX } from '@/core/menu'
 import { db } from '@/storage/db'
 import type { Exercise, Session } from '@/core/types'
 
@@ -54,6 +55,10 @@ const invalidMenus: { label: string; menu: Record<string, unknown> }[] = [
   { label: 'sets が 0', menu: { sets: 0 } },
   { label: 'sets が負', menu: { sets: -1 } },
   { label: 'sets が小数', menu: { sets: 3.5 } },
+  { label: 'weight が上限超過', menu: { weight: MENU_MAX.weight + 1 } },
+  { label: 'reps が上限超過', menu: { reps: MENU_MAX.reps + 1 } },
+  { label: 'sets が上限超過', menu: { sets: MENU_MAX.sets + 1 } },
+  { label: 'intervalSec が上限超過', menu: { intervalSec: MENU_MAX.intervalSec + 1 } },
 ]
 
 /** 検証を通るはずの envelope を検証させ、ok かどうかを返す */
@@ -170,13 +175,42 @@ describe('parseImport', () => {
     )
   })
 
-  // 通る側の境界。下限そのものを弾く方向の退行（`>= 1` → `> 1` 等）はここでしか落ちない
+  // 通る側の境界。境界そのものを弾く方向の退行（`>= 1` → `> 1`、`<= max` → `< max` 等）は
+  // ここでしか落ちない
   test.each([
-    { label: 'weight 0・intervalSec 0', menu: { weight: 0, intervalSec: 0 } },
-    { label: 'reps 1・sets 1', menu: { reps: 1, sets: 1 } },
-  ])('menu の下限そのもの（$label）は受け入れる', ({ menu }) => {
+    { label: '下限: weight 0・intervalSec 0', menu: { weight: 0, intervalSec: 0 } },
+    { label: '下限: reps 1・sets 1', menu: { reps: 1, sets: 1 } },
+    {
+      label: '上限: MENU_MAX そのもの',
+      menu: {
+        weight: MENU_MAX.weight,
+        reps: MENU_MAX.reps,
+        sets: MENU_MAX.sets,
+        intervalSec: MENU_MAX.intervalSec,
+      },
+    },
+  ])('menu の値域の境界（$label）は受け入れる', ({ menu }) => {
     const session = makeSession('s1')
     expect(parsesOk([{ ...session, menu: { ...session.menu, ...menu } }])).toBe(true)
+  })
+
+  test('宣言されたフィールドだけを取り込み、未知のプロパティは落とす', () => {
+    const session = makeSession('s1')
+    const result = backup.parseImport(
+      JSON.stringify(
+        makeEnvelope({
+          sessions: [
+            {
+              ...session,
+              unknown: 'x',
+              menu: { ...session.menu, unknown: 'x' },
+              results: [{ actualReps: 8, memo: '', unknown: 'x' }],
+            },
+          ],
+        }),
+      ),
+    )
+    expect(result.ok && result.sessions).toEqual([session])
   })
 
   test('exercise と menu.exercise が食い違うセッションを拒否する（不変条件: 1 セッション = 1 種目）', () => {
