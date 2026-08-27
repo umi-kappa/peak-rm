@@ -221,8 +221,8 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 - AppBar: 中央 "Settings"
 - セクション: Data
-  - Export 行 (アイコン + "Export" + chevron)
-  - Import 行 (アイコン + "Import" + chevron)
+  - Export 行 ("Export" + 右端に `Download` アイコン fg2)
+  - Import 行 ("Import" + 右端に `Upload` アイコン fg2)
 - セクション: About
   - Version 行 (label + `1.0.0` mono body)
 - 説明テキスト (sans caption fg3, 1.5 line-height)
@@ -244,7 +244,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### グローバル
 
-- すべての画面遷移は即時 (確認ダイアログなし)。例外: インターバル画面の「中断」のみ確認ダイアログを振る (`spec.md` §4)
+- すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」(`spec.md` §4)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
 - タップ feedback: button・stepper はアクティブ時に 50 ms 程度の `opacity: 0.7` フラッシュで十分
 - アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る (`../spec.md`「トーンガイド」)
 
@@ -285,7 +285,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ## Assets
 
-画面内では画像アセットを使用しない。操作アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行の先頭アイコン / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
+画面内では画像アセットを使用しない。操作アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行アイコン (行頭・行末とも) / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
 
 - `Chevron` (right/left/up/down)
 - `Plus` / `Minus` (Stepper)
