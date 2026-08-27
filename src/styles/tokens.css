@@ -2,8 +2,8 @@
   /* ===== color ===== */
   --color-bg: #0a0a0b; /* 画面背景（最暗） */
   --color-bg-light: #141416; /* カード面（bg より明るい） */
-  --color-line-dark: #1f1f22; /* 弱い区切り線（暗い・ほぼ見えない） */
-  --color-line: #2a2a2e; /* 通常の境界線 / pending / hover */
+  --color-line-dark: #1f1f22; /* 弱い区切り線（暗い・ほぼ見えない）/ カードの hover・押下面 */
+  --color-line: #2a2a2e; /* 通常の境界線 / ボタン・タブの hover */
   --color-text-tertiary: #807e78; /* 3次テキスト: caption・unit */
   --color-text-secondary: #bab7b0; /* 2次テキスト */
   --color-text: #f4f1ea; /* 主要テキスト */
