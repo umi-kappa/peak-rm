@@ -119,6 +119,7 @@ src/
 - **毎秒書き換わる値に `aria-live` / `role="timer"` を付けない**（インターバルの残り時間）。読み上げが暴走するだけで、0 秒到達の通知は音のみという spec の決定とも整合する。**ステッパーの値の変化も読み上げない**（`spinbutton` を避けた代償。`aria-live` を足すと 100ms 間隔の長押しリピートで同じく暴走するため付けない）
 - **`prefers-reduced-motion` は対応しない**。現状の `transition` は背景色・文字色の短い変化のみで視差・移動・拡大がなく、プログレスバーも `width` の直接更新（`transition` 無し）で動き自体が進捗という機能表現。将来アニメーションを足すときはこの基準で再判定する
 - **名前の字形は 2 種類に分ける**: 可視テキストを持たないコントロールの名前は **Title Case の英語**（`Back` / `Settings` / `Delete` / `Decrease` / `Increase` / `Exercise`）。画面に同じ文字列が出ているものをミラーする名前は**可視文字列そのまま**（`NumberStepper` の `label` = `REPS DONE` / `WEIGHT`。可視テキストと食い違わせない WCAG 2.5.3 の要請）。可視文言は大文字を文字列で書くため（`START SESSION` / `KG`。「スタイル（CSS）」節の `text-transform` 禁止を参照）後者は大文字になる。stories が渡すラベルも同じ規則に従う
+- **テキストのコントラストは AA（4.5:1）を満たす**: 3 次テキスト（`--color-text-tertiary`）は不透明な常設面（`--color-bg` / `--color-bg-light`）で満たす値に置いている。`opacity` で面ごと減衰する箇所（`TimelineSetCard` の pending）は合成後 2.15:1 で AA に届いておらず、別途対応が要る（#115）。hover / 押下で面が上がる箇所は、その状態で 3 次テキストも 1 段上げる。面が `--color-line-dark` に上がるカードは `TimelineSetCard` と `CardButton` の 2 つで、`TimelineSetCard` は対応済み・`CardButton` 配下で 3 次テキストを持つ `ExerciseCard` / `SessionSummaryCard` は未対応（#115）。面が `--color-line` に上がるボタン・タブ（`IconButton` / `ExerciseTabs`）は背景と一緒に文字色を `--color-text` へ上げる（`NumberStepper` は値が最初から `--color-text` なので背景だけ変える）。同じ行に並ぶアイコンは非テキスト（3:1）で単独では足りているが、見た目を揃えて一緒に上げる。色トークンの値を動かすときは 3 段（`--color-text` / `-secondary` / `-tertiary`）の間隔ごと見直す（下段だけ上げると階調が潰れる）
 - **`@storybook/addon-a11y` は入れない**。方針が名前付け + グループ化に閉じており、依存と CI 時間の追加に見合わない
 
 ## 状態表現（操作できない状態）
