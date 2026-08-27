@@ -50,7 +50,7 @@ function onClick() {
         <span v-if="actualReps === 0" class="skipped">SKIPPED</span>
         <template v-else>
           <span class="reps">{{ actualReps }}</span>
-          <BaseUnit>REPS</BaseUnit>
+          <BaseUnit class="reps-unit">REPS</BaseUnit>
         </template>
         <!-- 編集可能の目印。タップ対象はカード全体（spec「セット編集モーダル」） -->
         <BaseIcon class="edit-icon" name="pen-line" :size="12" />
@@ -87,16 +87,29 @@ function onClick() {
     outline-offset: 2px;
   }
 
-  /* タップ可能な done カードの hover / active は CardButton（ExerciseCard）と同じ背景変化で揃える */
+  /* タップ可能な done カードの hover / active は CardButton（ExerciseCard）と同じ背景変化で揃える。
+     面が line-dark に上がる分だけ 3 次テキストも 1 段上げ、その面でもコントラストを保つ */
   @media (hover: hover) {
     &.done:hover {
       background-color: var(--color-line-dark);
+
+      .skipped,
+      .reps-unit,
+      .edit-icon {
+        color: var(--color-text-secondary);
+      }
     }
   }
 
   /* media query の外に置き、hover を持たないタッチでも押下フィードバックを返す */
   &.done:active {
     background-color: var(--color-line-dark);
+
+    .skipped,
+    .reps-unit,
+    .edit-icon {
+      color: var(--color-text-secondary);
+    }
   }
 
   &.next {
@@ -158,6 +171,13 @@ function onClick() {
 .skipped {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-caption);
+}
+
+/* 色の変化はカード背景と同じ時間で追従させる */
+.skipped,
+.reps-unit,
+.edit-icon {
+  transition: color var(--transition);
 }
 
 /* 編集可能の目印は右端に寄せ、行のベースライン揃えには参加せず上下センターに置く */
