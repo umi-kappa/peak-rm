@@ -142,10 +142,10 @@ npm run build-storybook   # storybook-static/ に静的ビルド生成
 
 `vite-plugin-pwa`（`registerType: 'autoUpdate'`）で PWA 化している。`npm run build` で `dist/` に manifest・Service Worker・アイコンが生成され、`npm run preview` で動作確認できる（SW は本番ビルドでのみ有効、dev では動かない）。
 
-アイコンはプレースホルダ（本番デザインは別途）。元データは `assets/icon-source.svg`。再生成は以下で行い、出力 PNG / favicon を `public/` へ移す。
+アプリアイコンの元データは `assets/icon-source.svg`（デザインの意図は `docs/design/README.md` の PWA app icon 節）。再生成は以下で行い、出力 PNG / favicon を `public/` へ移す。`pwa-assets.config.js` は `minimal-2023` プリセットの出力サイズを使い、SVG が内包する背景とセーフゾーンを原寸のまま維持する（追加余白なし）。
 
 ```bash
-npx pwa-assets-generator --preset minimal-2023 assets/icon-source.svg
+npx pwa-assets-generator assets/icon-source.svg
 ```
 
 ### Git hooks（commit 時の自動チェック）

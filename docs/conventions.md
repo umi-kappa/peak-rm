@@ -284,7 +284,7 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 ## PWA・静的アセット
 
 - 静的アセット（PWA アイコン・favicon など）は `public/` に置き、ビルド時に `dist/` 直下へコピーする
-- PWA アイコンは手書きせず `assets/icon-source.svg` を元に `@vite-pwa/assets-generator`（`minimal-2023` プリセット）で再生成する。生成した PNG / favicon を `public/` へ移して使う
+- PWA アイコンは手書きせず `assets/icon-source.svg` を元に `@vite-pwa/assets-generator` で再生成する。`pwa-assets.config.js` で `minimal-2023` プリセットの出力サイズと追加余白なしの設定を管理し、生成した PNG / favicon を `public/` へ移して使う
 
 ## .gitignore
 
