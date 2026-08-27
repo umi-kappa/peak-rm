@@ -285,7 +285,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ## Assets
 
-このデザインでは画像アセットは使用しない。アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行アイコン (行頭・行末とも) / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
+画面内では画像アセットを使用しない。操作アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行アイコン (行頭・行末とも) / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
 
 - `Chevron` (right/left/up/down)
 - `Plus` / `Minus` (Stepper)
@@ -303,3 +303,10 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - `VolumeX` (通知音の停止)
 
 stroke-width はデフォルト 1.6〜2.0。色は `currentColor` なので親要素の `color` プロパティで制御。
+
+### PWA app icon
+
+- モチーフは、正面から見たウェイトプレートの外周と、1RM の段階的な上昇からピークへ至る線を一続きにした単一の幾何学マークとする。ピークの先端には、線幅より一段大きい同色の塗り点を置く
+- 背景は `bg`（`#0a0a0b`）、マークは `accent`（`#22e8ff`）の 2 色のみを使用する。グラデーション、光彩、影、質感、立体表現は使わない
+- 元画像は `assets/icon-source.svg`。完全に不透明な正方形とし、画像自体に角丸や透過を付けない
+- Android の円形・角丸・水滴型マスクで主要部分が欠けないよう、マーク全体を画像中央の直径 80% の円内に収める
