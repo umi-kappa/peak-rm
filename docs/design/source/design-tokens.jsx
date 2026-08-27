@@ -88,8 +88,8 @@ const DesignTokens = () => {
           ['surface',  '#141416', 'card surface'],
           ['lineSoft', '#1f1f22', 'subtle divider'],
           ['line',     '#2a2a2e', 'visible border · pending / hover'],
-          ['fg3',      '#6c6a64', 'tertiary text · captions, units'],
-          ['fg2',      '#a8a59e', 'secondary text'],
+          ['fg3',      '#807e78', 'tertiary text · captions, units'],
+          ['fg2',      '#bab7b0', 'secondary text'],
           ['fg',       '#f4f1ea', 'primary text · warm off-white'],
         ]} />
 
