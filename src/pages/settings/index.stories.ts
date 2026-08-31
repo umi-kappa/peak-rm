@@ -2,22 +2,28 @@ import { provide } from 'vue'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, userEvent, within } from 'storybook/test'
 import SettingsPage from '@/pages/settings/index.vue'
+import { sessionInjectionKey, type SessionStore } from '@/composables/shared/session/useSession'
 import { backupInjectionKey, type Backup, type ImportParseResult } from '@/storage/backup'
 import { storybookRouter as router } from '@/stories/router'
-import { makeBackup, makeSession } from '@/stories/session'
+import { makeBackup, makeSession, makeSessionStore } from '@/stories/session'
 
 // 各 story 共通の loader。設定画面は route を読まないが、戻る導線が router に依存するため実ルートへ置く。
-// Import の検証結果は fake が返すものが唯一のソースなので、story ごとに parsed を差し替える
+// Import の検証結果は fake が返すものが唯一のソースなので、story ごとに parsed を差し替える。
+// session store は設定画面が描画しないが、Import の確定で破棄されることを Behavior が見る
 function loadSettingsPage(parsed?: ImportParseResult) {
   return async () => {
     await router.push('/settings')
-    return { backup: makeBackup(parsed) }
+    return { backup: makeBackup(parsed), sessionStore: await makeSessionStore({}) }
   }
 }
 
-// loader の戻りは型が失われるため、取り出しとキャストをここ 1 箇所に閉じる
+// loader の戻りは型が失われるため、取り出しとキャストをここに閉じる
 function backupOf(loaded: Record<string, unknown>): Backup {
   return loaded.backup as Backup
+}
+
+function sessionStoreOf(loaded: Record<string, unknown>): SessionStore {
+  return loaded.sessionStore as SessionStore
 }
 
 function fileInputOf(canvasElement: HTMLElement): HTMLInputElement {
@@ -57,6 +63,7 @@ const meta: Meta<typeof SettingsPage> = {
     (_story, context) => ({
       setup() {
         provide(backupInjectionKey, backupOf(context.loaded))
+        provide(sessionInjectionKey, sessionStoreOf(context.loaded))
       },
       template: '<story />',
     }),
@@ -126,6 +133,7 @@ export const Behavior: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const backup = backupOf(loaded)
+    const store = sessionStoreOf(loaded)
 
     // 見出しがセクションのアクセシブルネームに配線されている
     await expect(canvas.getByRole('region', { name: 'DATA' })).toBeVisible()
@@ -157,10 +165,13 @@ export const Behavior: Story = {
 
     // 同じファイルを選び直せる（input の選択をリセットしている）ことも同時に確認する
     await selectFile(canvasElement)
+    await expect(store.session.value).toBeDefined()
     await userEvent.click(await canvas.findByRole('button', { name: '置き換える' }))
 
     await expect(await canvas.findByText('2 件のセッションを読み込みました')).toBeVisible()
     await expect(backup.replaceAll).toHaveBeenCalledOnce()
+    // 置換の確定でメモリ上の実行中セッションも捨てている
+    await expect(store.session.value).toBeUndefined()
 
     await userEvent.click(canvas.getByRole('button', { name: '閉じる' }))
     await expect(canvas.queryByText('2 件のセッションを読み込みました')).not.toBeInTheDocument()

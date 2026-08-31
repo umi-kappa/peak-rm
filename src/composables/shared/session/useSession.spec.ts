@@ -208,6 +208,18 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(0)
   })
 
+  test('discard は leave が残した session データごと捨てて done にする（追加の永続化はしない）', async () => {
+    const { repo, session } = setup()
+    session.start(menu({ sets: 3 }))
+    await session.completeSet()
+    session.leave()
+    const callsBefore = repo.calls.length
+    session.discard()
+    expect(session.phase.value).toBe('done')
+    expect(session.session.value).toBeUndefined()
+    expect(repo.calls).toHaveLength(callsBefore)
+  })
+
   test('completeSet の await 中に leave が割り込んでも done を interval で上書きしない', async () => {
     const repo = createFakeRepo()
     // 初回セット完了の insert を手動解決にして、永続化 I/O 中の離脱

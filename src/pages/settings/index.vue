@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { inject, ref, shallowRef, useTemplateRef } from 'vue'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { backupInjectionKey } from '@/storage/backup'
 import type { Session } from '@/core/types'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
@@ -20,6 +21,9 @@ const { goBack } = useBackNavigation()
 const injectedBackup = inject(backupInjectionKey)
 if (!injectedBackup) throw new Error('backup is not provided')
 const backup = injectedBackup
+const injectedSession = inject(sessionInjectionKey)
+if (!injectedSession) throw new Error('session store is not provided')
+const session = injectedSession
 
 const version = import.meta.env.VITE_APP_VERSION
 
@@ -85,6 +89,7 @@ async function confirmImport() {
   pendingSessions.value = undefined
   // 置換の失敗も読み取りと同じく境界へ流れページごと unmount されるため、その経路では戻さない
   await backup.replaceAll(sessions)
+  session.discard()
   notice.value = { title: `${sessions.length} 件のセッションを読み込みました` }
   importing.value = false
 }
