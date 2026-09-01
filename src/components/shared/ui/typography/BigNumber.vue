@@ -23,6 +23,11 @@ const {
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
+  /* 祖先が面ごと階調を上げたとき、背景と同じ時間で追従させる（conventions「デザイントークン」）。
+     accent は glow も同時に切り替わるので text-shadow を対にする */
+  transition:
+    color var(--transition),
+    text-shadow var(--transition);
 
   &.stat {
     font-size: var(--font-size-stat);

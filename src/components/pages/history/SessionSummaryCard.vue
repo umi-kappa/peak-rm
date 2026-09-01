@@ -94,6 +94,15 @@ const reps = computed(() => formatSetReps(session))
   font-variant-numeric: tabular-nums;
 }
 
+/* CardButton の hover・押下で面が上がると 3 次テキストが 1 段上がるので、3 次になりうる要素は
+   色の変化をカード背景と同じ時間で追従させる（.one-rm-value と .badge は tertiary のときだけ動く。
+   conventions「デザイントークン」） */
+.one-rm-value,
+.reps,
+.badge {
+  transition: color var(--transition);
+}
+
 /* 値と単位の横並び。1RM・重量・実績回数で共通 */
 .one-rm,
 .weight-line,

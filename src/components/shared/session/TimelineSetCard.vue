@@ -50,7 +50,7 @@ function onClick() {
         <span v-if="actualReps === 0" class="skipped">SKIPPED</span>
         <template v-else>
           <span class="reps">{{ actualReps }}</span>
-          <BaseUnit class="reps-unit">REPS</BaseUnit>
+          <BaseUnit>REPS</BaseUnit>
         </template>
         <!-- 編集可能の目印。タップ対象はカード全体（spec「セット編集モーダル」） -->
         <BaseIcon class="edit-icon" name="pen-line" :size="12" />
@@ -92,24 +92,14 @@ function onClick() {
   @media (hover: hover) {
     &.done:hover {
       background-color: var(--color-line-dark);
-
-      .skipped,
-      .reps-unit,
-      .edit-icon {
-        color: var(--color-text-secondary);
-      }
+      --color-text-tertiary: var(--color-text-secondary);
     }
   }
 
   /* media query の外に置き、hover を持たないタッチでも押下フィードバックを返す */
   &.done:active {
     background-color: var(--color-line-dark);
-
-    .skipped,
-    .reps-unit,
-    .edit-icon {
-      color: var(--color-text-secondary);
-    }
+    --color-text-tertiary: var(--color-text-secondary);
   }
 
   &.next {
@@ -124,8 +114,11 @@ function onClick() {
     }
   }
 
+  /* 面を薄くするのに opacity は使わない。テキストも一緒に落ちて 3 次テキストが AA を割る
+     （conventions「アクセシビリティ」） */
   &.pending {
-    opacity: 0.55;
+    background: var(--color-bg-pending);
+    border-color: var(--color-line-pending);
 
     .number {
       color: var(--color-text-tertiary);
@@ -173,11 +166,14 @@ function onClick() {
   font-size: var(--font-size-caption);
 }
 
-/* 色の変化はカード背景と同じ時間で追従させる */
+/* 3 次テキストは面が上がると 1 段上がるので、色の変化をカード背景と同じ時間で追従させる
+   （.memo-prompt は文字ではなく破線下線が 3 次なので border-color が対象） */
 .skipped,
-.reps-unit,
-.edit-icon {
-  transition: color var(--transition);
+.edit-icon,
+.memo-prompt {
+  transition:
+    color var(--transition),
+    border-color var(--transition);
 }
 
 /* 編集可能の目印は右端に寄せ、行のベースライン揃えには参加せず上下センターに置く */

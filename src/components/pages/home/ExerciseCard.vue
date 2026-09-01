@@ -115,5 +115,8 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   line-height: var(--line-height);
   text-align: right;
   word-break: break-word;
+  /* CardButton の hover・押下で面が上がると 3 次テキストが 1 段上がるので、色の変化を
+     カード背景と同じ時間で追従させる（conventions「デザイントークン」） */
+  transition: color var(--transition);
 }
 </style>

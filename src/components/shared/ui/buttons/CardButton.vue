@@ -52,6 +52,9 @@ function onClick() {
   /* 押下面は内側の不透明な BaseCard。外側ラッパーは透明なため :active を内側へ当てる */
   &:active .card {
     background-color: var(--color-line-dark);
+    /* 面が上がる間だけ 3 次テキストを 1 段上げる。カスタムプロパティの継承で slot 内の
+       ExerciseCard / SessionSummaryCard まで届く（conventions「デザイントークン」） */
+    --color-text-tertiary: var(--color-text-secondary);
   }
 }
 
@@ -61,6 +64,7 @@ function onClick() {
   @media (hover: hover) {
     &:hover {
       background-color: var(--color-line-dark);
+      --color-text-tertiary: var(--color-text-secondary);
     }
   }
 }

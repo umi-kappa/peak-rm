@@ -1,7 +1,10 @@
 :root {
   /* ===== color ===== */
+  /* 面と線は暗い順に並べる */
   --color-bg: #0a0a0b; /* 画面背景（最暗） */
+  --color-bg-pending: #101011; /* 予告（pending）の面。bg-light を bg に 55% で重ねた合成値 */
   --color-bg-light: #141416; /* カード面（bg より明るい） */
+  --color-line-pending: #161618; /* 予告（pending）の枠線。line-dark を bg に 55% で重ねた合成値 */
   --color-line-dark: #1f1f22; /* 弱い区切り線（暗い・ほぼ見えない）/ カードの hover・押下面 */
   --color-line: #2a2a2e; /* 通常の境界線 / ボタン・タブの hover */
   --color-text-tertiary: #807e78; /* 3次テキスト: caption・unit */

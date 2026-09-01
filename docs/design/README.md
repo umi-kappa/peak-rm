@@ -35,7 +35,9 @@ JSX 側は React で書かれているが、これは見た目の意図を示す
 | Token | Hex | 用途 |
 | --- | --- | --- |
 | `bg` | `#0a0a0b` | 画面背景 (最暗) |
+| `surfaceDim` | `#101011` | 予告 (pending) セットの面 |
 | `surface` | `#141416` | カード面 |
+| `lineDim` | `#161618` | 予告 (pending) セットの枠線 |
 | `lineSoft` | `#1f1f22` | 弱い区切り線 / カードの hover・押下面 |
 | `line` | `#2a2a2e` | 通常の境界線 / ボタン・タブの hover |
 | `fg3` | `#807e78` | 3次テキスト (キャプション・単位) |
@@ -43,9 +45,9 @@ JSX 側は React で書かれているが、これは見た目の意図を示す
 | `fg` | `#f4f1ea` | 主要テキスト (warm off-white) |
 | `accent` | `#22e8ff` | シアン: 1RM・現在重量・active timer・primary CTA・glow |
 
-テキスト 3 段の階調は WCAG AA (通常文字 4.5:1) から決めている。`fg3` は不透明な常設面 (`bg` / `surface`) で AA を満たす下限 (`surface` で 4.53:1)、`fg2` は `fg3` と `fg` の間隔を均す位置に置く。`fg3` を上げすぎると `fg2` との差が潰れ、階調が 3 段として読めなくなるため下限に留める。`opacity` で面ごと減衰する pending (Interval / Result のセット一覧) は合成後 2.15:1 で AA に届いておらず、別途対応が要る (#115)。
+テキスト 3 段の階調は WCAG AA (通常文字 4.5:1) から決めている。`fg3` は不透明な常設面 (`bg` / `surfaceDim` / `surface`) で AA を満たす下限 (`surface` で 4.53:1)、`fg2` は `fg3` と `fg` の間隔を均す位置に置く。`fg3` を上げすぎると `fg2` との差が潰れ、階調が 3 段として読めなくなるため下限に留める。予告 (pending) の減衰に `opacity` を使わないのはこの下限を守るためで、面ごと薄くするとテキストも一緒に落ちて合成後 2.15:1 になる。面と枠線だけを `surfaceDim` / `lineDim` へ落とし、テキストは `fg3` のまま置く (`surfaceDim` で 4.69:1)。
 
-`lineSoft` 面 (カードの hover / 押下) では `fg3` が 4.05:1 で AA に足りない。トークンを上げて全画面の階調を犠牲にせず、面が上がるその状態でだけ 3 次テキストを `fg2` へ 1 段上げて解決する。`TimelineSetCard` は対応済み。同じ面へ上がる他の押せるカードのうち 3 次テキストを持つもの (Home の種目カード / History のセッション行) は未対応 (#115)。
+`lineSoft` 面 (カードの hover / 押下) では `fg3` が 4.05:1 で AA に足りない。トークンを上げて全画面の階調を犠牲にせず、面が上がるその状態でだけ 3 次テキストを `fg2` へ 1 段上げて解決する (`lineSoft` 面で 8.21:1)。対象は同じ面へ上がる押せるカードすべて (セット一覧の完了行・Home の種目カード・History のセッション行)。
 
 アクセントを使う場面では neon glow を付与:
 
@@ -89,7 +91,7 @@ text-shadow:
 
 | Role | Weight | 用途 |
 | --- | --- | --- |
-| `regular` | 500 | body・行ラベル・メモ・Label・Unit・日付軸・pending |
+| `regular` | 500 | body・行ラベル・メモ・Label・Unit・日付軸 |
 | `semibold` | 600 | sans タイトル (card / AppBar / modal)・× 8 reps・secondary button caps |
 | `bold` | 700 | すべての数字・brand・primary button caps・badge・active state |
 
@@ -186,7 +188,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 - Timer ヒーロー: `0:47` (mono hero bold, accent + glow) + `.32` ms 部 (mono body bold, fg3)
 - Target 行: `Target 1:30` Label
 - Progress hairline (1 px line)
-- セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (fg3, regular)
+- セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (面 `surfaceDim` / 枠線 `lineDim`, fg3)
 - 各完了セットの行: タップでセット編集モーダル (重量 read-only + 実績ステッパー + メモ)
 - 下部: `Next set` (primary, fill accent) と `End session` (secondary, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
 

@@ -12,6 +12,8 @@ const { size = 'caption' } = defineProps<{ size?: 'caption' | 'body' }>()
   font-family: var(--font-family-mono);
   /* body の既定と同値だが、bold な数値の内側に置かれる使い方があるため打ち消しとして明示する（conventions「font-weight の使い分け」） */
   font-weight: var(--font-weight-regular);
+  /* 祖先が面ごと階調を上げたとき、背景と同じ時間で追従させる（conventions「デザイントークン」） */
+  transition: color var(--transition);
 
   &.caption {
     font-size: var(--font-size-caption);

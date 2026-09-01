@@ -312,10 +312,9 @@ const M_Interval = () => {
 
 const TimelineSetCard_M = ({ setNumber, state, reps, target, memo, memoPrompt }) =>
 <div style={{
-  background: C.surface,
-  border: `1px solid ${state === 'next' ? MA : C.lineSoft}`,
+  background: state === 'pending' ? C.surfaceDim : C.surface,
+  border: `1px solid ${state === 'next' ? MA : state === 'pending' ? C.lineDim : C.lineSoft}`,
   borderRadius: 4, padding: '12px 16px',
-  opacity: state === 'pending' ? 0.55 : 1,
   position: 'relative'
 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
