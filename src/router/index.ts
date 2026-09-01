@@ -64,7 +64,7 @@ export function createAppRouter(
     if (from === START_LOCATION && to.name !== 'home') {
       return { name: 'home', replace: true }
     }
-    // 実行中セッションが無ければ training / interval には入れない（ブラウザの進む等での再入防止）。
+    // 実行中セッションが終端していれば training / interval には入れない（ブラウザの進む等での再入防止）。
     // result はガードしない: 履歴詳細からも開くため（spec「結果確認画面」）
     if ((to.name === 'training' || to.name === 'interval') && session.phase.value === 'done') {
       return { name: 'home', replace: true }
