@@ -51,10 +51,14 @@ export function makeBackup(parsed: ImportParseResult = { ok: true, sessions: [] 
   return {
     createExport: fn(async () => ({ fileName: 'peak-rm-export-2026-05-12.json', json: '{}' })),
     // 入力を無視して parsed を返す（成功 / 失敗の分岐は stories 側が決める）。
-    // 引数を宣言しなくても fn が実引数を記録するので、play 関数は渡された本文を
-    // toHaveBeenCalledWith で assert できる
+    // parseImport は引数を使わないが、宣言しなくても fn が実引数を記録するので、
+    // play 関数は渡された本文を toHaveBeenCalledWith で assert できる
     parseImport: fn(() => parsed),
-    replaceAll: fn(async () => {}),
+    // 実 replaceAll は Dexie へ渡すため、構造化複製の制約を fake にも課す
+    // （設定画面が pendingSessions を shallowRef で持つ前提が壊れれば DataCloneError で落ちる）
+    replaceAll: fn(async (sessions: Session[]) => {
+      structuredClone(sessions)
+    }),
   }
 }
 
@@ -91,6 +95,9 @@ export function makeSession(
  * Storybook 用に useSession を実際に駆動して途中状態の store を作る（stories の loaders から使う）。
  * completedReps を先頭から completeSet で積み、phase: 'setActive' なら続けて nextSet で
  * 次セット実行中へ進める（training 画面用。interval 画面はインターバル中のまま渡す）。
+ * completedReps を省略すると開始直後（setActive・DB 未書き込み）の store になる。
+ * この store のセッションを読まない画面（履歴経由の結果確認画面）へ渡す用途。
+ * 終端済みの store が要る画面は completedReps を積んだうえで呼び出し側が leave() する。
  */
 export async function makeSessionStore(options: {
   menu?: Partial<Menu>
