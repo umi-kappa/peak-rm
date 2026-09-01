@@ -2,20 +2,25 @@ import { provide } from 'vue'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, userEvent, within } from 'storybook/test'
 import SettingsPage from '@/pages/settings/index.vue'
+import { sessionInjectionKey, type SessionStore } from '@/composables/shared/session/useSession'
 import { backupInjectionKey, type Backup, type ImportParseResult } from '@/storage/backup'
 import { storybookRouter as router } from '@/stories/router'
-import { makeBackup, makeSession } from '@/stories/session'
+import { makeBackup, makeSession, makeSessionStore } from '@/stories/session'
 
 // 各 story 共通の loader。設定画面は route を読まないが、戻る導線が router に依存するため実ルートへ置く。
-// Import の検証結果は fake が返すものが唯一のソースなので、story ごとに parsed を差し替える
+// Import の検証結果は fake が返すものが唯一のソースなので、story ごとに parsed を差し替える。
+// session store は設定画面が描画しないが、Import の確定で破棄されることを Behavior が見る。
+// 設定画面はホームからしか開けず、実行中セッションが残っている場合は必ず離脱後（終端済み）になる
 function loadSettingsPage(parsed?: ImportParseResult) {
   return async () => {
     await router.push('/settings')
-    return { backup: makeBackup(parsed) }
+    const sessionStore = await makeSessionStore({ completedReps: [8] })
+    sessionStore.leave()
+    return { backup: makeBackup(parsed), sessionStore }
   }
 }
 
-// loader の戻りは型が失われるため、取り出しとキャストをここ 1 箇所に閉じる
+// loader の戻りは型が失われるため、backup の取り出しとキャストをここに閉じる
 function backupOf(loaded: Record<string, unknown>): Backup {
   return loaded.backup as Backup
 }
@@ -49,7 +54,7 @@ const meta: Meta<typeof SettingsPage> = {
     docs: {
       description: {
         component:
-          '設定画面。データ操作（Export / Import）と Version 表示だけを置く（トレーニング挙動を変える設定は持たない）。Export は全セッションの envelope JSON をダウンロードし、Import はファイルの検証を通ったあと件数の確認ダイアログを経て全データを置き換える。検証エラーと置換完了はどちらも AlertDialog で伝える。データ源は provide された backup なので、stories は fake を provide して検証結果を再現する。',
+          '設定画面。データ操作（Export / Import）と Version 表示だけを置く（トレーニング挙動を変える設定は持たない）。Export は全セッションの envelope JSON をダウンロードし、Import はファイルの検証を通ったあと件数の確認ダイアログを経て全データを置き換える。置換の確定ではメモリ上の実行中セッションも破棄する。検証エラーと置換完了はどちらも AlertDialog で伝える。データ源は provide された backup なので、stories は fake を provide して検証結果を再現する。',
       },
     },
   },
@@ -57,6 +62,7 @@ const meta: Meta<typeof SettingsPage> = {
     (_story, context) => ({
       setup() {
         provide(backupInjectionKey, backupOf(context.loaded))
+        provide(sessionInjectionKey, context.loaded.sessionStore as SessionStore)
       },
       template: '<story />',
     }),
@@ -126,9 +132,11 @@ export const Behavior: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const backup = backupOf(loaded)
+    const store = loaded.sessionStore as SessionStore
 
     // 見出しがセクションのアクセシブルネームに配線されている
     await expect(canvas.getByRole('region', { name: 'DATA' })).toBeVisible()
+    await expect(canvas.getByRole('region', { name: 'ABOUT' })).toBeVisible()
     // MIME が割り当てられない環境でも Export ファイルを選べるよう拡張子も持たせている
     await expect(fileInputOf(canvasElement)).toHaveAttribute('accept', 'application/json,.json')
 
@@ -157,10 +165,15 @@ export const Behavior: Story = {
 
     // 同じファイルを選び直せる（input の選択をリセットしている）ことも同時に確認する
     await selectFile(canvasElement)
+    await expect(store.session.value).toBeDefined()
     await userEvent.click(await canvas.findByRole('button', { name: '置き換える' }))
 
     await expect(await canvas.findByText('2 件のセッションを読み込みました')).toBeVisible()
     await expect(backup.replaceAll).toHaveBeenCalledOnce()
+    // 置換の確定でメモリ上の実行中セッションも捨てている
+    await expect(store.session.value).toBeUndefined()
+    // 確定でも確認ダイアログは閉じる（完了モーダルの裏に残さない）
+    await expect(canvas.queryByText('2 件のセッションを置き換えますか？')).not.toBeInTheDocument()
 
     await userEvent.click(canvas.getByRole('button', { name: '閉じる' }))
     await expect(canvas.queryByText('2 件のセッションを読み込みました')).not.toBeInTheDocument()

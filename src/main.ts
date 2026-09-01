@@ -18,7 +18,8 @@ import '@/styles/tokens.css'
 import '@/styles/global.css'
 
 // 実行中セッションの単一インスタンス。router のセッションガードとコンポーネントツリー
-//（training / interval / result が inject）の両方から同じものを参照するため、ここで生成して配る
+//（セッションフローの各画面と、Import で破棄する設定画面が inject）の両方から同じものを
+// 参照するため、ここで生成して配る
 //（Pinia は導入しない・規約 docs/conventions.md「状態管理」）。
 const session = useSession()
 const router = createAppRouter(session)

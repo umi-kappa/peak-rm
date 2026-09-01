@@ -20,7 +20,8 @@ export type SessionDeps = {
  * 実行中セッション 1 つの状態機械と Dexie 増分保存を束ねるヘッドレス層。
  * 計算ルール（1RM 等）は core の純関数に委ね、ここでは状態遷移と永続化の配線だけを担う。
  * main.ts が単一インスタンスを生成して router のセッションガードへ渡しつつ app.provide し、
- * training / interval / result が inject で共有する。
+ * セッションフローの各画面（menu / training / interval / result）と、Import で破棄する設定画面が
+ * inject で共有する。
  * deps は通常省略し、本番の sessionRepo・実時計・実 UUID を使う。テストでのみ fake repo や固定の now / createId を渡す。
  */
 export function useSession(deps: SessionDeps = { sessionRepo }) {
@@ -114,6 +115,13 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     phase.value = 'done'
   }
 
+  function discard() {
+    // Import の全置換（backup.replaceAll）で DB から消えた id を指し続けないよう、
+    // 実行中セッションを丸ごと捨てる。leave() と違い session データも残さない
+    session.value = undefined
+    phase.value = 'done'
+  }
+
   // 完了済みセット 1 件のフィールド（実績回数・メモ）を更新し、results 全体を再保存する
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     const current = session.value
@@ -143,6 +151,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     nextSet,
     abort,
     leave,
+    discard,
     patchResultAt,
     editCurrentReps,
   }

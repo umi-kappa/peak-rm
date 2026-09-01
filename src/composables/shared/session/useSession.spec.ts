@@ -14,15 +14,17 @@ type RepoCall =
   | { method: 'insert'; session: Session }
   | { method: 'patchResults'; id: string; results: SetResult[] }
 
+// 記録の前に structuredClone を通し、実 Dexie と同じ構造化複製の制約を fake にも課す。
+// session を deep proxy で包む退行（shallowRef → ref）が入れば、実 DB と同じく DataCloneError で落ちる
 function createFakeRepo() {
   const calls: RepoCall[] = []
   return {
     calls,
     insert: async (session: Session) => {
-      calls.push({ method: 'insert', session })
+      calls.push({ method: 'insert', session: structuredClone(session) })
     },
     patchResults: async (id: string, results: SetResult[]) => {
-      calls.push({ method: 'patchResults', id, results })
+      calls.push({ method: 'patchResults', id, results: structuredClone(results) })
     },
   }
 }
@@ -208,6 +210,26 @@ describe('useSession', () => {
     expect(repo.calls).toHaveLength(0)
   })
 
+  test('discard は interval 中のセッションを session データごと捨てて done にする（追加の永続化はしない）', async () => {
+    const { repo, session } = setup()
+    session.start(menu({ sets: 3 }))
+    await session.completeSet()
+    const callsBefore = repo.calls.length
+    session.discard()
+    expect(session.phase.value).toBe('done')
+    expect(session.session.value).toBeUndefined()
+    expect(repo.calls).toHaveLength(callsBefore)
+  })
+
+  test('discard は leave が残した session データも捨てる（Import 確定の経路）', async () => {
+    const { session } = setup()
+    session.start(menu({ sets: 3 }))
+    await session.completeSet()
+    session.leave()
+    session.discard()
+    expect(session.session.value).toBeUndefined()
+  })
+
   test('completeSet の await 中に leave が割り込んでも done を interval で上書きしない', async () => {
     const repo = createFakeRepo()
     // 初回セット完了の insert を手動解決にして、永続化 I/O 中の離脱
@@ -218,7 +240,7 @@ describe('useSession', () => {
       insert: (session: Session) =>
         new Promise<void>((resolve) => {
           releaseInsert = () => {
-            repo.calls.push({ method: 'insert', session })
+            repo.calls.push({ method: 'insert', session: structuredClone(session) })
             resolve()
           }
         }),

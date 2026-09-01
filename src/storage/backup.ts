@@ -165,6 +165,8 @@ function parseImport(text: string): ImportParseResult {
 /**
  * 検証済みの sessions で全データを置き換える。
  * clear → bulkAdd を 1 トランザクションに包み、途中で失敗すれば全部ロールバックされる（atomic）。
+ * 呼び出し側は置換後に、メモリ上に残る実行中セッション（useSession）の破棄も担う。
+ * DB から消えた id を指したまま結果確認画面で編集されると保存に失敗するため（spec §7）。
  */
 async function replaceAll(sessions: Session[]): Promise<void> {
   await db.transaction('rw', db.sessions, async () => {

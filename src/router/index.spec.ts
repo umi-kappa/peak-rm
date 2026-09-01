@@ -111,7 +111,7 @@ test('履歴の種目切り替えは replace なので、戻るは切り替え�
   expect(router.currentRoute.value.name).toBe('home')
 })
 
-test('実行中セッションが無ければ training / interval へは入れずホームへ戻される', async () => {
+test('実行中セッションが終端していれば training / interval へは入れずホームへ戻される', async () => {
   const { session } = createFakeSession('done')
   const router = createAppRouter(session, createMemoryHistory())
   await router.push({ name: 'home' })
@@ -123,7 +123,7 @@ test('実行中セッションが無ければ training / interval へは入れ�
   expect(router.currentRoute.value.name).toBe('home')
 })
 
-test('実行中セッションが無くても result へは入れる（履歴詳細から開くため）', async () => {
+test('実行中セッションが終端していても result へは入れる（履歴詳細から開くため）', async () => {
   const { session } = createFakeSession('done')
   const router = createAppRouter(session, createMemoryHistory())
   await router.push({ name: 'home' })
