@@ -84,13 +84,15 @@ const DesignTokens = () => {
         }}>Colors</div>
 
         <ColorGroup title="Monotone (dark → light)" items={[
-          ['bg',       '#0a0a0b', 'deepest · phone bg'],
-          ['surface',  '#141416', 'card surface'],
-          ['lineSoft', '#1f1f22', 'subtle divider · card hover / press surface'],
-          ['line',     '#2a2a2e', 'visible border · button / tab hover'],
-          ['fg3',      '#807e78', 'tertiary text · captions, units'],
-          ['fg2',      '#bab7b0', 'secondary text'],
-          ['fg',       '#f4f1ea', 'primary text · warm off-white'],
+          ['bg',         '#0a0a0b', 'deepest · phone bg'],
+          ['surfaceDim', '#101011', 'upcoming (pending) set surface'],
+          ['surface',    '#141416', 'card surface'],
+          ['lineDim',    '#161618', 'upcoming (pending) set border'],
+          ['lineSoft',   '#1f1f22', 'subtle divider · card hover / press surface'],
+          ['line',       '#2a2a2e', 'visible border · button / tab hover'],
+          ['fg3',        '#807e78', 'tertiary text · captions, units'],
+          ['fg2',        '#bab7b0', 'secondary text'],
+          ['fg',         '#f4f1ea', 'primary text · warm off-white'],
         ]} />
 
         <div>
@@ -150,7 +152,7 @@ const DesignTokens = () => {
         <div style={{ fontSize: 12, color: C.fg3, lineHeight: 1.5, marginBottom: 8 }}>
           覚え方: <strong style={{ color: C.fg2 }}>数字は bold ・ sans タイトルは semibold ・ それ以外は regular</strong>
         </div>
-        <WeightRow weight={W.regular}  name="regular"  use="body / 行ラベル / メモ / Label / Unit / 日付軸 / pending state" />
+        <WeightRow weight={W.regular}  name="regular"  use="body / 行ラベル / メモ / Label / Unit / 日付軸" />
         <WeightRow weight={W.semibold} name="semibold" use="sans タイトル (card / AppBar / modal) ・ × 8 reps ・ secondary button caps" />
         <WeightRow weight={W.bold}     name="bold"     use="すべての数字 ・ brand ・ primary button caps ・ badge ・ active state" />
       </div>

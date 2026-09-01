@@ -9,13 +9,15 @@ const FONT_MONO = 'ui-monospace, Menlo, Consolas, monospace';
 
 // Base dark palette · monotone scale (dark → light)
 const C = {
-  bg:       '#0a0a0b',         // deepest · phone bg
-  surface:  '#141416',         // card surface
-  lineSoft: '#1f1f22',         // subtle divider · card hover / press surface
-  line:     '#2a2a2e',         // visible border · button / tab hover
-  fg3:      '#807e78',         // tertiary text · captions, units
-  fg2:      '#bab7b0',         // secondary text
-  fg:       '#f4f1ea',         // primary text · warm off-white
+  bg:         '#0a0a0b',       // deepest · phone bg
+  surfaceDim: '#101011',       // upcoming (pending) set surface
+  surface:    '#141416',       // card surface
+  lineDim:    '#161618',       // upcoming (pending) set border
+  lineSoft:   '#1f1f22',       // subtle divider · card hover / press surface
+  line:       '#2a2a2e',       // visible border · button / tab hover
+  fg3:        '#807e78',       // tertiary text · captions, units
+  fg2:        '#bab7b0',       // secondary text
+  fg:         '#f4f1ea',       // primary text · warm off-white
 };
 
 // PhoneFrame — artboard only (no device chrome), iOS-like status bar
