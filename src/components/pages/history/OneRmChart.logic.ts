@@ -27,11 +27,11 @@ const HELPER_DASH = [2, 3]
 /**
  * 点を打つ領域の内側の余白（px）。canvas には軸も目盛も無いため、
  * 上は両端の値テキスト、下は baseline とその下の余白、左右は点の半径を逃がす分だけ取る。
- * OneRmChart.vue の高さ 118 に対して点の帯が 52 になり、デザイン正本の chart card と同じ比率になる。
+ * OneRmChart.vue の高さ 118 に対して点の帯は 52 になる。
  */
 const CHART_PADDING = { top: 32, right: 6, bottom: 34, left: 6 }
 
-/** baseline は最下点のさらに下に引く（デザイン正本の chart card と同じ間隔） */
+/** baseline は最下点のさらに下に引く（最下点が線に重なって潰れないための間隔） */
 const BASELINE_OFFSET = 17
 
 /** 点の中心から、その上に置く値テキストのベースラインまでの距離（px） */
