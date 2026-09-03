@@ -68,8 +68,6 @@ UI コンポーネントは Storybook でカタログ化し、`main` への push
 | [docs/design/README.md](docs/design/README.md) | デザイントークン（色・タイポグラフィ・スペーシング）・画面リファレンス・トーンガイド       |
 | [AGENTS.md](AGENTS.md)                         | AI コーディングエージェント向けのリポジトリガイド                                          |
 
-`docs/design/preview.html` をブラウザで開くと、全画面を 1 枚のキャンバスに並べた HTML プロトタイプを閲覧できる。
-
 ## ディレクトリ構成
 
 `src/` は責務で分割している。各レイヤは **画面専用（`pages/<画面>/`）** と **横断（`shared/`）** で分岐する。

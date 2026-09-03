@@ -231,7 +231,7 @@ onScopeDispose(audioCue.stop)
   font-weight: var(--font-weight-bold);
 }
 
-/* 経過割合の hairline。装飾ではなく経過時間の受動的な可視化 */
+/* 経過割合の progress bar。装飾ではなく経過時間の受動的な可視化 */
 .track {
   width: 100%;
   height: 4px;

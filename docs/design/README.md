@@ -1,38 +1,24 @@
 # Design
 
-PeakRM のビジュアルデザイン成果物。機能仕様とプロダクトコンセプトの実装指針は `../spec.md` を参照。
-
-## ファイル構成
-
-| パス | 役割 |
-| --- | --- |
-| `README.md` (このファイル) | デザイントークン仕様 / 画面リスト / 実装ガイド |
-| `preview.html` | キャンバス上に全画面を並べた閲覧用 HTML プロトタイプ |
-| `source/` | プロトタイプの React/JSX ソース (実装時は Vue に翻訳) |
-
-ブラウザで `preview.html` を開けば、すべての画面を 1 枚のキャンバスで横並びに閲覧できる。pan/zoom で詳細確認、各画面ヘッダの "Focus" ボタンでフルスクリーン拡大が可能。
+PeakRM のデザインリファレンス (デザイントークン・画面構造・トーン)。機能仕様とプロダクトコンセプトの実装指針は `../spec.md` を参照。
 
 ## このデザインについて
 
-このフォルダ配下の HTML / JSX は **デザインリファレンス** で、HTML プロトタイプとして「見た目と振る舞いの意図」を示すもの。**プロダクションコードとして直接コピーしない。**
-
-実装タスクは、これらのデザインを `../spec.md`「技術スタック」指定の Vue 3 + Vite + TypeScript、scoped CSS で再実装すること。Tailwind は使わない。
-
-JSX 側は React で書かれているが、これは見た目の意図を示すための実装媒体。Vue へ翻訳する際は、コンポーネント境界よりも **トークン / スタイル / レイアウト値** を写し取ることを優先する。
+この README がデザインの上流正本で、ここに書かれたトークンとレイアウト値を `../spec.md`「技術スタック」指定の Vue 3 + Vite + TypeScript、scoped CSS で実装する。Tailwind は使わない。コンポーネント境界は実装側の責務分割に従い、README の語彙 (Card / AppBar 等) を実装名に揃えることはしない (`../conventions.md`「デザイントークン」)。
 
 ## Fidelity
 
-**High-fidelity**: 色・タイポグラフィ・スペーシング・インタラクションすべて確定済み。実装時はピクセル単位で再現すること。デザイントークン (色・フォントサイズ・ウエイト・スペース) は厳密に従う。
+**High-fidelity**: 色・タイポグラフィ・スペーシング・インタラクションすべて確定済み。実装はピクセル単位で一致させ、変更時も同じ精度で揃える。デザイントークン (色・フォントサイズ・ウエイト・スペース) には厳密に従い、独自の値や中間サイズを足さない。ここに載っていない値の扱いは `../conventions.md`「デザイントークン」を参照。
 
 ---
 
 ## Design Tokens
 
-基本トークン（色スケール・タイポグラフィ・スペーシング等）は `source/tokens.jsx` 内に React 実装として定義済み（accent と motion 系は例外。後述の各節を参照）。実装時は CSS カスタムプロパティ or TS 定数として落とし込む。
+以下の各表がトークン値の正本。実装は `src/styles/tokens.css` の CSS カスタムプロパティとして持つ（命名規則は `../conventions.md`「デザイントークン」）。
 
 ### Color (Dark mode・モノトーン + シアンアクセント)
 
-| Token | Hex | 用途 |
+| Token | 値 | 用途 |
 | --- | --- | --- |
 | `bg` | `#0a0a0b` | 画面背景 (最暗) |
 | `surfaceDim` | `#101011` | 予告 (pending) セットの面 |
@@ -44,6 +30,7 @@ JSX 側は React で書かれているが、これは見た目の意図を示す
 | `fg2` | `#bab7b0` | 2次テキスト |
 | `fg` | `#f4f1ea` | 主要テキスト (warm off-white) |
 | `accent` | `#22e8ff` | シアン: 1RM・現在重量・active timer・primary CTA・glow |
+| `backdrop` | `rgba(0, 0, 0, 0.6)` | モーダルの暗幕 (黒 60%) |
 
 テキスト 3 段の階調は WCAG AA (通常文字 4.5:1) から決めている。`fg3` は不透明な常設面 (`bg` / `surfaceDim` / `surface`) で AA を満たす下限 (`surface` で 4.53:1)、`fg2` は `fg3` と `fg` の間隔を均す位置に置く。`fg3` を上げすぎると `fg2` との差が潰れ、階調が 3 段として読めなくなるため下限に留める。予告 (pending) の減衰に `opacity` を使わないのはこの下限を守るためで、面ごと薄くするとテキストも一緒に落ちて合成後 2.15:1 になる。面と枠線だけを `surfaceDim` / `lineDim` へ落とし、テキストは `fg3` のまま置く (`surfaceDim` で 4.69:1)。
 
@@ -73,7 +60,7 @@ text-shadow:
 - すべて偶数のみ。**10 / 11 / 13 px などは禁止**
 - 半端なサイズ (16 / 24 / 28 等) は作らない
 - 1 画面に `display` は最大 1 つだけ
-- 行内補助単位 (kg, reps) は常に `caption`
+- 行内補助単位 (kg, reps) は常に `caption`。例外は Training の `display` ヒーローに添える `KG` だけで、`body` (14) にする
 
 ### Font Family
 
@@ -110,7 +97,7 @@ text-shadow:
 | 16 | card padding・section gap |
 | 20 | ScreenBody gap・本文 padding-y |
 | 24 | screen pad (画面外周)・stage gap |
-| 32 | interval timeline の memo 字下げ・design tokens card outer pad (design-doc) |
+| 32 | interval timeline の memo 字下げ |
 
 ### Radius
 
@@ -126,13 +113,15 @@ text-shadow:
 | `easing-ease-out-expo` | `cubic-bezier(0.16, 1, 0.3, 1)` | 変化が前半に集中する ease-out。transition の既定イージング |
 | `transition` | `300ms var(--easing-ease-out-expo)` | ボタン等の状態変化 (hover / active) の既定 transition |
 
-`source/tokens.jsx` には未定義（実装側 `tokens.css` 起点のトークン）。装飾的なアニメーションには使わず、状態変化のフィードバックのみに使う（トーンガイド準拠）。
+装飾的なアニメーションには使わず、状態変化のフィードバックのみに使う（トーンガイド準拠）。
 
 ### Tap Target
 
-最小 **44 px** (iOS HIG)。全ボタン・stepper・タブで遵守。
+最小 **44 px** (iOS HIG)。全ボタン・stepper で遵守。
 
-例外: `IconButton` は `source/primitives.jsx` のデザイン値どおり 40 × 40 px とする（AppBar の補助操作用で、隣接要素と十分な間隔を取って配置する前提）。
+例外: `IconButton` は 40 × 40 px とする（AppBar の戻る・補助操作、Home のブランド行の Settings、インターバルの通知音の停止に使う。いずれも隣接要素と十分な間隔を取って単独で置く前提。ただし通知音の停止だけは鳴っている最中に押す操作で、この前提が弱い）。
+
+例外: History の種目タブは高さ 33 px (padding 8)。padding を一律に上げて 44 px にすると最長ラベル `BENCH PRESS` が折り返す (§6) ため、高さは上げずに 3 等分した横幅で当たり判定を確保する。
 
 ### Line Height
 
@@ -144,16 +133,18 @@ text-shadow:
 
 ## Screens
 
-PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent)。ステータスバー高 44 px、ホームインジケータ高 34 px は OS ネイティブに任せる前提だがプロトタイプ上は描画。
+画面サイズは 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent)。ステータスバー高 44 px、ホームインジケータ高 34 px は OS ネイティブに任せる (実装は safe-area に委ねる)。
 
-各画面の詳細レイアウト・コピー・状態遷移は `source/screens-min.jsx` を参照。以下は構造のサマリ。
+以下は各画面の構造のサマリ。見出しの `M_*` は画面の識別子 (`M_Home` = Home 画面)。ここに書かれていない詳細値 (個別画面の余白・幅など) は実装 (`src/pages/**/index.vue` と使用コンポーネント) が正本で、値の理由はソースコメントに残す。
+
+AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevron left 24)、その右にタイトル (mono title bold, uppercase) を左寄せ。右端に画面ごとの補助操作 (Result のゴミ箱など) を置く。例外は Result で、セッション経由なら戻る・補助操作とも置かない (§5)。
 
 ### 1. Home (`M_Home`)
 
 - ブランド行: 左に `PeakRM` (sans title bold) + タグライン "Train the plan. Track your peak." (caption fg3)、右端に Settings (Gear) の IconButton
 - 3 つの種目カード (Bench Press / Squat / Deadlift) を縦に配置。各カード:
   - 種目名 (sans title semibold, uppercase)
-  - 左: `EST. 1RM` Label + 推定1RM 数値 (mono stat bold, アクセント色 + glow)。未記録時は `—` (fg3)
+  - 左: `EST. 1RM` Label + 推定1RM 数値 (mono stat bold, アクセント色 + glow) + `KG` unit。未記録時は `—` (fg3)
   - 右: `LAST` Label + 重量 (mono body bold, `KG`) + reps (mono caption regular, `/` 連結の `8/8/7` 形式 + `REPS`)
   - 未記録時は `NO LOG` (fg3)
 - 下部: History 行 (アイコン + ラベル + 右シェブロン) を 1 行
@@ -161,63 +152,64 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### 2. Menu (`M_Menu`)
 
-- AppBar: 左 ← / 中央 "Bench Press"
-- LP (Linear Progression) アクセント行: `Last session completed!` (mono caption regular, accent) + `147.75 → 150.25 kg` (前回重量 → 今回重量、選択値は accent + bold)
-- 4 つの Stepper 行: Weight (kg) / Reps / Sets / Interval (sec)
+- AppBar: "BENCH PRESS"
+- WEIGHT セクション: `WEIGHT` Label + カード内に Stepper (large) + `STEP · 0.25 KG` Label
+  - 直下に LP (Linear Progression) 行 (直前セッションが完遂のときだけ): Trend アイコン + `LINEAR PROGRESSION` Label + `LAST SESSION COMPLETED!` (mono caption regular, fg) + `147.75 → 150.25 KG` (前回重量 → 今回重量、今回重量だけ accent + bold)
+- PLAN セクション: `PLAN` Label + カード 3 枚 (Reps / Sets / Interval)
   - 各行: ラベル (sans body regular, uppercase) + Stepper (左 [−], 中央 値, 右 [+])
-  - Stepper 値は mono stat bold
-  - Stepper button は 44 × 44 px, radius 4, border `line` 色
+- Stepper 値は mono bold。Weight だけ `stat` (32) で立て、Reps / Sets / Interval は `title` (20)。値の右に unit (`KG` / `REPS` / `SETS` / `SEC`)
+- Stepper button は 44 × 44 px, radius 4, border `line` 色
 - Primary CTA: 画面下に `START SESSION` (caps mono bold, fill accent)
 
 ### 3. Training (`M_TrainingSet`)
 
-- AppBar: 左 ← / 中央 "Bench Press"
-- Set position row: `Set` Label + `2/4` (final 時は `Final set` ＋ accent + glow)
-- ヒーロー数値: `82.5` (mono display bold, accent, glow) + `kg` unit
-- 副情報: `× 8` (mono title semibold) + `reps` unit
-- 中央ラベル: `Reps done` (sans body regular)
+- AppBar: "BENCH PRESS"
+- Set position row: `SET` Label + `2/4` (final 時は `FINAL SET` ＋ accent + glow)
+- ヒーロー数値: `82.5` (mono display bold, accent, glow) + `KG` unit
+- 副情報: `× 8` (mono title semibold) + `REPS` unit
+- 中央ラベル: `REPS DONE` (sans body regular)
 - Stepper (large): 実績回数を 0〜99 で調整可能（上限は安全弁、`spec.md` §3）
-- Primary CTA: `COMPLETE SET` (caps mono bold, fill accent)
+- Primary CTA: `COMPLETE SET` (caps mono bold, fill accent)。最終セットでは `FINISH SESSION`
 
 **注意:** この画面に中断ボタンは無い (`spec.md` §3)。中断はインターバル画面から。
 
 ### 4. Interval (`M_Interval`)
 
-- AppBar: 左 ← / 中央 "Bench Press"
-- 上部サマリ: `82.5 kg · 8 reps · 4 sets` (mono body bold + Unit regular)
+- AppBar: "BENCH PRESS"
+- 上部サマリ: `82.5 KG · 8 REPS · 4 SETS` (mono body bold + Unit regular)
+- ヘッダー行: 左に `INTERVAL` Label、右に `TARGET 1:30` Label (space-between)
 - Timer ヒーロー: `0:47` (mono hero bold, accent + glow) + `.32` ms 部 (mono body bold, fg3)
-- Target 行: `Target 1:30` Label
-- Progress hairline (1 px line)
-- セット履歴タイムライン: 完了セット (チェック + 重量 + reps + メモ)、現セット (next badge, ステッパー), pending (面 `surfaceDim` / 枠線 `lineDim`, fg3)
+- Progress bar (高さ 4 px, radius 4。track `line`, fill accent)
+- `SETS` Label + セット履歴タイムライン。各行の先頭にセット番号を置き、状態で右側が変わる: 完了セット (実績 reps + `REPS`、実績 0 回は代わりに `SKIPPED` (caption fg3) + Edit (✎) 12 + メモ)、現セット (`NEXT` Label + 目標 reps + `REPS`), pending (面 `surfaceDim` / 枠線 `lineDim`, fg3)
 - 各完了セットの行: タップでセット編集モーダル (重量 read-only + 実績ステッパー + メモ)
-- 下部: `Next set` (primary, fill accent) と `End session` (secondary, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
+- 下部: `NEXT SET` (primary, fill accent) と `END SESSION` (secondary, 通常色 = `line` border / `fg2` text。中断/終了の動線。danger 配色は使わない)
 
 ### 5. Result (`M_Result`)
 
 - AppBar: 種目名タイトル。履歴経由なら左 ← と右にゴミ箱 (削除)、それ以外はどちらも無し
 - 日付 (履歴経由のみ。mono body bold, `2025/05/12` 形式)
-- Prescription summary: `82.5 kg · 8 reps · 3 sets`
+- Prescription summary: `82.5 KG · 8 REPS · 3 SETS`
 - Status marker (3 状態・履歴経由でも表示): `SESSION ABORTED` / `SESSION EXECUTED` (完走・目標未達。fg2, no glow) / `SESSION COMPLETE` (完遂。check + accent + glow)
-- ヒーロー: `Est. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す (glow なし。Home / History と共通の規則)
-- Delta badge (前回の完遂 (`SESSION COMPLETE`) セッションとの差): 上下矢印 + `+1.5 kg` (mono body bold, pill 999)
-- Next weight preview (LP triggered・セッション経由のみ): `Linear Progression` 行で `82.5 → 85.0 kg` を提示
-- セットタイムライン: カード全体のタップで編集モーダル (右端の ✎ は目印。履歴詳細でも表示され、実績 read-only でもメモは編集可)。`Add note` プロンプトはインターバル中のみで、この画面では未入力メモの行を出さない
+- ヒーロー: `EST. 1RM` Label + `99.0` (mono hero bold, accent + glow) + `KG` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す (glow なし。Home / History と共通の規則)
+- Delta badge (前回の完遂 (`SESSION COMPLETE`) セッションとの差): 上下矢印 + `+1.5 KG` (mono body bold, pill 999)
+- Next weight preview (LP triggered・セッション経由のみ): `LINEAR PROGRESSION` 行で `82.5 → 85.0 KG` を提示
+- `SETS` Label + セットタイムライン: カード全体のタップで編集モーダル (右端の ✎ は目印。履歴詳細でも表示され、実績 read-only でもメモは編集可)。`ADD NOTE` プロンプトはインターバル中のみで、この画面では未入力メモの行を出さない
 - 下部:
   - セッション経由 (完了・中断直後) なら `FINISH` (primary)
   - 履歴経由なら下部ボタン無し
 
 ### 6. History (`M_History`)
 
-- AppBar: 中央 "History"
+- AppBar: "HISTORY"
 - 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)
 - Est. 1RM カード (surface, `lineSoft` 枠, radius 4, padding 16)
-  - ヘッダー左: `Est. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `kg` unit
-  - ヘッダー右: `Last 8 sessions` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `kg` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
+  - ヘッダー左: `EST. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `KG` unit
+  - ヘッダー右: `LAST 8 SESSIONS` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `KG` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
   - 折れ線グラフ (高さ 118): `line` の baseline 1 本のみで grid・目盛は出さない。両端に破線の縦ヘルパー (`lineSoft`, dash `2 3`)。ヘッダー・グラフ・日付軸の間に余白は取らず、グラフ内部の padding が間隔を作る
   - パスは accent 2 px (round join / cap)。dot は中間が r2.5 (bg 塗り + fg 枠 1.5 px)、両端が r3.5 (accent 塗り + bg 枠)
   - 両端の点の**上に値テキスト** (mono 14 bold, accent。始点は左寄せ、終点は右寄せ)
   - 日付軸はグラフ下に**両端 2 つだけ** (mono caption fg3, `MM/DD`)
-- セッション行リスト: 日付 (mono body, fg2) + 推定 1RM (mono title bold + `kg` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す) + 詳細 (右寄せ 3 段。重量 + `kg` unit → 実績回数 `8/8/7` + `reps` unit (mono caption fg3) → ステータスバッジ)
+- セッション行リスト: 日付 (mono body, fg2) + 推定 1RM (mono title bold + `KG` unit。全セットスキップで算出できない場合は数値の代わりに `—` を fg3 で出す) + 詳細 (右寄せ 3 段。重量 + `KG` unit → 実績回数 `8/8/7` + `REPS` unit (mono caption fg3) → ステータスバッジ)
   - **行の日付・重量は regular**（トークンの「bold = すべての数字」の例外。行内で立てるのは推定 1RM だけ）。Home の LAST 列が重量を bold にするのは、カード内に他の数値が無く単独で読ませるため
 - ステータスバッジ (mono caption bold, uppercase。状態の区分は Result の Status marker と同じ 3 状態だが、階調は本画面独自 — Result は complete だけ accent で aborted / executed とも fg2): `COMPLETED` (accent) / `EXECUTED` (fg2) / `ABORTED` (fg3)。ステータスは実績から導出した結論なので、根拠 (実績回数) の直後に置く。完遂だけをアクセントで立て、他は本文より落とした階調にする
 - 選択種目に記録が無いときは、セッション行の代わりに `NO SESSIONS` (mono caption fg3) を 1 行。`SESSIONS` の見出しは残す (Home が `LAST` ラベルを残して `NO LOG` を出すのと同じ扱い)
@@ -225,20 +217,21 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### 7. Settings (`M_Settings`)
 
-- AppBar: 中央 "Settings"
-- セクション: Data
+- AppBar: "SETTINGS"
+- セクション: `DATA`
   - Export 行 ("Export" + 右端に `Download` アイコン fg2)
   - Import 行 ("Import" + 右端に `Upload` アイコン fg2)
-- セクション: About
+- セクション: `ABOUT`
   - Version 行 (label + `1.0.0` mono body)
 - 説明テキスト (sans caption fg3, 1.5 line-height)
 
 ### 8. Modal (`M_Modal` — セット編集)
 
 - フルスクリーンオーバーレイ + 中央モーダル
-- 背景は `M_Interval` の薄表示 (opacity 0.18)
+- 背景は暗幕 (`backdrop`)。モーダル背後の画面は暗幕越しに見える
+- **影は使わない**。背景からの分離は枠線 (`line`) と暗幕が担う (装飾的な影はトーンガイドに反する)
 - モーダル内容:
-  - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `kg` + Set 番号 (mono stat bold)
+  - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `KG` + `SET` unit + Set 番号 (mono stat bold)
   - 実績回数 Stepper (large)
   - メモテキストエリア (min-height 64 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
   - 下部: `SAVE` (primary, fill accent)
@@ -251,7 +244,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 ### グローバル
 
 - すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」(`spec.md` §4)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
-- タップ feedback: button・stepper はアクティブ時に 50 ms 程度の `opacity: 0.7` フラッシュで十分
+- タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面)。`opacity` は使わない
 - アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る (`../spec.md`「トーンガイド」)
 
 ### Timer (`M_Interval`)
@@ -272,7 +265,7 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 ### Linear Progression アクセント (M_Menu)
 
-- 直前セッションが完遂していれば `Last session completed!` バナー + 重量 diff 表示
+- 直前セッションが完遂していれば `LAST SESSION COMPLETED!` バナー + 重量 diff 表示
 - 増量幅: Bench `+2.5 kg` / Squat・Deadlift `+5 kg` (`spec.md` §2)
 
 ### Set Edit Modal (M_Modal)
@@ -285,30 +278,28 @@ PhoneFrame は 390 × 800 を想定 (iOS Safari / iPhone 13–15 mini-equivalent
 
 - アクセント色を使うすべての数字に neon glow (上記 CSS 参照)
 - mono 数字には常に `font-variant-numeric: tabular-nums` を指定 (Stepper 内で数値の位置がブレないため)
-- Unit ラベルは常に `text-transform: uppercase` + mono regular
+- Unit ラベルは常に大文字表記 + mono regular (`text-transform` ではなく文字列そのものを大文字で書く。`../conventions.md`「スタイル（CSS）」)
 
 ---
 
 ## Assets
 
-画面内では画像アセットを使用しない。操作アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行アイコン (行頭・行末とも) / 24 = 大型コントロール = stepper 大・AppBar 戻る・通知音の停止)。`source/icons.jsx` にすべて含まれる:
+画面内では画像アセットを使用しない。操作アイコンは SVG inline (24 px stroke based, `currentColor`)。表示サイズは 3 値に絞る (12 = 行内の差分 chevron・インラインマーカー / 16 = 行アイコン (行頭・行末とも) / 24 = 大型コントロール = stepper 大・`IconButton`)。使用するアイコン:
 
-- `Chevron` (right/left/up/down)
+- `Chevron` (right/left)
 - `Plus` / `Minus` (Stepper)
 - `Gear` (Settings)
 - `History`
 - `Edit` (✎)
 - `Trend`
-- `Arrow` (up/down/left/right)
+- `Arrow` (up/down)
 - `Download` / `Upload`
 - `Check`
-- `Dot`
 - `Note`
-- `Pause`
 - `Trash`
 - `VolumeX` (通知音の停止)
 
-stroke-width はデフォルト 1.6〜2.0。色は `currentColor` なので親要素の `color` プロパティで制御。
+stroke-width は 2。色は `currentColor` なので親要素の `color` プロパティで制御。
 
 ### PWA app icon
 
