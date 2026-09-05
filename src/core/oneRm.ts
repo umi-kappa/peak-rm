@@ -19,8 +19,10 @@ export function estimateOneRm(exercise: Exercise, weight: number, reps: number):
 }
 
 /**
- * 推定 1RM が算出できたか。sessionMaxOneRm は計算対象のセットが無いとき 0 を返すため、
- * 「0 = 不在」というセンチネル規則の判定はこの述語に集約する（表示・比較の各所で再判定しない）。
+ * 推定 1RM が算出できたか。sessionMaxOneRm は計算対象のセットが無いとき 0 を返し、
+ * 重量 0 kg（設定項目の下限）を完遂した場合も式の値が 0 になる。どちらも「算出できない」として
+ * `—` 表示・グラフ除外の扱いに寄せ、「0 = 不在」というセンチネル規則の判定はこの述語に集約する
+ * （表示・比較の各所で再判定しない）。
  */
 export function hasOneRm(oneRm: number): boolean {
   return oneRm > 0

@@ -2,7 +2,7 @@ import type { InjectionKey } from 'vue'
 
 import { isExercise } from '@/core/constants'
 import { localDayKey } from '@/core/localDay'
-import { MENU_MAX } from '@/core/menu'
+import { MENU_MAX, MENU_MIN } from '@/core/menu'
 import { db } from '@/storage/db'
 import type { Menu, Session, SetResult } from '@/core/types'
 
@@ -34,6 +34,11 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
 }
 
+/** unix ms の時刻として妥当か（正の整数）。[exercise+startedAt] index と履歴の日付表示に直接効く */
+function isTimestamp(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
 /** 回数・セット数・秒数のように 0 以上の整数で表す値か */
 function isCount(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0
@@ -53,10 +58,10 @@ function isMenu(value: unknown): value is Menu {
   if (!isRecord(value)) return false
   return (
     isExercise(value.exercise) &&
-    isNumberInRange(value.weight, 0, MENU_MAX.weight) &&
-    isCountInRange(value.reps, 1, MENU_MAX.reps) &&
-    isCountInRange(value.sets, 1, MENU_MAX.sets) &&
-    isCountInRange(value.intervalSec, 0, MENU_MAX.intervalSec)
+    isNumberInRange(value.weight, MENU_MIN.weight, MENU_MAX.weight) &&
+    isCountInRange(value.reps, MENU_MIN.reps, MENU_MAX.reps) &&
+    isCountInRange(value.sets, MENU_MIN.sets, MENU_MAX.sets) &&
+    isCountInRange(value.intervalSec, MENU_MIN.intervalSec, MENU_MAX.intervalSec)
   )
 }
 
@@ -71,7 +76,7 @@ function isSession(value: unknown): value is Session {
     typeof value.id === 'string' &&
     value.id.length > 0 &&
     isExercise(value.exercise) &&
-    isFiniteNumber(value.startedAt) &&
+    isTimestamp(value.startedAt) &&
     isMenu(value.menu) &&
     // 1 セッション = 1 種目。アプリは useSession.start が exercise: menu.exercise で書くため
     // 常に一致するが、Import だけがこの不変条件を破れる

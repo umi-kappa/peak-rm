@@ -50,8 +50,8 @@ export function buildOneRmChartData(
     .sort((a, b) => a.startedAt - b.startedAt)
     .flatMap((session) => {
       const oneRm = sessionMaxOneRm(session)
-      // 全セットスキップの日は推定 1RM が算出できない（0 は不在のセンチネル）。
-      // 0 を打つと実在しない谷が描かれるため、その日は点にしない
+      // 推定 1RM が 0（対象セット無し = 全セットスキップ、または重量 0）の日は算出できない扱い
+      // （0 は不在のセンチネル）。0 を打つと実在しない谷が描かれるため、その日は点にしない
       return hasOneRm(oneRm) ? [{ oneRm, dayLabel: formatLocalMonthDay(session.startedAt) }] : []
     })
     .slice(-CHART_MAX_POINTS)

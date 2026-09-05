@@ -179,7 +179,7 @@ function onClick() {
 /* 編集可能の目印は右端に寄せ、行のベースライン揃えには参加せず上下センターに置く */
 .edit-icon {
   align-self: center;
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--color-text-tertiary);
 }
 
@@ -192,7 +192,7 @@ function onClick() {
 
 /* 未実施セットは目標回数を右端に寄せる（実績の桁と揃えず「まだ予定」であることを示す） */
 .target {
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--color-text-tertiary);
 }
 
@@ -202,14 +202,14 @@ function onClick() {
   display: flex;
   align-items: flex-start;
   gap: var(--space-8);
-  margin-top: var(--space-8);
-  padding-left: var(--space-32);
+  margin-block-start: var(--space-8);
+  padding-inline-start: var(--space-32);
   color: var(--color-text-secondary);
 }
 
 /* caption の行ボックス（12px × 1.4 ≒ 17px）の 1 行目にアイコン（12px）を光学的にセンタリングする */
 .memo-icon {
-  margin-top: var(--space-2);
+  margin-block-start: var(--space-2);
 }
 
 .memo-text,

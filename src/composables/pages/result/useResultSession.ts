@@ -37,8 +37,8 @@ export function useResultSession(
 
   /**
    * 非同期ロード（history origin のセッション本体と、両 origin の前回完遂セッション）。
-   * 画面が onMounted で呼ぶ。history origin で id 不正・削除済みのときだけ false を返し、
-   * 画面が履歴一覧へ逃がす（削除後のブラウザ戻り対策）。
+   * 画面が onMounted で呼ぶ。表示対象が無ければ false を返し、画面が origin 別の出口へ逃がす
+   * （history: id 不正・削除済み → 履歴一覧。session: Import 確定で実行中セッションが破棄済み → ホーム）。
    * 失敗（IndexedDB 例外）は catch せずエラー境界へ落とす
    */
   async function load(): Promise<boolean> {
@@ -48,7 +48,7 @@ export function useResultSession(
       loaded.value = found
     }
     const current = session.value
-    if (current === undefined) return true
+    if (current === undefined) return false
     prev.value = await repo.latestCompleteBefore(current.exercise, current.startedAt)
     return true
   }
@@ -87,8 +87,8 @@ export function useResultSession(
   // 編集ポリシーは下の保存規則（patchResultAt の history 分岐）と対でここが持ち、画面は配線だけにする
   const repsReadonly = origin === 'history'
 
-  // 実績・メモの編集。session origin は store へ委譲する。history origin（実績は repsReadonly で
-  // メモのみ編集可）は store を経由しないため、loaded と repo を自分で更新する
+  // 実績・メモの編集。session origin は store へ委譲する。history origin は store を経由しないため、
+  // loaded と repo を自分で更新する
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     if (origin === 'session') {
       await store.patchResultAt(index, patch)
@@ -97,7 +97,9 @@ export function useResultSession(
     const current = loaded.value
     if (current === undefined) return
     if (index < 0 || index >= current.results.length) return
-    const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
+    // 実績 read-only は UI（repsReadonly）だけに頼らず保存規則でも守る。patch からメモだけを採る
+    const memoPatch: Partial<SetResult> = patch.memo === undefined ? {} : { memo: patch.memo }
+    const results = current.results.map((r, i) => (i === index ? { ...r, ...memoPatch } : r))
     await repo.patchResults(current.id, results)
     loaded.value = { ...current, results }
   }

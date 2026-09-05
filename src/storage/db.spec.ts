@@ -17,6 +17,13 @@ describe('requestPersistentStorage', () => {
     await expect(requestPersistentStorage()).resolves.toBe(true)
   })
 
+  test('既に永続化済み（persisted が true）なら persist を要求せず true を返す', async () => {
+    const persist = vi.fn(() => Promise.resolve(true))
+    vi.stubGlobal('navigator', { storage: { persisted: () => Promise.resolve(true), persist } })
+    await expect(requestPersistentStorage()).resolves.toBe(true)
+    expect(persist).not.toHaveBeenCalled()
+  })
+
   test('persist が false を resolve（拒否）すれば false を返す', async () => {
     vi.stubGlobal('navigator', { storage: { persist: () => Promise.resolve(false) } })
     await expect(requestPersistentStorage()).resolves.toBe(false)

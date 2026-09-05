@@ -9,6 +9,14 @@ export const DEFAULT_MENU = {
   intervalSec: 90,
 } as const satisfies Omit<Menu, 'exercise'>
 
+// メニュー設定ステッパーの下限（spec §2「設定項目」表）。UI と Import 検証の両方がここを読む
+export const MENU_MIN = {
+  weight: 0,
+  reps: 1,
+  sets: 1,
+  intervalSec: 0,
+} as const satisfies Omit<Menu, 'exercise'>
+
 // メニュー設定ステッパーの上限。想定ユーザー向けの UX レンジではなく、現実的に
 // あり得ない値だけを弾く安全弁。表示桁数の MAX を基準に統一する（spec §2）
 export const MENU_MAX = {
@@ -36,9 +44,9 @@ export function resolveInitialMenu(
   exercise: Exercise,
   prevSession: Session | undefined,
 ): InitialMenu {
-  // exercise は直前セッションが無いときの共通初期値スタンプ専用。
-  // 直前セッションがあれば prevSession.menu.exercise が支配的で exercise は使われない。
-  const base: Menu = prevSession ? { ...prevSession.menu } : { exercise, ...DEFAULT_MENU }
+  // 種目は常に引数を勝たせる。呼び出し側は同一種目の直前セッションを渡す約束だが、
+  // 食い違ったときに prevSession.menu.exercise が静かに勝って別種目のメニューになるのを防ぐ
+  const base: Menu = prevSession ? { ...prevSession.menu, exercise } : { exercise, ...DEFAULT_MENU }
   const lpPreview = computeLpPreview(prevSession)
   if (lpPreview === undefined) return { menu: base }
   return { menu: { ...base, weight: lpPreview.to }, lpPreview }

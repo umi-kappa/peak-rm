@@ -59,6 +59,10 @@ describe('clamp', () => {
     expect(clamp(NaN)).toBe(0)
     expect(clamp(NaN, undefined, 10)).toBe(0)
   })
+
+  test('NaN を下限へ寄せた後も max を適用する', () => {
+    expect(clamp(NaN, undefined, -5)).toBe(-5)
+  })
 })
 
 describe('0.25 刻みの重量', () => {

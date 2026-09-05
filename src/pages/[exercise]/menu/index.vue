@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, Menu } from '@/core/types'
 import type { LpPreview } from '@/core/linearProgression'
 import { EXERCISE_LABELS, isExercise } from '@/core/constants'
-import { MENU_MAX, resolveInitialMenu } from '@/core/menu'
+import { MENU_MAX, MENU_MIN, resolveInitialMenu } from '@/core/menu'
 import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
@@ -103,7 +103,7 @@ onMounted(async () => {
               <NumberStepper
                 v-model="menu.reps"
                 label="REPS"
-                :min="1"
+                :min="MENU_MIN.reps"
                 :max="MENU_MAX.reps"
                 unit="REPS"
               />
@@ -117,7 +117,7 @@ onMounted(async () => {
               <NumberStepper
                 v-model="menu.sets"
                 label="SETS"
-                :min="1"
+                :min="MENU_MIN.sets"
                 :max="MENU_MAX.sets"
                 unit="SETS"
               />
@@ -132,7 +132,7 @@ onMounted(async () => {
                 v-model="menu.intervalSec"
                 label="INTERVAL"
                 :step="10"
-                :min="0"
+                :min="MENU_MIN.intervalSec"
                 :max="MENU_MAX.intervalSec"
                 unit="SEC"
               />

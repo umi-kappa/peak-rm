@@ -106,10 +106,12 @@ async function confirmDelete() {
   goBack()
 }
 
-// 履歴経由で id 不正・削除済み（削除後のブラウザ戻り等）は履歴一覧へ逃がす
+// 表示対象が無ければ origin 別の出口へ逃がす。履歴経由の id 不正・削除済み（削除後のブラウザ戻り等）は
+// 履歴一覧へ、トレーニング直後経由で実行中セッションが破棄済み（Import 確定後）なら FINISH と同じホームへ。
+// 本文も ← も出ない出口の無い画面を残さない
 async function initialize() {
   const found = await load()
-  if (!found) router.replace({ name: 'history' })
+  if (!found) router.replace({ name: isHistory ? 'history' : 'home' })
 }
 
 onMounted(initialize)

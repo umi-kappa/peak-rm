@@ -94,6 +94,11 @@ describe('session origin', () => {
     expect(result.delta.value).toBe(2)
   })
 
+  test('実行中セッションが無ければ（Import 確定で破棄済み）load は false を返す', async () => {
+    const result = useResultSession('session', undefined, makeDeps().deps)
+    await expect(result.load()).resolves.toBe(false)
+  })
+
   test('前回の完遂セッションが無ければ delta は undefined', async () => {
     const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
     const result = useResultSession('session', undefined, deps)
@@ -197,6 +202,21 @@ describe('history origin', () => {
       { actualReps: 8, memo: '' },
     ])
     expect(result.session.value?.results[1]?.memo).toBe('重かった')
+  })
+
+  test('patchResultAt は actualReps を落としてメモだけ保存する（実績 read-only を保存規則でも守る）', async () => {
+    const { deps, repo } = makeDeps({ stored: [stored] })
+    const result = useResultSession('history', 'past', deps)
+    await result.load()
+
+    await result.patchResultAt(1, { actualReps: 3, memo: '重かった' })
+
+    expect(repo.patchResults).toHaveBeenCalledWith('past', [
+      { actualReps: 8, memo: 'フォーム良し' },
+      { actualReps: 8, memo: '重かった' },
+      { actualReps: 8, memo: '' },
+    ])
+    expect(result.session.value?.results[1]?.actualReps).toBe(8)
   })
 
   test('remove は当該セッションの id で repo.remove へ委譲する', async () => {

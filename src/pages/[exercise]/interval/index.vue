@@ -190,7 +190,7 @@ onScopeDispose(audioCue.stop)
   flex-direction: column;
   align-items: center;
   gap: var(--space-12);
-  padding-bottom: var(--space-8);
+  padding-block-end: var(--space-8);
 }
 
 .timer-head {

@@ -285,6 +285,18 @@ describe('parseImport', () => {
     ).toBe('sessions[0] のデータが不正です')
   })
 
+  // startedAt は unix ms の正の整数。[exercise+startedAt] 複合 index と履歴の日付表示に直接効く
+  test.each([
+    { label: '0', startedAt: 0 },
+    { label: '負', startedAt: -1 },
+    { label: '小数', startedAt: 1000.5 },
+    { label: '文字列', startedAt: '1000' },
+  ])('startedAt が正の整数でないセッション（$label）を拒否する', ({ startedAt }) => {
+    expect(sessionsErrorMessage([{ ...makeSession('s1'), startedAt }])).toBe(
+      'sessions[0] のデータが不正です',
+    )
+  })
+
   test('不正なセッションの位置を message に含める', () => {
     expect(
       sessionsErrorMessage([makeSession('s1'), { ...makeSession('s2'), startedAt: 'yesterday' }]),

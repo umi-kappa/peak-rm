@@ -4,7 +4,7 @@ import type { ReadonlySession } from '@/core/types'
 /**
  * 1 Session 内の actualReps >= 1 のセットのみで 1RM を算出し、その最大値を返す。
  * セッションの結果によらず、実施済みセットはすべて対象に含める。
- * 対象セットが無い場合は 0。
+ * 対象セットが無い場合は 0（重量 0 kg でも式の値は 0 になる。算出可否の判定は oneRm の hasOneRm）。
  */
 export function sessionMaxOneRm(session: ReadonlySession): number {
   return Math.max(
