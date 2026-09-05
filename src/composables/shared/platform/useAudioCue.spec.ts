@@ -119,12 +119,19 @@ describe('useAudioCue', () => {
   })
 
   test('stop で繰り返しが止まり、出力段をフェードアウトさせる', async () => {
-    const { audioCue, oscillator, masterGain } = await preparedAudioCue()
+    const { audioCue, context, oscillator, masterGain } = await preparedAudioCue()
     audioCue.start()
+    // 鳴り始めから時間が経ってから止める（start が打った setValueAtTime(1) は過去の時刻にある）
+    context.currentTime = 15
     audioCue.stop()
     expect(audioCue.ringing.value).toBe(false)
-    // 発音中に押されても即座に無音にするため、出力段を 0 へ落とす
-    expect(masterGain().gain.linearRampToValueAtTime).toHaveBeenCalledWith(0, expect.any(Number))
+    // ランプの始点を現在時刻で打ち直してから 0 へ落とす。打ち直さないとランプは start 時刻の 1 を
+    // 始点にした直線になり、stop 時点ではほぼ終端なのでゲインが不連続に跳んでクリックノイズが出る
+    expect(masterGain().gain.setValueAtTime).toHaveBeenLastCalledWith(1, 15)
+    expect(masterGain().gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+      0,
+      expect.closeTo(15.008, 5),
+    )
     await vi.advanceTimersByTimeAsync(9000)
     expect(oscillator.start).toHaveBeenCalledTimes(3)
   })

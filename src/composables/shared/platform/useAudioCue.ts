@@ -120,7 +120,13 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
     ringing.value = false
     if (!audio) return
     try {
-      audio.masterGain.gain.linearRampToValueAtTime(0, audio.context.currentTime + BEEP_RELEASE_SEC)
+      // linearRampToValueAtTime は直前のオートメーションイベントを始点にする。start() が打った
+      // setValueAtTime(1, 開始時刻) のままだと、ランプは「開始時刻の 1 → now + 8ms の 0」の直線になり、
+      // 数秒後に押される stop の時点ではほぼ終端なのでゲインが不連続に 0 へ跳ぶ。
+      // 現在時刻で 1 を打ち直し、そこから 8 ms で落とす
+      const now = audio.context.currentTime
+      audio.masterGain.gain.setValueAtTime(1, now)
+      audio.masterGain.gain.linearRampToValueAtTime(0, now + BEEP_RELEASE_SEC)
     } catch (error) {
       console.error('通知音の停止に失敗しました', error)
     }
