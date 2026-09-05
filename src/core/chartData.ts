@@ -1,5 +1,5 @@
 import { formatLocalMonthDay, localDayKey } from '@/core/localDay'
-import { hasOneRm } from '@/core/oneRm'
+import { hasOneRm, roundOneRm } from '@/core/oneRm'
 import { sessionMaxOneRm } from '@/core/session'
 import type { ReadonlySession } from '@/core/types'
 
@@ -18,7 +18,7 @@ export type OneRmChartData = {
   points: readonly OneRmChartPoint[]
   /** 表示区間の終点の推定 1RM。Est. 1RM のヘッドラインに出す */
   latest: number
-  /** 表示区間の「終点 − 始点」。比較対象が無い（1 点のみ）ときは undefined */
+  /** 表示区間の「終点 − 始点」（両端を表示桁へ丸めてから引く）。比較対象が無い（1 点のみ）ときは undefined */
   delta: number | undefined
 }
 
@@ -62,6 +62,7 @@ export function buildOneRmChartData(
   return {
     points,
     latest: last.oneRm,
-    delta: points.length >= 2 ? last.oneRm - points[0].oneRm : undefined,
+    // 表示値（roundOneRm 済み）の差にする。生値で引くとカードに並ぶ両端の表示値の差と食い違う
+    delta: points.length >= 2 ? roundOneRm(last.oneRm) - roundOneRm(points[0].oneRm) : undefined,
   }
 }

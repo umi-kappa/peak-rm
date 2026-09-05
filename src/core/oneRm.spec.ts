@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { estimateOneRm, formatOneRm, hasOneRm } from '@/core/oneRm'
+import { estimateOneRm, formatOneRm, hasOneRm, roundOneRm } from '@/core/oneRm'
 
 describe('estimateOneRm', () => {
   test('ベンチプレスは w × (1 + r / 40) で計算する', () => {
@@ -41,6 +41,18 @@ describe('hasOneRm', () => {
   test('正の値は算出できたと判定する', () => {
     expect(hasOneRm(0.1)).toBe(true)
     expect(hasOneRm(96)).toBe(true)
+  })
+})
+
+describe('roundOneRm', () => {
+  test('表示桁（小数 1 桁）へ丸めた数値を返す', () => {
+    expect(roundOneRm(63.55)).toBe(63.5)
+    expect(roundOneRm(100 * (1 + 8 / 33.3))).toBe(124)
+  })
+
+  test('既に 1 桁以内の値は変えない', () => {
+    expect(roundOneRm(61.5)).toBe(61.5)
+    expect(roundOneRm(0)).toBe(0)
   })
 })
 

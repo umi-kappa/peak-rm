@@ -81,6 +81,19 @@ describe('session origin', () => {
     expect(result.delta.value).toBeCloseTo(3)
   })
 
+  test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', async () => {
+    // 前回 60kg × 1 → 61.5、今回 62kg × 1 → 63.55（表示 63.5）。生値の差 2.05 では +2.1 になる
+    const prev = makeSession({ id: 'prev', startedAt: 1000, weight: 60, sets: 1, actualReps: [1] })
+    const { deps } = makeDeps({
+      storeSession: makeSession({ weight: 62, sets: 1, actualReps: [1] }),
+      prev,
+    })
+    const result = useResultSession('session', undefined, deps)
+    await result.load()
+
+    expect(result.delta.value).toBe(2)
+  })
+
   test('前回の完遂セッションが無ければ delta は undefined', async () => {
     const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
     const result = useResultSession('session', undefined, deps)

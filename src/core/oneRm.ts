@@ -27,9 +27,18 @@ export function hasOneRm(oneRm: number): boolean {
 }
 
 /**
+ * 推定 1RM を表示桁（小数 1 桁）へ丸める。表示（formatOneRm）と差分（前回比・グラフの delta）は
+ * 必ずこの丸めを通してから比較・減算する。丸め前の生値で引くと、同じ画面に並ぶ表示値の差と
+ * バッジの値が 0.1 ずれる（63.55 − 61.5 = 2.05 → +2.1 だが表示は 63.5 − 61.5 = 2.0）。
+ */
+export function roundOneRm(oneRm: number): number {
+  return Number(oneRm.toFixed(1))
+}
+
+/**
  * 推定 1RM の表示文字列。小数 1 桁で示し、算出できないときは数値を出さず `—` にする
  * （spec「ホーム」「結果確認画面」「履歴」で共通の規則）。
  */
 export function formatOneRm(oneRm: number): string {
-  return hasOneRm(oneRm) ? oneRm.toFixed(1) : '—'
+  return hasOneRm(oneRm) ? roundOneRm(oneRm).toFixed(1) : '—'
 }
