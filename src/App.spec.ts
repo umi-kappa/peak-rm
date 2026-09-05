@@ -42,7 +42,7 @@ describe('App', () => {
     // Vue が出す setup throw の警告はこのテストでのみ発生するため、抑止もここに閉じる
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(() => mount(App, { global: { stubs: { RouterView: true } } })).toThrow(
-      'fatal error store is not provided',
+      'fatalError is not provided',
     )
     warn.mockRestore()
   })

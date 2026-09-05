@@ -12,6 +12,7 @@ import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { useSetEdit } from '@/composables/shared/session/useSetEdit'
 import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
@@ -28,14 +29,8 @@ const route = useRoute()
 const router = useRouter()
 const { goBack } = useBackNavigation()
 
-// main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injected = inject(sessionInjectionKey)
-if (!injected) throw new Error('session store is not provided')
-const session = injected
-
-const injectedAudioCue = inject(audioCueInjectionKey)
-if (!injectedAudioCue) throw new Error('audio cue is not provided')
-const audioCue = injectedAudioCue
+const session = injectRequired(sessionInjectionKey)
+const audioCue = injectRequired(audioCueInjectionKey)
 
 const { menu, exercise } = session
 // 停止ボタンの活性表現に使う。テンプレートで自動アンラップさせるため、ここで取り出す

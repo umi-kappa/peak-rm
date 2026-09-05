@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { MENU_MAX } from '@/core/menu'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
@@ -18,14 +19,8 @@ const route = useRoute()
 const router = useRouter()
 const { goBack } = useBackNavigation()
 
-// main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injected = inject(sessionInjectionKey)
-if (!injected) throw new Error('session store is not provided')
-const session = injected
-
-const injectedAudioCue = inject(audioCueInjectionKey)
-if (!injectedAudioCue) throw new Error('audio cue is not provided')
-const audioCue = injectedAudioCue
+const session = injectRequired(sessionInjectionKey)
+const audioCue = injectRequired(audioCueInjectionKey)
 
 // 表示するのは開始時に焼き込んだ Session.menu のみ。変更 UI を持たず「トレーニング中変更不可」を担保する
 const { menu, exercise, currentReps, currentSetIndex, setsTotal } = session

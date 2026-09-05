@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { useResultSession } from '@/composables/pages/result/useResultSession'
@@ -9,6 +9,7 @@ import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { useSetEdit } from '@/composables/shared/session/useSetEdit'
 import { useSetTimeline } from '@/composables/shared/session/useSetTimeline'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import type { SessionOutcome } from '@/core/session'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
@@ -40,13 +41,9 @@ const router = useRouter()
 // ← は履歴一覧から push で開かれた前提の戻り（直リンク時は履歴一覧へ逃がす）
 const { goBack } = useBackNavigation({ name: 'history' })
 
-// main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injectedSession = inject(sessionInjectionKey)
-if (!injectedSession) throw new Error('session store is not provided')
-const store = injectedSession
-const injectedRepo = inject(sessionRepoInjectionKey)
-if (!injectedRepo) throw new Error('session repo is not provided')
-const repo = injectedRepo
+// 実行中セッション store は、useResultSession が返す表示対象の session と区別するため sessionStore と呼ぶ
+const sessionStore = injectRequired(sessionInjectionKey)
+const sessionRepo = injectRequired(sessionRepoInjectionKey)
 
 // 遷移元。origin / id は結果確認のマウント中に変わらない（フロー外へ出てからしか再入できない）
 // history = ヘッダー左上「←」で履歴へ / session = 下部 FINISH でホームへ（spec「結果確認画面」）
@@ -66,7 +63,7 @@ const {
   load,
   patchResultAt,
   remove,
-} = useResultSession(origin, sessionId, { store, repo })
+} = useResultSession(origin, sessionId, { store: sessionStore, repo: sessionRepo })
 
 // セット編集モーダルの配線（保存先の origin 分岐は useResultSession が担う）
 const { editingSet, openSetEdit, closeSetEdit, saveSetEdit } = useSetEdit(
