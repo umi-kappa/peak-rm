@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { inject, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useHistory } from '@/composables/pages/history/useHistory'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import { sessionRepoInjectionKey } from '@/storage/sessionRepo'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
@@ -13,12 +14,9 @@ import SessionSummaryCard from '@/components/pages/history/SessionSummaryCard.vu
 
 const { goBack } = useBackNavigation()
 
-// main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injectedRepo = inject(sessionRepoInjectionKey)
-if (!injectedRepo) throw new Error('session repo is not provided')
-const repo = injectedRepo
+const sessionRepo = injectRequired(sessionRepoInjectionKey)
 
-const { exercise, sessions, chart, selectExercise, load } = useHistory({ repo })
+const { exercise, sessions, chart, selectExercise, load } = useHistory({ repo: sessionRepo })
 
 onMounted(load)
 </script>

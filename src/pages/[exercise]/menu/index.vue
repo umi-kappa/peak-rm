@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Exercise, Menu } from '@/core/types'
 import type { LpPreview } from '@/core/linearProgression'
@@ -10,6 +10,7 @@ import { sessionInjectionKey } from '@/composables/shared/session/useSession'
 import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { wakeLockInjectionKey } from '@/composables/shared/platform/useWakeLock'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
 import AppBar from '@/components/shared/ui/layout/AppBar.vue'
 import BaseButton from '@/components/shared/ui/base/BaseButton.vue'
@@ -23,22 +24,10 @@ const route = useRoute()
 const router = useRouter()
 const { goBack } = useBackNavigation()
 
-// いずれも main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injected = inject(sessionInjectionKey)
-if (!injected) throw new Error('session store is not provided')
-const session = injected
-
-const injectedRepo = inject(sessionRepoInjectionKey)
-if (!injectedRepo) throw new Error('session repo is not provided')
-const sessionRepo = injectedRepo
-
-const injectedAudioCue = inject(audioCueInjectionKey)
-if (!injectedAudioCue) throw new Error('audio cue is not provided')
-const audioCue = injectedAudioCue
-
-const injectedWakeLock = inject(wakeLockInjectionKey)
-if (!injectedWakeLock) throw new Error('wake lock is not provided')
-const wakeLock = injectedWakeLock
+const session = injectRequired(sessionInjectionKey)
+const sessionRepo = injectRequired(sessionRepoInjectionKey)
+const audioCue = injectRequired(audioCueInjectionKey)
+const wakeLock = injectRequired(wakeLockInjectionKey)
 
 // route param を Exercise へ絞り込む。この画面は param を Session.exercise として
 // 保存するため、不正値で書き込まないよう型ガードで弾いてホームへ逃がす

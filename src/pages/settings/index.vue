@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { inject, ref, shallowRef, useTemplateRef } from 'vue'
+import { ref, shallowRef, useTemplateRef } from 'vue'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
+import { injectRequired } from '@/composables/shared/inject/injectRequired'
 import { backupInjectionKey } from '@/storage/backup'
 import type { Session } from '@/core/types'
 import ScreenFrame from '@/components/shared/ui/layout/ScreenFrame.vue'
@@ -17,13 +18,8 @@ type Notice = { title: string; message?: string }
 
 const { goBack } = useBackNavigation()
 
-// main.ts で app.provide 済み。欠落はアプリ配線のバグなので即座に失敗させる
-const injectedBackup = inject(backupInjectionKey)
-if (!injectedBackup) throw new Error('backup is not provided')
-const backup = injectedBackup
-const injectedSession = inject(sessionInjectionKey)
-if (!injectedSession) throw new Error('session store is not provided')
-const session = injectedSession
+const backup = injectRequired(backupInjectionKey)
+const session = injectRequired(sessionInjectionKey)
 
 const version = import.meta.env.VITE_APP_VERSION
 

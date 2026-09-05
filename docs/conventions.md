@@ -17,6 +17,7 @@ src/
     shared/
       error/           # useFatalError（エラー境界の状態。main.ts が生成し app.provide で共有）+ installErrorBoundary（4 経路の配線）
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
+      inject/          # injectRequired（main.ts が app.provide した必須依存を受ける。欠落は配線バグとして throw）
       session/         # useSession / useIntervalTimer（実行中セッションの状態系。useSession は main.ts が生成し router ガードと画面で共有）
       platform/        # useWakeLock / useAudioCue（ブラウザ API glue）+ installSessionEndRelease（セッション終端で解除する配線）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
@@ -59,7 +60,7 @@ src/
   2. `composables/shared/ui/inputs/useNumberStepper` = ブラウザ glue（長押しリピートのタイマー・イベント処理）
   3. `components/shared/ui/inputs/NumberStepper.vue` = 見た目（presentational）
 - **アイコンは単一 `BaseIcon.vue` に集約**する。種類ごとの個別コンポーネントは作らない。SVG 実体は **lucide 純正ファイル**を `src/assets/icons/<name>.svg` に置き、同階層の `src/assets/icons/index.ts` が名前一覧（`iconNames` 配列と、そこから導出される union 型 `IconName`）を持ち、**vite-svg-loader（`?component` でインライン展開）+ `import.meta.glob`** でファイル名 → コンポーネントのマップ（`icons`）をモジュールスコープで構築して export する。`BaseIcon.vue` はそのマップを `name`（`IconName`）で引くだけ。出典は **lucide（ISC）に統一**し、独自に描き起こさない（公開されている純正 SVG を無加工で使う）。アイコン追加は `assets/icons/` に lucide 純正 SVG を 1 ファイル置き、隣の `index.ts` の `iconNames` に名前を 1 つ足すだけ（作業が 1 ディレクトリで完結する）。ライセンス帰属として `src/assets/icons/NOTICE`（lucide LICENSE 全文・ISC + Feather 由来分の MIT）を置く。色は SVG ルートの `stroke="currentColor"` を親の `color` から継承させる（`vite.config` の `svgLoader` は `svgo: false` で属性を保持）。`<img>` での読み込みは使わない（外部リソース化で `currentColor` が効かないため。`?component` はインライン展開なので `currentColor` が効く）。
-- **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを共有する。component tree の外にある router のセッションガードも同じインスタンスを参照するため、`main.ts` が生成して `createAppRouter` へ渡しつつ **`app.provide()`** で供給し、画面（セッションフローの menu / training / interval / result と、Import の確定で破棄する settings）が `inject` で受ける（`useFatalError` と同じ配線。後述）。依存リポジトリは composable の引数で注入する。
+- **状態管理**: Pinia は導入しない。共有が必要な状態（実行中セッション）は composable（`useSession()`）の単一インスタンスを共有する。component tree の外にある router のセッションガードも同じインスタンスを参照するため、`main.ts` が生成して `createAppRouter` へ渡しつつ **`app.provide()`** で供給し、画面（セッションフローの menu / training / interval / result と、Import の確定で破棄する settings）が `inject` で受ける（`useFatalError` と同じ配線。後述）。依存リポジトリは composable の引数で注入する。必須依存の `inject` は `composables/shared/inject/injectRequired` で受け、素の `inject` + 手書きの欠落ガードは書かない（欠落メッセージは key の Symbol description から生成される）。素の `inject(key, default)` は default を持つ任意依存（`intervalTimerDepsInjectionKey`）にのみ使う。
 - **ブラウザ API の glue（`composables/shared/platform/`）も同じ配線に乗せる**。`useAudioCue`（AudioContext）と `useWakeLock`（WakeLockSentinel）はセッションフロー全体で状態を保持する必要がある一方、インターバル画面はセットごとに `router.replace` で再マウントされるため画面内では保持できない。`main.ts` が単一インスタンスを生成して `app.provide()` し、メニュー / トレーニング / インターバルが `inject` で受ける（stories は `src/stories/platform.ts` の fake を provide する）。解除は画面のライフサイクルではなく実行中セッションの終端に紐づけ、その配線（`installSessionEndRelease`）は `installErrorBoundary` と同じく単体テストできるモジュールへ出す。挙動は spec「Wake Lock のライフサイクル」を参照する
 - **画面が直接使うリポジトリ（`sessionRepo`）も `main.ts` が `app.provide()` で供給し、画面は `inject` で受ける**。画面（`pages/**/index.vue`）から `@/storage/sessionRepo` の実体を直接 import しない。データ源を provide 経由に統一することで、全画面が Storybook の provide decorator で fake repo（`src/stories/session.ts` の `makeSessionRepo`）に差し替えられ、実 IndexedDB に依存せずページ stories を書ける（#82 で確立。injection key は実体を定義するファイルの末尾に置く: `sessionRepoInjectionKey` は `storage/sessionRepo.ts`、`backupInjectionKey` は `storage/backup.ts`、`sessionInjectionKey` は `useSession.ts`）。Export / Import のデータ源（`backup`）も同じ配線に乗せるが、テーブル単位の `sessionRepo` ではなく DB 全体の置換を担うため相乗りさせず専用 key で配る（設定画面が `inject` で受け、stories は `makeBackup` の fake に差し替える）。
 
@@ -136,7 +137,7 @@ src/
 - アプリ内部の型は、オブジェクト形状も含め原則 **`type`** で定義する（`type Session = { ... }`）。ユニオン型（例: `type Exercise = 'benchPress' | 'squat' | 'deadlift'`）が `type` 必須なため、全体を `type` に揃えて表記の混在を防ぐ
 - **`interface` は declaration merging が必要な型拡張のみ**に使う（例: `vite-env.d.ts` の `ImportMetaEnv` 拡張）。アプリ内の閉じたドメインモデルは `interface` にしない。意図しない再宣言マージ（footgun）を防ぎ、`Readonly<>` で固める不変モデルの思想とも揃える
 - **値の不在は `null` ではなく `undefined` で表す**（`Session | undefined`、リポジトリの「見つからない」も `undefined`）。Dexie の `.get()`・`Array.at()`・`?.`・`??` の自然な返り値が `undefined` であり、`?? null` のような変換を挟まないため。`null` リテラルは ESLint（`unicorn/no-null`）で禁止している
-- **モジュールスコープの定数は SCREAMING_SNAKE_CASE で命名する**（`MENU_MAX` / `ONE_RM_DIVISOR` / `NUMBER_STEPPER_REPEAT_DELAY_MS`）。対象は値が固定のプリミティブ・静的データで、インスタンス・injection key・関数（`sessionRepo` / `db` / `sessionInjectionKey`）は camelCase のまま
+- **モジュールスコープの定数は SCREAMING_SNAKE_CASE で命名する**（`MENU_MAX` / `ONE_RM_DIVISOR` / `NUMBER_STEPPER_REPEAT_DELAY_MS`）。対象は値が固定のプリミティブ・静的データで、インスタンス・injection key・関数（`sessionRepo` / `db` / `sessionInjectionKey`）は camelCase のまま。injection key は `Symbol('<名前>')` の description を必ず付ける（`injectRequired` の欠落メッセージに使う）
   - 定数オブジェクトの**キーは大文字化せず camelCase のまま**にする。キーはドメイン型のフィールド名や値の写し（`MENU_MAX.weight` ← `Menu`、`ONE_RM_DIVISOR` のキー ← `Exercise`）であり、一致しているからこそ `satisfies` による網羅検査と spread での焼き込み（`{ exercise, ...DEFAULT_MENU }`）が成立する。大文字化の境界は識別子まで
 
 ## エラーハンドリング
@@ -163,6 +164,7 @@ Vitest を projects 構成で動かし、ロジック層の単体テスト（`un
 
 - マウント時は RouterView を `global.stubs` で置換し、依存する store は `global.provide` で注入して、統合点（テンプレートの分岐・inject ガード）そのものを検証する
 - `provide` / `inject` への依存だけでは例外の根拠にならない。provide / inject は本アプリ標準の状態管理機構であり、inject する presentational な画面は Storybook の provide decorator で Story 化して play + Chromatic が担う
+- もう 1 つの例外は **`inject` を呼ぶため setup 文脈が必要なヘルパー（`injectRequired`）** で、画面ではなく Story 化する実体が無い関数なので、検証専用の最小コンポーネントを `mount` して `unit` project で実運用と同じ setup 文脈で検証してよい
 - プレゼンテーショナルなコンポーネントの見た目・振る舞いは従来どおり Storybook が担い、二重には書かない
 
 ### 配置
