@@ -14,6 +14,7 @@ import {
 import { audioCueInjectionKey, useAudioCue } from '@/composables/shared/platform/useAudioCue'
 import { useWakeLock, wakeLockInjectionKey } from '@/composables/shared/platform/useWakeLock'
 import { installSessionEndRelease } from '@/composables/shared/platform/installSessionEndRelease'
+import { installSessionKeepAwake } from '@/composables/shared/platform/installSessionKeepAwake'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
 import { backup, backupInjectionKey } from '@/storage/backup'
@@ -55,6 +56,8 @@ installErrorBoundary(app, router, fatalError.report)
 
 // 解除の配線は fatal error も終端として扱うため、境界の生成後に置く
 installSessionEndRelease(session, fatalError, wakeLock, audioCue)
+// 背景化で自動解除された Wake Lock を前景復帰で取り直す。解除側と対称に fatal error 中は取り直さない
+installSessionKeepAwake(session, fatalError, wakeLock)
 
 app.mount('#app')
 
