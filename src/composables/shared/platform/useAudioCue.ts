@@ -113,12 +113,17 @@ export function useAudioCue(deps: AudioCueDeps = {}) {
   /**
    * アラームを止める。繰り返しの予約を解くだけでなく出力段をフェードアウトさせ、
    * 発音中に押されても即座に無音になるようにする（クリックノイズを避けるためランプで落とす）。
+   * 鳴っていなければ出力段には触れない（start と対称の冪等ガード）。
    */
   function stop() {
     clearInterval(repeatId)
     repeatId = undefined
+    // セッション終端では suspend() と画面の onScopeDispose から数 ms 差で 2 回呼ばれる。
+    // 2 回目もゲインを 1 へ打ち直すと、1 回目のフェード途中の値から不連続に跳ね上がり、
+    // 予約済みのビープが残っていればクリックノイズになる（下で消しているものと同種）
+    const wasRinging = ringing.value
     ringing.value = false
-    if (!audio) return
+    if (!audio || !wasRinging) return
     try {
       // linearRampToValueAtTime は直前のオートメーションイベントを始点にする。start() が打った
       // setValueAtTime(1, 開始時刻) のままだと、ランプは「開始時刻の 1 → now + 8ms の 0」の直線になり、

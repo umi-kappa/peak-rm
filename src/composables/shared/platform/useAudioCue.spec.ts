@@ -136,6 +136,20 @@ describe('useAudioCue', () => {
     expect(oscillator.start).toHaveBeenCalledTimes(3)
   })
 
+  test('stop を 2 回呼んでも 2 回目は出力段のゲインを打ち直さない', async () => {
+    const { audioCue, context, masterGain } = await preparedAudioCue()
+    audioCue.start()
+    context.currentTime = 15
+    audioCue.stop()
+    // セッション終端では suspend と onScopeDispose から数 ms 差で 2 回呼ばれる。
+    // 2 回目も 1 へ打ち直すと 1 回目のフェード途中から跳ね上がってクリックノイズになる
+    context.currentTime = 15.004
+    audioCue.stop()
+    // start の 1 回 + 1 回目の stop の 1 回。2 回目の stop は setValueAtTime を追加しない
+    expect(masterGain().gain.setValueAtTime).toHaveBeenCalledTimes(2)
+    expect(masterGain().gain.linearRampToValueAtTime).toHaveBeenCalledTimes(1)
+  })
+
   test('stop 後に start すると再び鳴る', async () => {
     const { audioCue, oscillator } = await preparedAudioCue()
     audioCue.start()
