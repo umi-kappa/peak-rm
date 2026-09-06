@@ -117,6 +117,11 @@ describe('session origin', () => {
     expect(result.delta.value).toBeUndefined()
   })
 
+  test('実績回数は編集可（repsReadonly は false）', () => {
+    const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
+    expect(useResultSession('session', undefined, deps).repsReadonly).toBe(false)
+  })
+
   test('完遂セッションは lpPreview に今回 → 増量後の重量ペアを返し、未達は undefined', () => {
     const { deps: completeDeps } = makeDeps({
       storeSession: makeSession({ actualReps: [8, 8, 8] }),
@@ -179,6 +184,11 @@ describe('history origin', () => {
     await expect(noId.load()).resolves.toBe(false)
   })
 
+  test('実績回数は読み専用（repsReadonly は true。メモのみ編集可）', () => {
+    const { deps } = makeDeps({ stored: [stored] })
+    expect(useResultSession('history', 'past', deps).repsReadonly).toBe(true)
+  })
+
   test('完遂セッションでも lpPreview は常に undefined（過去に「次回」は無い）', async () => {
     const { deps } = makeDeps({ stored: [stored] })
     const result = useResultSession('history', 'past', deps)
@@ -202,21 +212,6 @@ describe('history origin', () => {
       { actualReps: 8, memo: '' },
     ])
     expect(result.session.value?.results[1]?.memo).toBe('重かった')
-  })
-
-  test('patchResultAt は actualReps を落としてメモだけ保存する（実績 read-only を保存規則でも守る）', async () => {
-    const { deps, repo } = makeDeps({ stored: [stored] })
-    const result = useResultSession('history', 'past', deps)
-    await result.load()
-
-    await result.patchResultAt(1, { actualReps: 3, memo: '重かった' })
-
-    expect(repo.patchResults).toHaveBeenCalledWith('past', [
-      { actualReps: 8, memo: 'フォーム良し' },
-      { actualReps: 8, memo: '重かった' },
-      { actualReps: 8, memo: '' },
-    ])
-    expect(result.session.value?.results[1]?.actualReps).toBe(8)
   })
 
   test('remove は当該セッションの id で repo.remove へ委譲する', async () => {

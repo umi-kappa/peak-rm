@@ -87,8 +87,8 @@ export function useResultSession(
   // 編集ポリシーは下の保存規則（patchResultAt の history 分岐）と対でここが持ち、画面は配線だけにする
   const repsReadonly = origin === 'history'
 
-  // 実績・メモの編集。session origin は store へ委譲する。history origin は store を経由しないため、
-  // loaded と repo を自分で更新する
+  // 実績・メモの編集。session origin は store へ委譲する。history origin（実績は repsReadonly で
+  // メモのみ編集可）は store を経由しないため、loaded と repo を自分で更新する
   async function patchResultAt(index: number, patch: Partial<SetResult>) {
     if (origin === 'session') {
       await store.patchResultAt(index, patch)
@@ -97,9 +97,7 @@ export function useResultSession(
     const current = loaded.value
     if (current === undefined) return
     if (index < 0 || index >= current.results.length) return
-    // 実績 read-only は UI（repsReadonly）だけに頼らず保存規則でも守る。patch からメモだけを採る
-    const memoPatch: Partial<SetResult> = patch.memo === undefined ? {} : { memo: patch.memo }
-    const results = current.results.map((r, i) => (i === index ? { ...r, ...memoPatch } : r))
+    const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
     await repo.patchResults(current.id, results)
     loaded.value = { ...current, results }
   }
