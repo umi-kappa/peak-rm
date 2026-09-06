@@ -302,6 +302,51 @@ describe('useSession', () => {
     expect(store.phase.value).toBe('setActive')
   })
 
+  test('settled は進行中のセット完了の書き込みが終わるまで待ち、phase が進んでから解決する', async () => {
+    const repo = createFakeRepo()
+    const { blockedRepo, release } = blockInsert(repo)
+    const session = useSession({
+      sessionRepo: blockedRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    session.start(menu({ sets: 3 }))
+    const completing = session.completeSet()
+    // 離脱確認のキャンセルが書き込みより先に返った状況。行き先を決める前に書き込みを待つ
+    let phaseAtSettled: string | undefined
+    const waiting = session.settled().then(() => {
+      phaseAtSettled = session.phase.value
+    })
+    release()
+    await Promise.all([completing, waiting])
+    expect(phaseAtSettled).toBe('interval')
+  })
+
+  test('settled は書き込みが進行中でなければ即座に解決する', async () => {
+    const { session } = setup()
+    session.start(menu({ sets: 3 }))
+    await expect(session.settled()).resolves.toBeUndefined()
+  })
+
+  test('settled は書き込みの失敗を投げない（報告は completeSet の呼び出し側が担う）', async () => {
+    const repo = createFakeRepo()
+    const failingRepo = {
+      ...repo,
+      insert: async () => {
+        throw new Error('quota')
+      },
+    }
+    const session = useSession({
+      sessionRepo: failingRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    session.start(menu({ sets: 3 }))
+    const completing = session.completeSet()
+    await expect(session.settled()).resolves.toBeUndefined()
+    await expect(completing).rejects.toThrow('quota')
+  })
+
   test('completeSet の二重呼び出し（二重タップ）でも同一セットを重複記録しない', async () => {
     const { repo, session } = setup()
     session.start(menu({ sets: 3 }))
