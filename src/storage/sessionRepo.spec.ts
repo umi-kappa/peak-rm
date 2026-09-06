@@ -63,6 +63,12 @@ describe('永続化シーケンス', () => {
     expect(updated?.results).toEqual([reps(5)])
   })
 
+  test('results が空の patchResults を拒否する（insert と同じ不変条件）', async () => {
+    await sessionRepo.insert(makeSession('s1', 'benchPress', 1000))
+    await expect(sessionRepo.patchResults('s1', [])).rejects.toThrow()
+    expect((await db.sessions.get('s1'))?.results).toHaveLength(1)
+  })
+
   test('patchResults を存在しない id に呼ぶと例外を投げる（サイレント no-op を防ぐ）', async () => {
     await expect(sessionRepo.patchResults('missing', [reps(8)])).rejects.toThrow()
   })

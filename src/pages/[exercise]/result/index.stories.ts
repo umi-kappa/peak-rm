@@ -159,6 +159,25 @@ export const HistoryEditBehavior: Story = {
   },
 }
 
+// Import 確定で実行中セッションが破棄された後にセッション経由で再入すると、
+// 出口の無い空画面を残さずホームへ replace する配線を確認する（spec §5「結果確認画面」）
+export const DiscardedSessionBehavior: Story = {
+  loaders: [
+    async () => {
+      await router.push('/benchPress/result?origin=session')
+      const sessionStore = await makeSessionStore({})
+      sessionStore.discard()
+      return { sessionStore, sessionRepo: makeSessionRepo() }
+    },
+  ],
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async () => {
+    await waitFor(() => {
+      expect(router.currentRoute.value.name).toBe('home')
+    })
+  },
+}
+
 // 削除アクション → 確認ダイアログ → 確定で repo.remove が呼ばれ履歴一覧へ戻る配線を確認する
 export const DeleteBehavior: Story = {
   loaders: [historyOriginLoader({ wrapRepo: (repo) => ({ ...repo, remove: fn(repo.remove) }) })],

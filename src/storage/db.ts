@@ -31,6 +31,8 @@ export const db = new PeakDexie()
 export async function requestPersistentStorage(): Promise<boolean> {
   if (!navigator.storage?.persist) return false
   try {
+    // 既に許可済みなら要求し直さない（spec §7 の要求は最善努力。拒否された端末では起動ごとに再要求になる）
+    if (await navigator.storage.persisted?.()) return true
     return await navigator.storage.persist()
   } catch {
     return false

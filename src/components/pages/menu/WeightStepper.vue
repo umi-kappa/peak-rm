@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MENU_MAX } from '@/core/menu'
+import { MENU_MAX, MENU_MIN } from '@/core/menu'
 import BaseCard from '@/components/shared/ui/base/BaseCard.vue'
 import BaseLabel from '@/components/shared/ui/base/BaseLabel.vue'
 import NumberStepper from '@/components/shared/ui/inputs/NumberStepper.vue'
@@ -17,7 +17,7 @@ const model = defineModel<number>({ required: true })
       tone="accent"
       unit="KG"
       :step="0.25"
-      :min="0"
+      :min="MENU_MIN.weight"
       :max="MENU_MAX.weight"
     />
     <BaseLabel>STEP · 0.25 KG</BaseLabel>

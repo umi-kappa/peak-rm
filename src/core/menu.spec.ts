@@ -41,6 +41,11 @@ describe('resolveInitialMenu', () => {
     })
   })
 
+  test('直前セッションの種目が引数と食い違っても引数の種目を勝たせる', () => {
+    const { menu } = resolveInitialMenu('squat', makeSession('benchPress', [5]))
+    expect(menu.exercise).toBe('squat')
+  })
+
   test('返す menu は prevSession.menu のコピー（画面編集で履歴を汚さない）', () => {
     const prev = makeSession('benchPress', [5])
     const { menu } = resolveInitialMenu('benchPress', prev)

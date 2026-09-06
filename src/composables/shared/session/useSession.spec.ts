@@ -40,6 +40,22 @@ function setup() {
   return { repo, session: useSession(deps) }
 }
 
+// 初回セット完了の insert を手動解決（release）にした repo。永続化 I/O 中の割り込みを再現する
+function blockInsert(repo: ReturnType<typeof createFakeRepo>) {
+  let release!: () => void
+  const blockedRepo = {
+    ...repo,
+    insert: (session: Session) =>
+      new Promise<void>((resolve) => {
+        release = () => {
+          repo.calls.push({ method: 'insert', session: structuredClone(session) })
+          resolve()
+        }
+      }),
+  }
+  return { blockedRepo, release: () => release() }
+}
+
 // 完遂かどうかは results から都度導出する（判定は core の isComplete に委ねる）
 function completed(store: SessionStore): boolean {
   const current = store.session.value
@@ -232,19 +248,8 @@ describe('useSession', () => {
 
   test('completeSet の await 中に leave が割り込んでも done を interval で上書きしない', async () => {
     const repo = createFakeRepo()
-    // 初回セット完了の insert を手動解決にして、永続化 I/O 中の離脱
-    //（ブラウザバック → afterEach → leave）を再現する
-    let releaseInsert!: () => void
-    const blockedRepo = {
-      ...repo,
-      insert: (session: Session) =>
-        new Promise<void>((resolve) => {
-          releaseInsert = () => {
-            repo.calls.push({ method: 'insert', session: structuredClone(session) })
-            resolve()
-          }
-        }),
-    }
+    // 永続化 I/O 中の離脱（ブラウザバック → afterEach → leave）を再現する
+    const { blockedRepo, release } = blockInsert(repo)
     const session = useSession({
       sessionRepo: blockedRepo,
       now: () => 1000,
@@ -253,11 +258,48 @@ describe('useSession', () => {
     session.start(menu({ sets: 3 }))
     const completing = session.completeSet()
     session.leave()
-    releaseInsert()
+    release()
     await completing
     expect(session.phase.value).toBe('done')
-    // フロー終端後は session も書き戻さない（結果は DB 側には保存済み）
+    // 非最終セットでフローが終端していたら session も書き戻さない（結果は DB 側には保存済み）
     expect(session.session.value?.results).toHaveLength(0)
+  })
+
+  test('completeSet の await 中に discard が割り込んでも破棄済みセッションを復活させない', async () => {
+    // 最終セットの永続化中に Import の全置換（discard）が走る。#111 で入れた
+    // 「DB から消えた id を指し続けない」保護を、await 後の書き戻しが破らないこと
+    const { blockedRepo, release } = blockInsert(createFakeRepo())
+    const store = useSession({
+      sessionRepo: blockedRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    store.start(menu({ sets: 1 }))
+    const completing = store.completeSet()
+    store.discard()
+    release()
+    await completing
+    expect(store.session.value).toBeUndefined()
+    expect(store.phase.value).toBe('done')
+  })
+
+  test('completeSet の await 中に leave → start が割り込んでも新しいセッションを上書きしない', async () => {
+    const repo = createFakeRepo()
+    const { blockedRepo, release } = blockInsert(repo)
+    let id = 'sess-1'
+    const store = useSession({ sessionRepo: blockedRepo, now: () => 1000, createId: () => id })
+    store.start(menu({ sets: 3 }))
+    const completing = store.completeSet()
+    // ブラウザバックで離脱し、ホームから新しいセッションを始める（phase は setActive に戻る）
+    store.leave()
+    id = 'sess-2'
+    store.start(menu({ sets: 3, weight: 110 }))
+    release()
+    await completing
+    // phase だけを見るガードでは通過してしまい、新セッションが旧セッションの内容へ置き換わる
+    expect(store.session.value?.id).toBe('sess-2')
+    expect(store.session.value?.results).toHaveLength(0)
+    expect(store.phase.value).toBe('setActive')
   })
 
   test('completeSet の二重呼び出し（二重タップ）でも同一セットを重複記録しない', async () => {
@@ -351,6 +393,33 @@ describe('useSession', () => {
 
     await session.patchResultAt(0, { actualReps: 8 })
     expect(completed(session)).toBe(true)
+  })
+
+  test('patchResultAt の await 中に discard が割り込んでも破棄済みセッションを復活させない', async () => {
+    const repo = createFakeRepo()
+    let releasePatch!: () => void
+    const blockedRepo = {
+      ...repo,
+      patchResults: (id: string, results: SetResult[]) =>
+        new Promise<void>((resolve) => {
+          releasePatch = () => {
+            repo.calls.push({ method: 'patchResults', id, results: structuredClone(results) })
+            resolve()
+          }
+        }),
+    }
+    const store = useSession({
+      sessionRepo: blockedRepo,
+      now: () => 1000,
+      createId: () => 'sess-1',
+    })
+    store.start(menu({ sets: 3 }))
+    await store.completeSet()
+    const patching = store.patchResultAt(0, { memo: 'late' })
+    store.discard()
+    releasePatch()
+    await patching
+    expect(store.session.value).toBeUndefined()
   })
 
   test('patchResultAt は範囲外 index では何もせず永続化もしない', async () => {

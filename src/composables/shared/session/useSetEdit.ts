@@ -39,11 +39,21 @@ export function useSetEdit(
     editingIndex.value = undefined
   }
 
+  // 保存中か。モーダルは保存の完了後に閉じるため、その間の SAVE 再タップを弾く
+  let saving = false
+
   // SAVE で実績とメモを 1 回の patch で保存して閉じる
   async function saveSetEdit(result: SetResult) {
     const index = editingIndex.value
-    if (index === undefined) return
-    await save(index, result)
+    // 保存が並走すると useSession.patchResultAt の同一性ガードが後着の書き戻しを捨て、
+    // DB と画面が食い違う。他画面の非同期ボタン（START / COMPLETE SET / Import）と同じ形で弾く
+    if (index === undefined || saving) return
+    saving = true
+    try {
+      await save(index, result)
+    } finally {
+      saving = false
+    }
     closeSetEdit()
   }
 

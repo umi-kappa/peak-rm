@@ -18,9 +18,11 @@ async function insert(session: Session): Promise<void> {
 
 /**
  * セット完了ごとの増分保存。results 配列を全置換する。
+ * 空の results は insert と同じ不変条件（実績のあるセッションのみ保存）に反するため書き込み境界で拒否する。
  * 対象 id が無ければ update は 0 件 no-op になるため、サイレントな実績喪失を防ぐべく例外を投げる。
  */
 async function patchResults(id: string, results: SetResult[]): Promise<void> {
+  if (results.length === 0) throw new Error(`results must not be empty: ${id}`)
   const updated = await db.sessions.update(id, { results })
   if (updated === 0) throw new Error(`session not found: ${id}`)
 }

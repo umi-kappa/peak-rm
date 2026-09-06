@@ -19,11 +19,22 @@ export function estimateOneRm(exercise: Exercise, weight: number, reps: number):
 }
 
 /**
- * 推定 1RM が算出できたか。sessionMaxOneRm は計算対象のセットが無いとき 0 を返すため、
- * 「0 = 不在」というセンチネル規則の判定はこの述語に集約する（表示・比較の各所で再判定しない）。
+ * 推定 1RM が算出できたか。sessionMaxOneRm は計算対象のセットが無いとき 0 を返し、
+ * 重量 0 kg（設定項目の下限）を完遂した場合も式の値が 0 になる。どちらも「算出できない」として
+ * `—` 表示・グラフ除外の扱いに寄せ、「0 = 不在」というセンチネル規則の判定はこの述語に集約する
+ * （表示・比較の各所で再判定しない）。
  */
 export function hasOneRm(oneRm: number): boolean {
   return oneRm > 0
+}
+
+/**
+ * 推定 1RM を表示桁（小数 1 桁）へ丸める。表示（formatOneRm）と差分（前回比・グラフの delta）は
+ * 必ずこの丸めを通してから比較・減算する。丸め前の生値で引くと、同じ画面に並ぶ表示値の差と
+ * バッジの値が 0.1 ずれる（63.55 − 61.5 = 2.05 → +2.1 だが表示は 63.5 − 61.5 = 2.0）。
+ */
+export function roundOneRm(oneRm: number): number {
+  return Number(oneRm.toFixed(1))
 }
 
 /**
@@ -31,5 +42,5 @@ export function hasOneRm(oneRm: number): boolean {
  * （spec「ホーム」「結果確認画面」「履歴」で共通の規則）。
  */
 export function formatOneRm(oneRm: number): string {
-  return hasOneRm(oneRm) ? oneRm.toFixed(1) : '—'
+  return hasOneRm(oneRm) ? roundOneRm(oneRm).toFixed(1) : '—'
 }

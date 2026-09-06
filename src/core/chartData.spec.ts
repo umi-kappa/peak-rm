@@ -73,6 +73,17 @@ describe('buildOneRmChartData', () => {
     expect(data?.delta).toBe(110 * (1 + 8 / 40) - 100 * (1 + 8 / 40))
   })
 
+  test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', () => {
+    // 60kg × 1 → 61.5、62kg × 1 → 63.55（表示 63.5）。生値の差 2.05 を丸めると +2.1 になり、
+    // カードに並ぶ表示値の差 63.5 − 61.5 = 2.0 と食い違う
+    const data = buildOneRmChartData([
+      makeSession(at(5, 9), 60, [1]),
+      makeSession(at(5, 12), 62, [1]),
+    ])
+
+    expect(data?.delta).toBe(2)
+  })
+
   test('切り出しの外にある古い記録は delta の始点にならない', () => {
     const sessions = Array.from({ length: 9 }, (_, index) =>
       makeSession(at(5, index + 1), index === 0 ? 50 : 100, [8]),

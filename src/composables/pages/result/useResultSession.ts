@@ -2,7 +2,7 @@ import { computed, shallowRef } from 'vue'
 
 import { computeLpPreview } from '@/core/linearProgression'
 import { formatLocalDay } from '@/core/localDay'
-import { hasOneRm } from '@/core/oneRm'
+import { hasOneRm, roundOneRm } from '@/core/oneRm'
 import { sessionMaxOneRm, sessionOutcome } from '@/core/session'
 import type { SessionStore } from '@/composables/shared/session/useSession'
 import type { SessionRepo } from '@/storage/sessionRepo'
@@ -37,8 +37,8 @@ export function useResultSession(
 
   /**
    * 非同期ロード（history origin のセッション本体と、両 origin の前回完遂セッション）。
-   * 画面が onMounted で呼ぶ。history origin で id 不正・削除済みのときだけ false を返し、
-   * 画面が履歴一覧へ逃がす（削除後のブラウザ戻り対策）。
+   * 画面が onMounted で呼ぶ。表示対象が無ければ false を返し、画面が origin 別の出口へ逃がす
+   * （history: id 不正・削除済み → 履歴一覧。session: Import 確定で実行中セッションが破棄済み → ホーム）。
    * 失敗（IndexedDB 例外）は catch せずエラー境界へ落とす
    */
   async function load(): Promise<boolean> {
@@ -48,7 +48,7 @@ export function useResultSession(
       loaded.value = found
     }
     const current = session.value
-    if (current === undefined) return true
+    if (current === undefined) return false
     prev.value = await repo.latestCompleteBefore(current.exercise, current.startedAt)
     return true
   }
@@ -57,10 +57,11 @@ export function useResultSession(
   const maxOneRm = computed(() => (session.value ? sessionMaxOneRm(session.value) : 0))
 
   // 前回完遂セッションの推定 1RM からの差分。前回が無い・当日の 1RM が算出できない（全セットスキップ等）なら
-  // 比較不能として undefined（画面は非表示。算出可否の判定は core の hasOneRm に集約）
+  // 比較不能として undefined（画面は非表示。算出可否の判定は core の hasOneRm に集約）。
+  // 両端を表示桁へ丸めてから引く（1RM グラフの delta と同じ規則。生値の差は表示値の差と 0.1 ずれる）
   const delta = computed(() => {
     if (prev.value === undefined || !hasOneRm(maxOneRm.value)) return undefined
-    return maxOneRm.value - sessionMaxOneRm(prev.value)
+    return roundOneRm(maxOneRm.value) - roundOneRm(sessionMaxOneRm(prev.value))
   })
 
   // 次回増量プレビュー（今回の重量 → 増量後）。今回のセッション自身を「同一種目の直前セッション」

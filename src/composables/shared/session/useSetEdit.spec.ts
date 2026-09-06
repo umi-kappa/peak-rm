@@ -65,6 +65,26 @@ test('saveSetEdit は対象 index で save を呼び、保存後に閉じる', a
   expect(editingSet.value).toBeUndefined()
 })
 
+test('保存中の saveSetEdit 再呼び出しは save を呼ばない（SAVE の二重タップ）', async () => {
+  let release!: () => void
+  const save = vi.fn(
+    () =>
+      new Promise<void>((resolve) => {
+        release = resolve
+      }),
+  )
+  const { editingSet, openSetEdit, saveSetEdit } = useSetEdit(() => done, save)
+  openSetEdit(1)
+  const first = saveSetEdit({ actualReps: 9, memo: '' })
+  await saveSetEdit({ actualReps: 10, memo: '' })
+  expect(save).toHaveBeenCalledTimes(1)
+  // 保存が完了するまでモーダルは開いたまま
+  expect(editingSet.value).toBeDefined()
+  release()
+  await first
+  expect(editingSet.value).toBeUndefined()
+})
+
 test('open していないときの saveSetEdit は save を呼ばない', async () => {
   const save = vi.fn(async () => {})
   const { saveSetEdit } = useSetEdit(() => done, save)

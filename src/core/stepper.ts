@@ -7,13 +7,14 @@ export type StepperOptions = {
 
 /**
  * value を min〜max の範囲に丸める。省略した境界は無制限。
- * NaN は数値として壊れた入力なので下限（min、無ければ 0）へ寄せる。
+ * NaN は数値として壊れた入力なので下限（min、無ければ 0）へ置き換え、そのうえで同じ経路で丸める
+ * （max も適用される）。
  */
 export function clamp(value: number, min?: number, max?: number): number {
-  if (Number.isNaN(value)) return min ?? 0
+  const safeValue = Number.isNaN(value) ? (min ?? 0) : value
   const lower = min ?? -Infinity
   const upper = max ?? Infinity
-  return Math.min(Math.max(value, lower), upper)
+  return Math.min(Math.max(safeValue, lower), upper)
 }
 
 /**

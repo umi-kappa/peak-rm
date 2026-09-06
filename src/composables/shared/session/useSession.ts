@@ -76,6 +76,11 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
       } else {
         await repo.patchResults(current.id, results)
       }
+      // await 中に discard()（Import の全置換）や leave() → start()（離脱後の新セッション開始）が
+      // 割り込んでいたら書き戻さない。破棄済みセッションを復活させたり、新しいセッションを
+      // 古い内容で上書きしたりしないため、phase ではなくセッション実体の同一性で判定する
+      // （shallowRef + イミュータブル更新なので参照比較で足りる。phase は同じ値へ戻ってこられる）
+      if (session.value !== current) return
       if (isLastSet) {
         session.value = { ...current, results }
         phase.value = 'done'
@@ -129,6 +134,8 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     if (index < 0 || index >= current.results.length) return
     const results = current.results.map((r, i) => (i === index ? { ...r, ...patch } : r))
     await repo.patchResults(current.id, results)
+    // completeSet と同じく、await 中に別のセッションへ入れ替わっていたら書き戻さない
+    if (session.value !== current) return
     session.value = { ...current, results }
   }
 

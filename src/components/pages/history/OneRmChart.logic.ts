@@ -40,30 +40,42 @@ const EDGE_VALUE_GAP = 10
 function resolveChartTokens() {
   const style = getComputedStyle(document.documentElement)
   const read = (name: string) => style.getPropertyValue(name).trim()
-  // rem のフォントサイズを canvas 用の px へ直す（html の font-size 62.5% と
-  // ブラウザのフォントサイズ設定の両方を反映させる）
-  const valueFontSize =
-    Number.parseFloat(read('--font-size-body')) * Number.parseFloat(style.fontSize)
-  return {
+  const colors = {
     accent: read('--color-accent'),
     bg: read('--color-bg'),
     text: read('--color-text'),
     line: read('--color-line'),
     lineDark: read('--color-line-dark'),
-    valueFont: `${read('--font-weight-bold')} ${valueFontSize}px ${read('--font-family-mono')}`,
+  }
+  const fontSizeBody = read('--font-size-body')
+  const fontWeightBold = read('--font-weight-bold')
+  const fontFamilyMono = read('--font-family-mono')
+  // rem のフォントサイズを canvas 用の px へ直す（html の font-size 62.5% と
+  // ブラウザのフォントサイズ設定の両方を反映させる）
+  const valueFontSize = Number.parseFloat(fontSizeBody) * Number.parseFloat(style.fontSize)
+  return {
+    tokens: { ...colors, valueFont: `${fontWeightBold} ${valueFontSize}px ${fontFamilyMono}` },
+    // カスタムプロパティが未解決のタイミング（スタイルシート適用前など）は空文字が返る
+    complete: [...Object.values(colors), fontSizeBody, fontWeightBold, fontFamilyMono].every(
+      (value) => value !== '',
+    ),
   }
 }
 
-let resolvedTokens: ReturnType<typeof resolveChartTokens> | undefined
+let resolvedTokens: ReturnType<typeof resolveChartTokens>['tokens'] | undefined
 
 /**
  * canvas は CSS を解釈しないため、描画に要るトークンを描画前に解決する。
  * 値の単一ソースは tokens.css のまま保ち、色・フォントをこのファイルに直書きしない。
  * getComputedStyle は同期のスタイル再計算を伴うのに対し、このアプリはテーマ切り替えを
  * 持たず値が実行中に変わらないため、初回の解決結果を使い回す。
+ * ただし未解決の値が混ざった結果はキャッシュしない（空文字を恒久化すると以降ずっと描けない）。
  */
 function chartTokens() {
-  return (resolvedTokens ??= resolveChartTokens())
+  if (resolvedTokens) return resolvedTokens
+  const { tokens, complete } = resolveChartTokens()
+  if (complete) resolvedTokens = tokens
+  return tokens
 }
 
 /** 1px の線を画素の境界に載せてにじませない（canvas は座標が画素の中心を指すため 0.5 ずらす） */
@@ -187,7 +199,8 @@ export function buildChartData(values: readonly number[]): ChartData<'line'> {
 }
 
 /**
- * 軸・凡例・ツールチップ・アニメーションをすべて切った読み取り専用のグラフ設定。
+ * 軸・アニメーション・イベントを切った読み取り専用のグラフ設定。
+ * 凡例・ツールチップは対応するプラグインを登録していないため出ない（設定も持たない）。
  * 日付ラベルは canvas の外（OneRmCard の日付軸）が持つため、目盛は一切描かない。
  */
 export function buildChartOptions(singlePoint: boolean): ChartOptions<'line'> {
@@ -204,6 +217,5 @@ export function buildChartOptions(singlePoint: boolean): ChartOptions<'line'> {
       x: { type: 'category', display: false, offset: singlePoint },
       y: { type: 'linear', display: false },
     },
-    plugins: { legend: { display: false }, tooltip: { enabled: false } },
   }
 }

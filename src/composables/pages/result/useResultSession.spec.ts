@@ -81,6 +81,24 @@ describe('session origin', () => {
     expect(result.delta.value).toBeCloseTo(3)
   })
 
+  test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', async () => {
+    // 前回 60kg × 1 → 61.5、今回 62kg × 1 → 63.55（表示 63.5）。生値の差 2.05 では +2.1 になる
+    const prev = makeSession({ id: 'prev', startedAt: 1000, weight: 60, sets: 1, actualReps: [1] })
+    const { deps } = makeDeps({
+      storeSession: makeSession({ weight: 62, sets: 1, actualReps: [1] }),
+      prev,
+    })
+    const result = useResultSession('session', undefined, deps)
+    await result.load()
+
+    expect(result.delta.value).toBe(2)
+  })
+
+  test('実行中セッションが無ければ（Import 確定で破棄済み）load は false を返す', async () => {
+    const result = useResultSession('session', undefined, makeDeps().deps)
+    await expect(result.load()).resolves.toBe(false)
+  })
+
   test('前回の完遂セッションが無ければ delta は undefined', async () => {
     const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
     const result = useResultSession('session', undefined, deps)
@@ -97,6 +115,11 @@ describe('session origin', () => {
 
     expect(result.maxOneRm.value).toBe(0)
     expect(result.delta.value).toBeUndefined()
+  })
+
+  test('実績回数は編集可（repsReadonly は false）', () => {
+    const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
+    expect(useResultSession('session', undefined, deps).repsReadonly).toBe(false)
   })
 
   test('完遂セッションは lpPreview に今回 → 増量後の重量ペアを返し、未達は undefined', () => {
@@ -159,6 +182,11 @@ describe('history origin', () => {
 
     const noId = useResultSession('history', undefined, makeDeps().deps)
     await expect(noId.load()).resolves.toBe(false)
+  })
+
+  test('実績回数は読み専用（repsReadonly は true。メモのみ編集可）', () => {
+    const { deps } = makeDeps({ stored: [stored] })
+    expect(useResultSession('history', 'past', deps).repsReadonly).toBe(true)
   })
 
   test('完遂セッションでも lpPreview は常に undefined（過去に「次回」は無い）', async () => {
