@@ -44,8 +44,9 @@ export function resolveInitialMenu(
   exercise: Exercise,
   prevSession: Session | undefined,
 ): InitialMenu {
-  // 種目は常に引数を勝たせる。呼び出し側は同一種目の直前セッションを渡す約束だが、
-  // 食い違ったときに prevSession.menu.exercise が静かに勝って別種目のメニューになるのを防ぐ
+  // 種目フィールドだけは常に引数を勝たせる。呼び出し側は同一種目の直前セッションを渡す約束だが、
+  // 食い違ったときに prevSession.menu.exercise が静かに勝って記録上の種目が URL と食い違うのを防ぐ
+  //（数値と増量幅は約束どおり prevSession 由来のまま）
   const base: Menu = prevSession ? { ...prevSession.menu, exercise } : { exercise, ...DEFAULT_MENU }
   const lpPreview = computeLpPreview(prevSession)
   if (lpPreview === undefined) return { menu: base }

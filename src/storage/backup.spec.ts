@@ -297,6 +297,11 @@ describe('parseImport', () => {
     )
   })
 
+  test('startedAt が最小の正の整数（1）のセッションを受け入れる', () => {
+    // 通る側の境界。下限を `> 0` から狭める退行はここでしか落ちない
+    expect(parsesOk([makeSession('s1', 'benchPress', 1)])).toBe(true)
+  })
+
   test('不正なセッションの位置を message に含める', () => {
     expect(
       sessionsErrorMessage([makeSession('s1'), { ...makeSession('s2'), startedAt: 'yesterday' }]),

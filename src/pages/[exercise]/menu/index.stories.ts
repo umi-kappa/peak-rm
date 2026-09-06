@@ -70,19 +70,38 @@ export const FirstRun: Story = {
   loaders: [loadMenuPage()],
 }
 
-// START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線と、
+// PLAN の各ステッパーが step と MENU_MIN に配線されていることと、編集した menu が
+// START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線、
 // 同じジェスチャ内で AudioContext の準備 / Wake Lock 取得を呼ぶ配線だけを確認する
 export const Behavior: Story = {
   loaders: [loadMenuPage()],
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    // START SESSION は onMounted の非同期読み込み後（v-if="menu"）に現れるため findBy で待つ
-    await userEvent.click(await canvas.findByRole('button', { name: 'START SESSION' }))
+    // ステッパーは onMounted の非同期読み込み後（v-if="menu"）に現れるため findBy で待つ。
+    // REPS / INTERVAL は 1 回下げて step（1 / 10）の配線だけを見る。SETS は初期値 3 から
+    // 下限 1 まで下げて 1 回余分に押し、min に MENU_MIN が渡っていることを確認する
+    // （clamp のルール自体は stepper.spec / useNumberStepper.spec が担う）
+    for (const [label, clicks] of [
+      ['REPS', 1],
+      ['SETS', 3],
+      ['INTERVAL', 1],
+    ] as const) {
+      const group = within(await canvas.findByRole('group', { name: label }))
+      const decrease = group.getByRole('button', { name: 'Decrease' })
+      for (let index = 0; index < clicks; index += 1) await userEvent.click(decrease)
+    }
+    await userEvent.click(canvas.getByRole('button', { name: 'START SESSION' }))
     await waitFor(() => {
       const store = loaded.sessionStore as SessionStore
       expect(store.phase.value).toBe('setActive')
-      expect(store.session.value?.menu.weight).toBe(40)
+      expect(store.session.value?.menu).toEqual({
+        exercise: 'benchPress',
+        weight: 40,
+        reps: 7,
+        sets: 1,
+        intervalSec: 80,
+      })
       expect(router.currentRoute.value.name).toBe('training')
       expect(router.currentRoute.value.params.exercise).toBe('benchPress')
       expect((loaded.audioCue as AudioCueStore).prepare).toHaveBeenCalled()

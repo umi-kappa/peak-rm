@@ -261,7 +261,7 @@ describe('useSession', () => {
     release()
     await completing
     expect(session.phase.value).toBe('done')
-    // フロー終端後は session も書き戻さない（結果は DB 側には保存済み）
+    // 非最終セットでフローが終端していたら session も書き戻さない（結果は DB 側には保存済み）
     expect(session.session.value?.results).toHaveLength(0)
   })
 
