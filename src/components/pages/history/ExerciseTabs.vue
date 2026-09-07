@@ -50,7 +50,7 @@ function select(exercise: Exercise) {
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-caption);
-  /* <button> の UA 既定に頼らず明示する（global.css の button リセットは text-align を触らない） */
+  /* <button> の UA 既定に頼らず明示する（global.css の button / a リセットは text-align を触らない） */
   text-align: center;
   transition:
     background-color var(--transition),
