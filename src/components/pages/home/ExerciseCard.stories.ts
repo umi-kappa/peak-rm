@@ -52,6 +52,19 @@ export const Loading: Story = {
   },
 }
 
+// 未読込を未記録に見せない規則（spec「読み込み中の表示」）は視覚差分では守れないため assert する
+export const LoadingBehavior: Story = {
+  args: {
+    exercise: 'squat',
+    loading: true,
+  },
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByText('NO LOG')).toBeNull()
+  },
+}
+
 // reps が多セットで長いとき、省略せず折り返して全セットが表示されることを確認する
 export const LongReps: Story = {
   args: {

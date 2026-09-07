@@ -75,7 +75,9 @@ const { variant = 'primary', disabled = false } = defineProps<{
     }
   }
   /* 押せない間は一段落とす（データの読み込み待ちなど、常設ボタンが一時的に押せない場合）。
-     primary はアクセントの塗りを外し、面と枠線を非活性のカードと同じ色に落として主アクションの主張を止める。
+     variant を問わず面と枠線をカードと同じ色（bg-light / line）に置き、文字色を 3 次に落とす。
+     primary はアクセントの塗りが外れて主アクションの主張が止まり、secondary は透明だった面に
+     カードの塗りが付く。
      variant の塗りより後に置いて上書きする（詳細度が同じため順序で決まる） */
   &:disabled {
     background: var(--color-bg-light);

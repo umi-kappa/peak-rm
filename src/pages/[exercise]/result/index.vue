@@ -128,12 +128,7 @@ onMounted(initialize)
       <AppBar :title="EXERCISE_LABELS[exercise]" :back="isHistory" @back="goBack">
         <template v-if="isHistory" #action>
           <!-- 削除対象が読み込まれるまで押せない（常設のまま disabled で待つ） -->
-          <IconButton
-            name="trash-2"
-            label="Delete"
-            :disabled="!session"
-            @click="openDeleteConfirm"
-          />
+          <IconButton name="trash-2" label="Delete" :disabled="!ready" @click="openDeleteConfirm" />
         </template>
       </AppBar>
     </template>

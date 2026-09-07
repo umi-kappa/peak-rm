@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, waitFor, within } from 'storybook/test'
 import HomePage from '@/pages/home/index.vue'
 import { sessionRepoInjectionKey, type SessionRepo } from '@/storage/sessionRepo'
+import { flushLoad } from '@/stories/flush'
 import { makeSession, makeSessionRepo } from '@/stories/session'
 
 const meta: Meta<typeof HomePage> = {
@@ -51,6 +52,17 @@ export const Empty: Story = {
 // 直前セッションの読み込み中。カードの枠・種目名・ラベルだけ出し、値欄は空のまま Default と同じ高さを保つ
 export const Loading: Story = {
   loaders: [() => ({ sessionRepo: makeSessionRepo([], { pending: true }) })],
+}
+
+// 未読込を未記録に見せない規則（spec「読み込み中の表示」）は視覚差分では守れないため assert する
+export const LoadingBehavior: Story = {
+  loaders: [() => ({ sessionRepo: makeSessionRepo([], { pending: true }) })],
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await flushLoad()
+    await expect(canvas.queryByText('NO LOG')).toBeNull()
+  },
 }
 
 // provide した repo の直前セッションがカードに表示される配線（inject → loadSessions）だけを確認する。

@@ -1,4 +1,4 @@
-import { computed, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 
 import { computeLpPreview } from '@/core/linearProgression'
 import { formatLocalDay } from '@/core/localDay'
@@ -34,7 +34,7 @@ export function useResultSession(
   const prev = shallowRef<Session>()
   // load が表示対象と前回比の取得まで終えたか。画面は両 origin ともこれを待って本文を出す
   //（prev の後入れで前回比バッジが現れ、セット一覧が下へずれるのを防ぐ。spec「読み込み中の表示」）
-  const ready = shallowRef(false)
+  const ready = ref(false)
 
   const session = computed(() => (origin === 'session' ? store.session.value : loaded.value))
 

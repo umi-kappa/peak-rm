@@ -10,6 +10,7 @@ import {
 import { sessionRepoInjectionKey, type SessionRepo } from '@/storage/sessionRepo'
 import { audioCueInjectionKey, type AudioCueStore } from '@/composables/shared/platform/useAudioCue'
 import { wakeLockInjectionKey, type WakeLockStore } from '@/composables/shared/platform/useWakeLock'
+import { flushLoad } from '@/stories/flush'
 import { makeSession, makeSessionRepo } from '@/stories/session'
 import { makeAudioCue, makeWakeLock } from '@/stories/platform'
 import { storybookRouter as router } from '@/stories/router'
@@ -75,10 +76,21 @@ export const Loading: Story = {
   loaders: [loadMenuPage([], { pending: true })],
 }
 
+// 常設ボタンを disabled で待たせる規則（spec「読み込み中の表示」）は視覚差分では守れないため assert する
+export const LoadingBehavior: Story = {
+  loaders: [loadMenuPage([], { pending: true })],
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await flushLoad()
+    await expect(canvas.getByRole('button', { name: 'START SESSION' })).toBeDisabled()
+  },
+}
+
 // PLAN の各ステッパーが step と MENU_MIN に配線されていることと、編集した menu が
 // START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線、
 // 同じジェスチャ内で AudioContext の準備 / Wake Lock 取得を呼ぶ配線だけを確認する
-//（読み込み完了前の disabled は fake repo が即時解決するため play では見ず、Loading story が担う）
+//（読み込み完了前の disabled は fake repo が即時解決するため play では見ず、LoadingBehavior が担う）
 export const Behavior: Story = {
   loaders: [loadMenuPage()],
   parameters: { chromatic: { disableSnapshot: true } },
