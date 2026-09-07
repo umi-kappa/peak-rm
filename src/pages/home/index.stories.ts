@@ -48,6 +48,11 @@ export const Empty: Story = {
   loaders: [() => ({ sessionRepo: makeSessionRepo() })],
 }
 
+// 直前セッションの読み込み中。カードの枠・種目名・ラベルだけ出し、値欄は空のまま Default と同じ高さを保つ
+export const Loading: Story = {
+  loaders: [() => ({ sessionRepo: makeSessionRepo([], { pending: true }) })],
+}
+
 // provide した repo の直前セッションがカードに表示される配線（inject → loadSessions）だけを確認する。
 // カードタップの遷移は ExerciseCard の Behavior が担う。
 // 99.0 は fixture 由来の推定 1RM（82.5 kg × (1 + 8 / 40)）で、記録なし表示（—）では現れない値

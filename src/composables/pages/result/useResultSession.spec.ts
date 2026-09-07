@@ -81,6 +81,16 @@ describe('session origin', () => {
     expect(result.delta.value).toBeCloseTo(3)
   })
 
+  // 画面は前回比の取得まで待って本文を出す（spec「読み込み中の表示」）。store にセッションがあっても load 前は ready にしない
+  test('ready は load が前回比の取得まで終えてから true になる', async () => {
+    const { deps } = makeDeps({ storeSession: makeSession({ actualReps: [8, 8, 8] }) })
+    const result = useResultSession('session', undefined, deps)
+
+    expect(result.ready.value).toBe(false)
+    await result.load()
+    expect(result.ready.value).toBe(true)
+  })
+
   test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', async () => {
     // 前回 60kg × 1 → 61.5、今回 62kg × 1 → 63.55（表示 63.5）。生値の差 2.05 では +2.1 になる
     const prev = makeSession({ id: 'prev', startedAt: 1000, weight: 60, sets: 1, actualReps: [1] })
@@ -182,6 +192,7 @@ describe('history origin', () => {
 
     const noId = useResultSession('history', undefined, makeDeps().deps)
     await expect(noId.load()).resolves.toBe(false)
+    expect(noId.ready.value).toBe(false)
   })
 
   test('実績回数は読み専用（repsReadonly は true。メモのみ編集可）', () => {

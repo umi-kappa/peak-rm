@@ -32,6 +32,9 @@ export function useResultSession(
   const loaded = shallowRef<Session>()
   // 同一種目で当該より前の直近の完遂セッション（前回比の基準）。無ければ undefined のまま
   const prev = shallowRef<Session>()
+  // load が表示対象と前回比の取得まで終えたか。画面は両 origin ともこれを待って本文を出す
+  //（prev の後入れで前回比バッジが現れ、セット一覧が下へずれるのを防ぐ。spec「読み込み中の表示」）
+  const ready = shallowRef(false)
 
   const session = computed(() => (origin === 'session' ? store.session.value : loaded.value))
 
@@ -50,6 +53,7 @@ export function useResultSession(
     const current = session.value
     if (current === undefined) return false
     prev.value = await repo.latestCompleteBefore(current.exercise, current.startedAt)
+    ready.value = true
     return true
   }
 
@@ -111,6 +115,7 @@ export function useResultSession(
 
   return {
     session,
+    ready,
     marker,
     maxOneRm,
     delta,

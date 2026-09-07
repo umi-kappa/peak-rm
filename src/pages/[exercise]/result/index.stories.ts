@@ -38,6 +38,8 @@ const historyOriginLoader =
     options: {
       memo?: string
       withPrev?: boolean
+      /** repo の読み取りを解決させず、読み込み中の表示を見る */
+      pending?: boolean
       wrapRepo?: (repo: SessionRepo) => SessionRepo
     } = {},
   ) =>
@@ -52,7 +54,7 @@ const historyOriginLoader =
       )
     }
     await router.push('/benchPress/result?origin=history&id=past')
-    const repo = makeSessionRepo(sessions)
+    const repo = makeSessionRepo(sessions, { pending: options.pending })
     return {
       sessionStore: await makeSessionStore({}),
       sessionRepo: options.wrapRepo?.(repo) ?? repo,
@@ -109,6 +111,11 @@ export const AllSkipped: Story = {
 // 履歴詳細（日付 + マーカー + 削除アクション。FINISH と増量プレビューは出ない）
 export const HistoryDetail: Story = {
   loaders: [historyOriginLoader({ memo: 'フォーム良し', withPrev: true })],
+}
+
+// 履歴詳細の読み込み中。AppBar（種目名は URL から・削除は disabled）だけ出し、本文は出さない
+export const HistoryLoading: Story = {
+  loaders: [historyOriginLoader({ pending: true })],
 }
 
 // 完了セットのカードタップ → 編集 → SAVE → store（patchResultAt）へ反映されモーダルが閉じる配線と、
@@ -179,12 +186,18 @@ export const DiscardedSessionBehavior: Story = {
 }
 
 // 削除アクション → 確認ダイアログ → 確定で repo.remove が呼ばれ履歴一覧へ戻る配線を確認する
+//（読み込み完了前の disabled は fake repo が即時解決するため play では見ず、HistoryLoading story が担う）
 export const DeleteBehavior: Story = {
   loaders: [historyOriginLoader({ wrapRepo: (repo) => ({ ...repo, remove: fn(repo.remove) }) })],
   parameters: { chromatic: { disableSnapshot: true } },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Delete' }))
+    // AppBar は mount 直後からあるが、削除は読み込み完了まで disabled なので活性化を待つ
+    const deleteButton = canvas.getByRole('button', { name: 'Delete' })
+    await waitFor(() => {
+      expect(deleteButton).toBeEnabled()
+    })
+    await userEvent.click(deleteButton)
     await userEvent.click(canvas.getByRole('button', { name: '削除する' }))
     await waitFor(() => {
       const repo = loaded.sessionRepo as SessionRepo

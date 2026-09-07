@@ -20,9 +20,25 @@ export function localStartedAt(year: number, month: number, date: number, hour =
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
  * （get = id 一致、latestByExercise = 同種目の直近、latestCompleteBefore = 同種目・完遂・
  * startedAt がより前の直近、list = startedAt 降順）。
+ * pending を立てると読み取り系が永遠に解決しない Promise を返し、読み込み中の表示（spec「読み込み中の表示」）を再現する。
  */
-export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
+export function makeSessionRepo(
+  sessions: Session[] = [],
+  { pending = false }: { pending?: boolean } = {},
+): SessionRepo {
   const byStartedAt = [...sessions].sort((a, b) => a.startedAt - b.startedAt)
+  if (pending) {
+    const never = () => new Promise<never>(() => {})
+    return {
+      insert: async () => {},
+      patchResults: async () => {},
+      remove: async () => {},
+      get: never,
+      list: never,
+      latestByExercise: never,
+      latestCompleteBefore: never,
+    }
+  }
   return {
     insert: async () => {},
     patchResults: async () => {},

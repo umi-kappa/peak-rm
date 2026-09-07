@@ -16,7 +16,9 @@ const { goBack } = useBackNavigation()
 
 const sessionRepo = injectRequired(sessionRepoInjectionKey)
 
-const { exercise, sessions, chart, selectExercise, load } = useHistory({ repo: sessionRepo })
+const { exercise, loaded, sessions, chart, selectExercise, load } = useHistory({
+  repo: sessionRepo,
+})
 
 onMounted(load)
 </script>
@@ -35,16 +37,18 @@ onMounted(load)
 
     <section class="sessions" aria-labelledby="history-sessions-label">
       <BaseLabel id="history-sessions-label">SESSIONS</BaseLabel>
-      <ul v-if="sessions.length > 0" class="list" role="list">
-        <li v-for="session in sessions" :key="session.id">
-          <SessionSummaryCard :session />
-        </li>
-      </ul>
-      <!-- 選択中の種目に記録が無い場合（spec「履歴」）。見出しは残し、行の位置に 1 行で示す
-           （ホームが LAST ラベルを残して NO LOG を出すのと同じ扱い）。
-           load 完了前も同じ表示になるが、これもホームと揃えてフラッシュを許容する
-           — 共通初期値から増量後の値へ数値が書き換わるメニュー設定と違い、誤った値を読むリスクがない -->
-      <BaseUnit v-else>NO SESSIONS</BaseUnit>
+      <!-- 行と空表示は load 完了後に 1RM カードと一緒に出す。先に行を出すとカードの後入れで
+           タップ対象の行が下へずれるため（spec「読み込み中の表示」） -->
+      <template v-if="loaded">
+        <ul v-if="sessions.length > 0" class="list" role="list">
+          <li v-for="session in sessions" :key="session.id">
+            <SessionSummaryCard :session />
+          </li>
+        </ul>
+        <!-- 選択中の種目に記録が無い場合（spec「履歴」）。見出しは残し、行の位置に 1 行で示す
+             （ホームが LAST ラベルを残して NO LOG を出すのと同じ扱い） -->
+        <BaseUnit v-else>NO SESSIONS</BaseUnit>
+      </template>
     </section>
   </ScreenFrame>
 </template>

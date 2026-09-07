@@ -18,10 +18,10 @@ import { storybookRouter as router } from '@/stories/router'
 // （不正値はホームへ逃がす）ため、training / interval と違い visual story でも描画前に実ルートへ置く。
 // 直前セッションの有無は sessions の fixture で再現する。session store はトレーニング開始前の
 // 画面なので idle のまま渡す。開始時のブラウザ API 副作用は fake に差し替える
-function loadMenuPage(sessions?: Parameters<typeof makeSessionRepo>[0]) {
+function loadMenuPage(...repoArgs: Parameters<typeof makeSessionRepo>) {
   return async () => {
     await router.push('/benchPress/menu')
-    const sessionRepo = makeSessionRepo(sessions)
+    const sessionRepo = makeSessionRepo(...repoArgs)
     return {
       sessionRepo,
       sessionStore: useSession({ sessionRepo }),
@@ -70,9 +70,15 @@ export const FirstRun: Story = {
   loaders: [loadMenuPage()],
 }
 
+// 直前セッションの読み込み中。見出しと disabled の START SESSION だけ出し、値のカードは出さない
+export const Loading: Story = {
+  loaders: [loadMenuPage([], { pending: true })],
+}
+
 // PLAN の各ステッパーが step と MENU_MIN に配線されていることと、編集した menu が
 // START SESSION → session.start（menu 焼き込み・setActive へ）+ training へ replace する配線、
 // 同じジェスチャ内で AudioContext の準備 / Wake Lock 取得を呼ぶ配線だけを確認する
+//（読み込み完了前の disabled は fake repo が即時解決するため play では見ず、Loading story が担う）
 export const Behavior: Story = {
   loaders: [loadMenuPage()],
   parameters: { chromatic: { disableSnapshot: true } },
@@ -91,7 +97,9 @@ export const Behavior: Story = {
       const decrease = group.getByRole('button', { name: 'Decrease' })
       for (let index = 0; index < clicks; index += 1) await userEvent.click(decrease)
     }
-    await userEvent.click(canvas.getByRole('button', { name: 'START SESSION' }))
+    const startButton = canvas.getByRole('button', { name: 'START SESSION' })
+    expect(startButton).toBeEnabled()
+    await userEvent.click(startButton)
     await waitFor(() => {
       const store = loaded.sessionStore as SessionStore
       expect(store.phase.value).toBe('setActive')

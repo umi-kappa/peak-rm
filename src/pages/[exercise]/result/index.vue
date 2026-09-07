@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { EXERCISE_LABELS } from '@/core/constants'
+import { EXERCISE_LABELS, isExercise } from '@/core/constants'
 import { useResultSession } from '@/composables/pages/result/useResultSession'
 import { formatDeltaBadge } from '@/core/deltaBadge'
 import { formatOneRm, hasOneRm } from '@/core/oneRm'
@@ -51,9 +51,14 @@ const origin: ResultOrigin = route.query.origin === 'history' ? 'history' : 'ses
 const sessionId = typeof route.query.id === 'string' ? route.query.id : undefined
 // 履歴経由フラグ。← 戻り・削除導線・ヘッダ表示の分岐に使う（origin はマウント中不変）
 const isHistory = origin === 'history'
+// AppBar は骨組みとして読み込み前に出すため、種目名は URL の種目から取る（spec「読み込み中の表示」）。
+// 1 セッション = 1 種目なので読み込み後の session.exercise と一致する
+const rawExercise = route.params.exercise
+const exercise = isExercise(rawExercise) ? rawExercise : undefined
 
 const {
   session,
+  ready,
   marker,
   maxOneRm,
   delta,
@@ -119,15 +124,22 @@ onMounted(initialize)
 
 <template>
   <ScreenFrame>
-    <template v-if="session" #header>
-      <AppBar :title="EXERCISE_LABELS[session.exercise]" :back="isHistory" @back="goBack">
+    <template v-if="exercise" #header>
+      <AppBar :title="EXERCISE_LABELS[exercise]" :back="isHistory" @back="goBack">
         <template v-if="isHistory" #action>
-          <IconButton name="trash-2" label="Delete" @click="openDeleteConfirm" />
+          <!-- 削除対象が読み込まれるまで押せない（常設のまま disabled で待つ） -->
+          <IconButton
+            name="trash-2"
+            label="Delete"
+            :disabled="!session"
+            @click="openDeleteConfirm"
+          />
         </template>
       </AppBar>
     </template>
 
-    <template v-if="session">
+    <!-- 本文は前回比の取得まで含めて読み込みが終わってから一度に出す（spec「読み込み中の表示」） -->
+    <template v-if="ready && session">
       <span v-if="dayLabel" class="date">{{ dayLabel }}</span>
 
       <MenuSummary

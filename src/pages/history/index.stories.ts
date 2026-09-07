@@ -5,13 +5,14 @@ import HistoryPage from '@/pages/history/index.vue'
 import { sessionRepoInjectionKey, type SessionRepo } from '@/storage/sessionRepo'
 import { storybookRouter as router } from '@/stories/router'
 import { localStartedAt, makeSession, makeSessionRepo } from '@/stories/session'
-import type { Session } from '@/core/types'
 
 // 選択種目は route query から読むため、repo を用意する前に開始 route を確定する
-const historyLoader = (repoSessions: Session[]) => async () => {
-  await router.push('/history')
-  return { sessionRepo: makeSessionRepo(repoSessions) }
-}
+const historyLoader =
+  (...repoArgs: Parameters<typeof makeSessionRepo>) =>
+  async () => {
+    await router.push('/history')
+    return { sessionRepo: makeSessionRepo(...repoArgs) }
+  }
 
 // ベンチは 3 状態のバッジが並ぶように、スクワットは種目切り替えの確認用に 1 件だけ用意する
 const sessions = [
@@ -80,6 +81,11 @@ export const Default: Story = {
 // 初回起動（記録なし）。選択中の種目に記録が無いため NO SESSIONS を表示する
 export const Empty: Story = {
   loaders: [historyLoader([])],
+}
+
+// 一覧の読み込み中。タブと SESSIONS 見出しだけ出し、1RM カード・行・NO SESSIONS は出さない
+export const Loading: Story = {
+  loaders: [historyLoader([], { pending: true })],
 }
 
 // 同日同種目の 2 セッションを一覧では集約せず両方表示し、グラフでは 1 点に畳む

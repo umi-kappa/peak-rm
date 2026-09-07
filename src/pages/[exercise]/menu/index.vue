@@ -34,8 +34,9 @@ const wakeLock = injectRequired(wakeLockInjectionKey)
 const rawExercise = route.params.exercise
 const exercise = isExercise(rawExercise) ? rawExercise : undefined
 
-// undefined 始まりにして読み込み完了まで本体を描画しない
-//（共通初期値 → 増量後の値へ表示が切り替わるフラッシュを防ぐ）
+// undefined 始まりにして読み込み完了まで値のカードを描画しない
+//（共通初期値 → 増量後の値へ表示が切り替わるフラッシュを防ぐ）。見出しと START SESSION は
+// 骨組みとして先に出し、ボタンは読み込み完了まで disabled にする（spec「読み込み中の表示」）
 const menu = ref<Menu>()
 // 増量プレビューは初期解決時の値を固定表示する（増量提案の記録のため、手動編集には追従させない）
 const lpPreview = ref<LpPreview>()
@@ -82,9 +83,9 @@ onMounted(async () => {
       <AppBar :title="EXERCISE_LABELS[exercise]" @back="goBack" />
     </template>
 
-    <template v-if="menu">
-      <section class="section" aria-labelledby="menu-weight-label">
-        <BaseLabel id="menu-weight-label">WEIGHT</BaseLabel>
+    <section class="section" aria-labelledby="menu-weight-label">
+      <BaseLabel id="menu-weight-label">WEIGHT</BaseLabel>
+      <template v-if="menu">
         <WeightStepper v-model="menu.weight" />
         <LpIndicator
           v-if="lpPreview"
@@ -92,10 +93,12 @@ onMounted(async () => {
           :to="lpPreview.to"
           message="LAST SESSION COMPLETED!"
         />
-      </section>
+      </template>
+    </section>
 
-      <section class="section" aria-labelledby="menu-plan-label">
-        <BaseLabel id="menu-plan-label">PLAN</BaseLabel>
+    <section class="section" aria-labelledby="menu-plan-label">
+      <BaseLabel id="menu-plan-label">PLAN</BaseLabel>
+      <template v-if="menu">
         <BaseCard>
           <div class="row">
             <span class="row-label">REPS</span>
@@ -139,11 +142,11 @@ onMounted(async () => {
             </div>
           </div>
         </BaseCard>
-      </section>
-    </template>
+      </template>
+    </section>
 
-    <template v-if="menu" #footer>
-      <BaseButton @click="start">START SESSION</BaseButton>
+    <template #footer>
+      <BaseButton :disabled="!menu" @click="start">START SESSION</BaseButton>
     </template>
   </ScreenFrame>
 </template>
