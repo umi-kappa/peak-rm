@@ -20,8 +20,11 @@ export function useHistory(deps: HistoryDeps) {
   const route = useRoute()
   const router = useRouter()
 
-  // 全種目分の一覧。要素は書き換えず入れ替えのみのため shallowRef で持つ
-  const all = shallowRef<Session[]>([])
+  // 全種目分の一覧。要素は書き換えず入れ替えのみのため shallowRef で持つ。
+  // load 完了まで undefined にし、画面が未読込（行も NO SESSIONS も出さない）と
+  // 未記録を区別できるようにする（spec「読み込み中の表示」）
+  const all = shallowRef<Session[]>()
+  const loaded = computed(() => all.value !== undefined)
 
   // 選択中の種目は URL に持たせ、履歴詳細から戻っても（= 画面が再マウントされても）絞り込みを保つ。
   // 未指定・不正な値はタブ先頭（ベンチプレス）にフォールバックする
@@ -29,7 +32,7 @@ export function useHistory(deps: HistoryDeps) {
     isExercise(route.query.exercise) ? route.query.exercise : EXERCISE_ORDER[0],
   )
 
-  const sessions = computed(() => all.value.filter((s) => s.exercise === exercise.value))
+  const sessions = computed(() => all.value?.filter((s) => s.exercise === exercise.value) ?? [])
 
   // グラフは一覧と同じ絞り込み結果から作る（日付集約と区間の切り出しは chartData に閉じている）。
   // 記録が 1 点も無い種目では undefined になり、画面はカードごと出さない
@@ -45,5 +48,5 @@ export function useHistory(deps: HistoryDeps) {
     all.value = await repo.list()
   }
 
-  return { exercise, sessions, chart, selectExercise, load }
+  return { exercise, loaded, sessions, chart, selectExercise, load }
 }

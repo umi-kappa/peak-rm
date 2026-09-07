@@ -14,19 +14,41 @@ export function localStartedAt(year: number, month: number, date: number, hour =
   return new Date(year, month - 1, date, hour, 0).getTime()
 }
 
+/** 永遠に解決しない Promise を返す。pending の読み取り系に使う */
+function neverResolves() {
+  return new Promise<never>(() => {})
+}
+
 /**
  * 実 DB へ書かない fake repo を作る（stories の loaders / provide decorator から使う）。
  * stories は表示状態だけ欲しいので、書き込み系はすべて握りつぶす。
  * 読み取り系は sessions（保存済みセッションの fixture 群）から実 repo と同じ規則で導出する
  * （get = id 一致、latestByExercise = 同種目の直近、latestCompleteBefore = 同種目・完遂・
  * startedAt がより前の直近、list = startedAt 降順）。
+ * pending を立てると読み取り系が永遠に解決しない Promise を返し、読み込み中の表示（spec「読み込み中の表示」）を再現する。
  */
-export function makeSessionRepo(sessions: Session[] = []): SessionRepo {
-  const byStartedAt = [...sessions].sort((a, b) => a.startedAt - b.startedAt)
-  return {
+export function makeSessionRepo(
+  sessions: Session[] = [],
+  { pending = false }: { pending?: boolean } = {},
+): SessionRepo {
+  // 書き込み系は pending でも解決させる（読み込み中の表示を再現するのは読み取り系だけ）
+  const writes = {
     insert: async () => {},
     patchResults: async () => {},
     remove: async () => {},
+  }
+  if (pending) {
+    return {
+      ...writes,
+      get: neverResolves,
+      list: neverResolves,
+      latestByExercise: neverResolves,
+      latestCompleteBefore: neverResolves,
+    }
+  }
+  const byStartedAt = [...sessions].sort((a, b) => a.startedAt - b.startedAt)
+  return {
+    ...writes,
     get: async (id) => sessions.find((session) => session.id === id),
     list: async () => [...byStartedAt].reverse(),
     latestByExercise: async (exercise) =>

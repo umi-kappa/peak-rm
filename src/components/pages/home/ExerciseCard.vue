@@ -13,6 +13,8 @@ const { exercise, session } = defineProps<{
   exercise: Exercise
   /** 直前セッション。undefined は未記録（初回 / データクリア直後） */
   session?: Session
+  /** 直前セッションの読み込み中。値欄を空のまま高さだけ確保し、未記録表示（— / NO LOG）を出さない（spec「読み込み中の表示」） */
+  loading?: boolean
 }>()
 
 const oneRm = computed(() => (session ? sessionMaxOneRm(session) : 0))
@@ -30,8 +32,10 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
         <div class="est">
           <BaseLabel>EST. 1RM</BaseLabel>
           <div class="est-value">
-            <BigNumber :value="oneRmText" size="stat" :tone="oneRmTone" />
-            <BaseUnit>KG</BaseUnit>
+            <template v-if="!loading">
+              <BigNumber :value="oneRmText" size="stat" :tone="oneRmTone" />
+              <BaseUnit>KG</BaseUnit>
+            </template>
           </div>
         </div>
         <div class="last">
@@ -46,7 +50,7 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
               <BaseUnit>REPS</BaseUnit>
             </div>
           </template>
-          <BaseUnit v-else>NO LOG</BaseUnit>
+          <BaseUnit v-else-if="!loading">NO LOG</BaseUnit>
         </div>
       </div>
     </div>
@@ -81,6 +85,11 @@ const reps = computed(() => (session ? formatSetReps(session) : ''))
   display: flex;
   align-items: baseline;
   gap: var(--space-4);
+  /* 読み込み中（中身なし）も stat サイズの BigNumber（line-height tight = 1）と同じ高さを保ち、
+     値が入ってもカードの高さ＝下のカードの位置が動かないようにする。reps が 1 行に収まる限り
+     EST 列（52px）が LAST 列（50.8px）より高いので、この 1 箇所で .data の高さが決まる。
+     多セットで reps が折り返すと LAST 列が上回り、そのカードだけ読み込み完了で高さが増える */
+  min-height: var(--font-size-stat);
 }
 
 .last {

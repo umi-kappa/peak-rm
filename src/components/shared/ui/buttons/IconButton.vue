@@ -56,8 +56,7 @@ function onClick() {
   background: var(--color-bg-light);
   border: none;
   color: var(--color-text-secondary);
-  /* router-link 版は <a> になり global.css の button リセットが効かないため、ここで補う */
-  cursor: pointer;
+  /* router-link 版の <a> に付く UA 既定の下線を落とす */
   text-decoration: none;
   transition:
     background-color var(--transition),

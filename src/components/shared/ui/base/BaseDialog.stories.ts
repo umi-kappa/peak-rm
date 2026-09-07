@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fireEvent, fn, within } from 'storybook/test'
+import { expect, fireEvent, fn, waitFor, within } from 'storybook/test'
 import BaseDialog from '@/components/shared/ui/base/BaseDialog.vue'
 import { topLayerDocs } from '@/stories/topLayerDocs'
 
@@ -11,7 +11,7 @@ const meta: Meta<typeof BaseDialog> = {
       story: topLayerDocs(240),
       description: {
         component:
-          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。マウント = 表示（開閉は呼び出し側の `v-if` が唯一のソース）で `showModal()` し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。ネイティブのフォーカス復元が働くよう、アンマウント前に `close()` を通す。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
+          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。マウント = 表示（開閉は呼び出し側の `v-if` が唯一のソース）で `showModal()` し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。ネイティブのフォーカス復元が働くよう、アンマウント前に `close()` を通す。初期フォーカスは中身が `autofocus` で決める（無ければ最初のフォーカス可能要素）。dialog 要素は可視領域いっぱいの透明な配置レイヤーで、カードをその中央に置く。iOS のソフトキーボードで可視領域が縮んだときは `visualViewport` に追従してレイヤーを縮め、収まらないカードは中をスクロールさせる（下部の SAVE をキーボードの裏に隠さない）。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
       },
     },
   },
@@ -71,5 +71,14 @@ export const Behavior: Story = {
     await fireEvent.pointerDown(canvas.getByRole('textbox', { name: 'Sample input' }))
     await fireEvent.click(dialog)
     await expect(args.onCancel).toHaveBeenCalledTimes(2)
+
+    // 本物の window.visualViewport が配置レイヤーへ配線されていることを確認する。
+    // useVisualViewport.spec は fake を注入する経路しか通らず、本番で使う deps 省略経路
+    // （= window.visualViewport へのフォールバック）はここでしか通らない。
+    // height / offsetTop は read-only でテストから動かせないため、追従そのものは spec が担う
+    await waitFor(() => {
+      expect(dialog.style.height).toBe(`${window.visualViewport?.height}px`)
+      expect(dialog.style.top).toBe(`${window.visualViewport?.offsetTop}px`)
+    })
   },
 }

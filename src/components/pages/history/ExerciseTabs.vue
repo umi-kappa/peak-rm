@@ -38,9 +38,11 @@ function select(exercise: Exercise) {
 }
 
 /* padding は最長ラベル BENCH PRESS が 3 分割幅に 1 行で収まる上限として 8px。
-   狭幅・フォント拡大時は折り返して縦に伸びる（横スクロールにはしない） */
+   高さは padding でなく min-height でタップ最小 44px（design「Tap Target」）を確保し、
+   幅に影響させない。狭幅・フォント拡大時は折り返して縦に伸びる（横スクロールにはしない） */
 .tab {
   flex: 1;
+  min-height: 44px;
   padding: var(--space-8);
   border: 0;
   border-radius: var(--radius);
@@ -48,7 +50,7 @@ function select(exercise: Exercise) {
   color: var(--color-text-tertiary);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-caption);
-  /* <button> の UA 既定に頼らず明示する（global.css の button リセットは text-align を触らない） */
+  /* <button> の UA 既定に頼らず明示する（global.css の button / a リセットは text-align を触らない） */
   text-align: center;
   transition:
     background-color var(--transition),

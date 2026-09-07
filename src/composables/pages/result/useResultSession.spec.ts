@@ -32,8 +32,25 @@ function makeSession(options: {
   }
 }
 
+// 手動で解決できる Promise。await の途中で状態を観測するテストに使う
+function makeDeferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((r) => {
+    resolve = r
+  })
+  return { promise, resolve }
+}
+
 // store / repo の fake を束ねた deps。store は実装と同じイミュータブル更新で編集を反映する
-function makeDeps(options: { storeSession?: Session; stored?: Session[]; prev?: Session } = {}) {
+function makeDeps(
+  options: {
+    storeSession?: Session
+    stored?: Session[]
+    prev?: Session
+    /** 前回比の取得を保留させる Promise。解決タイミングを握って load の途中を観測する */
+    prevPromise?: Promise<Session | undefined>
+  } = {},
+) {
   const storeRef = shallowRef<Session | undefined>(options.storeSession)
   const store = {
     session: storeRef,
@@ -48,7 +65,7 @@ function makeDeps(options: { storeSession?: Session; stored?: Session[]; prev?: 
   const repo = {
     get: vi.fn(async (id: string) => options.stored?.find((s) => s.id === id)),
     patchResults: vi.fn(async () => {}),
-    latestCompleteBefore: vi.fn(async () => options.prev),
+    latestCompleteBefore: vi.fn(() => options.prevPromise ?? Promise.resolve(options.prev)),
     remove: vi.fn(async () => {}),
   }
   const deps: ResultSessionDeps = { store, repo }
@@ -81,6 +98,27 @@ describe('session origin', () => {
     expect(result.delta.value).toBeCloseTo(3)
   })
 
+  // 画面は前回比の取得まで待って本文を出す（spec「読み込み中の表示」）。store にセッションがあっても
+  // 前回比が返るまで ready にしない（先に本文が出ると、後から入る前回比バッジでセット一覧が下へずれる）
+  test('ready は load が前回比の取得まで終えてから true になる', async () => {
+    const deferred = makeDeferred<Session | undefined>()
+    const { deps } = makeDeps({
+      storeSession: makeSession({ actualReps: [8, 8, 8] }),
+      prevPromise: deferred.promise,
+    })
+    const result = useResultSession('session', undefined, deps)
+
+    expect(result.ready.value).toBe(false)
+
+    const loading = result.load()
+    await Promise.resolve()
+    expect(result.ready.value).toBe(false)
+
+    deferred.resolve(undefined)
+    await loading
+    expect(result.ready.value).toBe(true)
+  })
+
   test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', async () => {
     // 前回 60kg × 1 → 61.5、今回 62kg × 1 → 63.55（表示 63.5）。生値の差 2.05 では +2.1 になる
     const prev = makeSession({ id: 'prev', startedAt: 1000, weight: 60, sets: 1, actualReps: [1] })
@@ -97,6 +135,7 @@ describe('session origin', () => {
   test('実行中セッションが無ければ（Import 確定で破棄済み）load は false を返す', async () => {
     const result = useResultSession('session', undefined, makeDeps().deps)
     await expect(result.load()).resolves.toBe(false)
+    expect(result.ready.value).toBe(false)
   })
 
   test('前回の完遂セッションが無ければ delta は undefined', async () => {
@@ -180,8 +219,12 @@ describe('history origin', () => {
     const missingId = useResultSession('history', 'missing', makeDeps({ stored: [stored] }).deps)
     await expect(missingId.load()).resolves.toBe(false)
 
-    const noId = useResultSession('history', undefined, makeDeps().deps)
+    // id 未指定なら repo を叩かずに逃がす（Dexie の get は undefined を invalid key として throw する）
+    const { deps: noIdDeps, repo: noIdRepo } = makeDeps()
+    const noId = useResultSession('history', undefined, noIdDeps)
     await expect(noId.load()).resolves.toBe(false)
+    expect(noIdRepo.get).not.toHaveBeenCalled()
+    expect(noId.ready.value).toBe(false)
   })
 
   test('実績回数は読み専用（repsReadonly は true。メモのみ編集可）', () => {

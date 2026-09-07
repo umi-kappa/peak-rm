@@ -119,9 +119,9 @@ text-shadow:
 
 最小 **44 px** (iOS HIG)。全ボタン・stepper で遵守。
 
-例外: `IconButton` は 40 × 40 px とする（AppBar の戻る・補助操作、Home のブランド行の Settings、インターバルの通知音の停止に使う。いずれも隣接要素と十分な間隔を取って単独で置く前提。ただし通知音の停止だけは鳴っている最中に押す操作で、この前提が弱い）。
+例外: `IconButton` は 40 × 40 px とする（AppBar の戻る・補助操作、Home のブランド行の Settings に使う。いずれも隣接要素と十分な間隔を取って単独で置く前提）。インターバルの通知音の停止だけは鳴っている最中に急いで押す操作でこの前提が弱いため、44 × 44 px とする。
 
-例外: History の種目タブは高さ 33 px (padding 8)。padding を一律に上げて 44 px にすると最長ラベル `BENCH PRESS` が折り返す (§6) ため、高さは上げずに 3 等分した横幅で当たり判定を確保する。
+History の種目タブは内側の余白 8 を保ったまま高さだけ 44 px に広げる（余白を一律に上げると最長ラベル `BENCH PRESS` が 3 分割幅で折り返す。§6）。
 
 ### Line Height
 
@@ -201,7 +201,7 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### 6. History (`M_History`)
 
 - AppBar: "HISTORY"
-- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)
+- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)。高さは min-height 44 px (Tap Target)
 - Est. 1RM カード (surface, `lineSoft` 枠, radius 4, padding 16)
   - ヘッダー左: `EST. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `KG` unit
   - ヘッダー右: `LAST 8 SESSIONS` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `KG` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
@@ -228,12 +228,13 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### 8. Modal (`M_Modal` — セット編集)
 
 - フルスクリーンオーバーレイ + 中央モーダル
+- ソフトキーボード表示中は可視領域 (visual viewport) の中央に置き直し、収まらない高さはモーダル内をスクロールさせる (下部の `SAVE` をキーボードの裏に隠さない。iOS はキーボードが出てもページの高さが変わらないため、可視領域の変化を別途検知して位置と高さを決める)
 - 背景は暗幕 (`backdrop`)。モーダル背後の画面は暗幕越しに見える
 - **影は使わない**。背景からの分離は枠線 (`line`) と暗幕が担う (装飾的な影はトーンガイドに反する)
 - モーダル内容:
   - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `KG` + `SET` unit + Set 番号 (mono stat bold)
   - 実績回数 Stepper (large)
-  - メモテキストエリア (min-height 64 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
+  - メモテキストエリア (高さ 4 行分 ≈ 104 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
   - 下部: `SAVE` (primary, fill accent)
 - 閉じるための × は無い (保存のみで閉じる)
 
@@ -243,8 +244,10 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 
 ### グローバル
 
+- 保存済みデータを読む画面 (Home / Menu / Result / History) は、読み込み中も枠・見出し・ラベル・下部 CTA を出したまま値だけを空にする。値が入る場所は空のまま高さを保ち、記録なしの表示 (`—` / `NO LOG` / `NO SESSIONS`) は読み込みが終わってからだけ出す (未読込を未記録に見せない。`../spec.md`「読み込み中の表示」)
+- 読み込み中の常設ボタン (Menu の `START SESSION`、Result の削除) は消さず、押せない状態で置いたままにする。押せない状態は文字色を 3 次まで落とし、塗りを持つボタンはアクセントの塗りを外して面と枠線をカードと同じ階調に置く
 - すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」(`spec.md` §4)・トレーニング中 / インターバル中からのセッションフロー離脱 (§5)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
-- タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面)。`opacity` は使わない
+- タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面、Home の History 行はシェブロン)。向きは一段**上げる** (明るくする) 方向に揃える。例外は primary で、アクセントの塗りを外して文字色をアクセントにする反転にする (塗りが既にパレットで最も明るい面のため、上げる余地が無い)。`opacity` は使わない
 - アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る (`../spec.md`「トーンガイド」)
 
 ### Timer (`M_Interval`)
@@ -260,6 +263,7 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### Stepper
 
 - 左 [−] / 右 [+] ボタンタップで刻み分増減
+- 長押しで連続増減 (0.5 s 後から 100 ms 間隔)。1 s 続けたら 1 回あたり 4 刻みに加速し、重量 0.25 kg 刻みの大きな移動を数秒で済ませる
 - 中央値は表示のみ (タップで直接編集はしない)。`tabular-nums` で揃える
 - `0.25 kg` / `1 rep` / `1 set` / `10 sec` の刻みは `spec.md` §2 参照
 

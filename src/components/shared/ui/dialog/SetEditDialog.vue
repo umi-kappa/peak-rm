@@ -89,15 +89,19 @@ function onCancel() {
 
     <div class="field">
       <BaseLabel id="set-edit-note-label">NOTE</BaseLabel>
+      <!-- 高さは 4 行分（rows）。ステッパー・ボタンと並ぶ 1 画面の中で、メモを数行読み書きできる余裕を持たせる -->
       <textarea
         v-model="draftMemo"
         class="memo"
+        rows="4"
         placeholder="ADD NOTE"
         aria-labelledby="set-edit-note-label"
       />
     </div>
 
-    <BaseButton @click="onSave">SAVE</BaseButton>
+    <!-- 初期フォーカスは SAVE に置く（BaseDialog の showModal は既定で最初のフォーカス可能要素 = Decrease に
+         フォーカスし、Enter がそのまま減算になる）。textarea に置くとモバイルで開くたびキーボードが出る -->
+    <BaseButton autofocus @click="onSave">SAVE</BaseButton>
   </BaseDialog>
 </template>
 
@@ -121,6 +125,9 @@ function onCancel() {
 .divider {
   width: 100%;
   height: 1px;
+  /* .panel が縦 flex で、他の子は自動最小サイズで止まるため、レイヤーより高いときは
+     縮み分が唯一縮めるこの 1px の線に集中して 0 になる */
+  flex-shrink: 0;
   margin: 0;
   border: 0;
   background: var(--color-line-dark);
@@ -139,13 +146,12 @@ function onCancel() {
 }
 
 .memo {
-  min-height: 64px;
   padding: var(--space-12);
   background: var(--color-bg-light);
   border: 1px solid var(--color-line-dark);
   border-radius: var(--radius);
   color: var(--color-text);
-  /* form control は body のフォントを継承しないため明示する（global.css の button リセットと同趣旨） */
+  /* form control は body のフォントを継承しないため明示する（global.css の button / a リセットと同趣旨） */
   font: inherit;
   /* モバイル前提のため手動リサイズは持たせない（入力に応じた高さはブラウザのスクロールに任せる） */
   resize: none;

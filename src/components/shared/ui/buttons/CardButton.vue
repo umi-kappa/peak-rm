@@ -38,8 +38,7 @@ function onClick() {
   padding: 0;
   border: 0;
   background: none;
-  /* router-link 版は <a> になり global.css の button リセットが効かないため、ここで補う */
-  cursor: pointer;
+  /* router-link 版の <a> に付く UA 既定の下線を落とす */
   text-decoration: none;
   /* <button> 版の UA 既定（text-align: center）を打ち消し、内側 BaseCard を左寄せに保つ */
   text-align: left;

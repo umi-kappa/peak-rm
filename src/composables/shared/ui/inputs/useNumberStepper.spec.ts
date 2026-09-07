@@ -2,10 +2,17 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { effectScope, ref } from 'vue'
 import type { StepperOptions } from '@/core/stepper'
 import {
+  NUMBER_STEPPER_ACCELERATE_AFTER_TICKS,
+  NUMBER_STEPPER_ACCELERATED_STEPS,
   NUMBER_STEPPER_REPEAT_DELAY_MS,
   NUMBER_STEPPER_REPEAT_INTERVAL_MS,
   useNumberStepper,
 } from '@/composables/shared/ui/inputs/useNumberStepper'
+
+// 長押し判定から加速に入る直前（等速リピートを NUMBER_STEPPER_ACCELERATE_AFTER_TICKS 回終えた時点）までの時間
+const UNTIL_ACCELERATION_MS =
+  NUMBER_STEPPER_REPEAT_DELAY_MS +
+  NUMBER_STEPPER_REPEAT_INTERVAL_MS * NUMBER_STEPPER_ACCELERATE_AFTER_TICKS
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -15,13 +22,15 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+const POINTER_ID = 1
+
 // startIncrement / startDecrement は pointerdown ハンドラとして PointerEvent を受け取り capture を取得するため、
 // タイマーロジックの検証では setPointerCapture を持つ最小限のスタブイベントを注入する
-function pointerDown(button = 0): PointerEvent {
+function pointerDown(button = 0, setPointerCapture: (pointerId: number) => void = () => {}) {
   return {
     button,
-    currentTarget: { setPointerCapture: () => {} },
-    pointerId: 1,
+    currentTarget: { setPointerCapture },
+    pointerId: POINTER_ID,
   } as unknown as PointerEvent
 }
 
@@ -34,7 +43,8 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
   return {
     scope,
     value,
-    startIncrement: (button?: number) => startIncrement(pointerDown(button)),
+    startIncrement: (button?: number, setPointerCapture?: (pointerId: number) => void) =>
+      startIncrement(pointerDown(button, setPointerCapture)),
     startDecrement: (button?: number) => startDecrement(pointerDown(button)),
     stepUp,
     stepDown,
@@ -43,6 +53,24 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
 }
 
 describe('useNumberStepper', () => {
+  // 長押しの体感（design「Stepper」の 0.5 s / 100 ms / 1 s で 4 刻み）は定数そのものが決めるため、
+  // 実値を直接固定する。他のテストは定数から期待値を導出するので、値を変えても気付けない
+  test('長押しリピートの定数は design で決めた実値になっている', () => {
+    expect(NUMBER_STEPPER_REPEAT_DELAY_MS).toBe(500)
+    expect(NUMBER_STEPPER_REPEAT_INTERVAL_MS).toBe(100)
+    expect(NUMBER_STEPPER_ACCELERATE_AFTER_TICKS).toBe(10)
+    expect(NUMBER_STEPPER_ACCELERATED_STEPS).toBe(4)
+  })
+
+  test('pointerdown で pointer capture を取得する', () => {
+    const setPointerCapture = vi.fn()
+    const { startIncrement } = setup(8)
+
+    startIncrement(0, setPointerCapture)
+
+    expect(setPointerCapture).toHaveBeenCalledWith(POINTER_ID)
+  })
+
   test('startIncrement で即座に 1 step 増える', () => {
     const { value, startIncrement } = setup(8)
     startIncrement()
@@ -100,6 +128,61 @@ describe('useNumberStepper', () => {
     stop()
     vi.advanceTimersByTime(10_000)
     expect(value.value).toBe(3)
+  })
+
+  test('リピートが NUMBER_STEPPER_ACCELERATE_AFTER_TICKS 回続いたら 1 回あたり NUMBER_STEPPER_ACCELERATED_STEPS step 進む', () => {
+    const { value, startIncrement } = setup(0)
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS)
+    expect(value.value).toBe(1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS)
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(
+      1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS,
+    )
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_INTERVAL_MS * 2)
+    expect(value.value).toBe(
+      1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS * 3,
+    )
+  })
+
+  test('加速しても step の刻み幅は変わらない', () => {
+    const { value, startIncrement } = setup(40, ref({ step: 0.25 }))
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(
+      40 + 0.25 * (1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS),
+    )
+  })
+
+  test('加速後も max を上回らない', () => {
+    const { value, startIncrement } = setup(
+      0,
+      ref({ step: 1, max: NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2 }),
+    )
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 3)
+    expect(value.value).toBe(NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2)
+  })
+
+  test('加速後も min を下回らない', () => {
+    const { value, startDecrement } = setup(
+      NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2,
+      ref({ step: 1, min: 0 }),
+    )
+    startDecrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 3)
+    expect(value.value).toBe(0)
+  })
+
+  test('離して押し直すと等速リピートからやり直す', () => {
+    const { value, startIncrement, stop } = setup(0)
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    stop()
+    const accelerated = value.value
+    startIncrement()
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_DELAY_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(accelerated + 2)
   })
 
   test('start を連続で呼んでも多重リピートしない', () => {

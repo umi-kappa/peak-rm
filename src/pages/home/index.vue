@@ -11,7 +11,8 @@ import NavLink from '@/components/pages/home/NavLink.vue'
 
 const sessionRepo = injectRequired(sessionRepoInjectionKey)
 
-const sessions = ref<Partial<Record<Exercise, Session>>>({})
+// 読み込み完了まで undefined にし、カードの値欄を空のまま出す（spec「読み込み中の表示」）
+const sessions = ref<Partial<Record<Exercise, Session>>>()
 
 async function loadSessions() {
   const next: Partial<Record<Exercise, Session>> = {}
@@ -35,7 +36,7 @@ onMounted(loadSessions)
 
     <ul class="exercises" role="list">
       <li v-for="exercise in EXERCISE_ORDER" :key="exercise">
-        <ExerciseCard :exercise :session="sessions[exercise]" />
+        <ExerciseCard :exercise :session="sessions?.[exercise]" :loading="!sessions" />
       </li>
     </ul>
 

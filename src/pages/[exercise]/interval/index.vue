@@ -201,7 +201,9 @@ onScopeDispose(audioCue.stop)
 }
 
 /* 時刻を常にカードの中央に置き、停止ボタンは右側の余白へ逃がす。
-   両端を 1fr で挟むことで、ボタンの有無や活性状態で数字の中心が動かない */
+   両端を 1fr で挟むことで、ボタンの活性状態で数字の中心が動かない（ボタンは常時描画）。
+   両端の取り分がボタンの 44px を下回る狭い端末（375px 以下）で最長表示のときだけ、中心が数 px 左へ寄る
+   （両端に 44px の最小幅を置くと、その幅ではカードから溢れる方が害が大きい） */
 .clock {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -215,8 +217,12 @@ onScopeDispose(audioCue.stop)
   align-items: baseline;
 }
 
+/* 通知音の停止は鳴っている最中に急いで押す操作なので、IconButton の 40px 例外を使わず
+   タップ最小 44px（design「Tap Target」）まで広げる。外形は使用側が決める（conventions「プリミティブの外形幅」） */
 .stop-alarm {
   justify-self: end;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .centis {

@@ -37,12 +37,14 @@ const { to, icon, label } = defineProps<{
     outline-offset: 2px;
   }
 
-  &:active .text {
+  /* 押下・hover はシェブロンを 1 段上げる。文字色を落とす向きだと、同じ画面で面を上げる
+     CardButton と反応の向きが逆になる（design「グローバル」のタップ feedback） */
+  &:active .chevron {
     color: var(--color-text-secondary);
   }
 
   @media (hover: hover) {
-    &:hover .text {
+    &:hover .chevron {
       color: var(--color-text-secondary);
     }
   }
@@ -56,11 +58,11 @@ const { to, icon, label } = defineProps<{
 
 .text {
   color: var(--color-text);
-  transition: color var(--transition);
 }
 
 .chevron {
   display: inline-flex;
   color: var(--color-text-tertiary);
+  transition: color var(--transition);
 }
 </style>

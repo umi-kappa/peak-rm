@@ -62,6 +62,32 @@ test('種目の切り替えは replace で URL に反映する（履歴を積ま
   expect(router.replace).toHaveBeenCalledWith({ query: { exercise: 'squat' } })
 })
 
+// 画面は loaded で未読込（行も NO SESSIONS も出さない）と未記録を分ける（spec「読み込み中の表示」）
+test('load 完了まで loaded は false で、一覧は空・グラフは undefined', async () => {
+  const { loaded, sessions, chart, load } = useHistory({
+    repo: makeRepo([makeSession('bench', 'benchPress', 1000)]),
+  })
+
+  expect(loaded.value).toBe(false)
+  expect(sessions.value).toEqual([])
+  expect(chart.value).toBeUndefined()
+
+  await load()
+
+  expect(loaded.value).toBe(true)
+})
+
+// loaded は「読み込み済みか」であって「中身があるか」ではない。
+// 記録 0 件のユーザーで loaded が立たないと、履歴画面が NO SESSIONS を出せず空白のまま残る
+test('記録が 1 件も無くても load 完了後は loaded が true になる', async () => {
+  const { loaded, sessions, load } = useHistory({ repo: makeRepo([]) })
+
+  await load()
+
+  expect(loaded.value).toBe(true)
+  expect(sessions.value).toEqual([])
+})
+
 // bench1 が朝・bench2 が夕方で同一ローカル日。同日同種目を畳まないことも兼ねて守る
 test('load 後は選択中の種目のセッションだけを repo の並び順で返す（同日 2 件も畳まない）', async () => {
   const bench2 = makeSession('bench2', 'benchPress', new Date(2026, 0, 1, 18, 0).getTime())

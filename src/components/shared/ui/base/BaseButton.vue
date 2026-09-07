@@ -1,9 +1,13 @@
 <script setup lang="ts">
-const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' }>()
+const { variant = 'primary', disabled = false } = defineProps<{
+  variant?: 'primary' | 'secondary'
+  /** 一時的に押せないことを示す（常設ボタンがデータの読み込み待ちなどで押せない間） */
+  disabled?: boolean
+}>()
 </script>
 
 <template>
-  <button class="base-button" :class="variant" type="button">
+  <button class="base-button" :class="variant" type="button" :disabled>
     <slot />
   </button>
 </template>
@@ -36,16 +40,18 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
     color: var(--color-bg);
     font-weight: var(--font-weight-bold);
 
-    @media (hover: hover) {
-      &:hover {
+    &:not(:disabled) {
+      @media (hover: hover) {
+        &:hover {
+          background: var(--color-bg-light);
+          color: var(--color-accent);
+        }
+      }
+
+      &:active {
         background: var(--color-bg-light);
         color: var(--color-accent);
       }
-    }
-
-    &:active {
-      background: var(--color-bg-light);
-      color: var(--color-accent);
     }
   }
 
@@ -56,15 +62,28 @@ const { variant = 'primary' } = defineProps<{ variant?: 'primary' | 'secondary' 
     color: var(--color-text-secondary);
     font-weight: var(--font-weight-semibold);
 
-    @media (hover: hover) {
-      &:hover {
+    &:not(:disabled) {
+      @media (hover: hover) {
+        &:hover {
+          border-color: var(--color-text);
+        }
+      }
+
+      &:active {
         border-color: var(--color-text);
       }
     }
-
-    &:active {
-      border-color: var(--color-text);
-    }
+  }
+  /* 押せない間は一段落とす（データの読み込み待ちなど、常設ボタンが一時的に押せない場合）。
+     variant を問わず面と枠線をカードと同じ色（bg-light / line）に置き、文字色を 3 次に落とす。
+     primary はアクセントの塗りが外れて主アクションの主張が止まり、secondary は透明だった面に
+     カードの塗りが付く。
+     variant の塗りより後に置いて上書きする（詳細度が同じため順序で決まる） */
+  &:disabled {
+    background: var(--color-bg-light);
+    border-color: var(--color-line);
+    color: var(--color-text-tertiary);
+    cursor: default;
   }
 }
 </style>

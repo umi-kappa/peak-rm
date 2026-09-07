@@ -11,7 +11,7 @@ const meta: Meta<typeof ExerciseCard> = {
     docs: {
       description: {
         component:
-          'Home の種目カード。直前セッションの推定 1RM（小数 1 桁）と前回記録（重量 + 実績 reps）を表示し、タップで該当種目のメニュー設定へ遷移する。`session` 未指定で未記録状態（— / NO LOG）を出す。',
+          'Home の種目カード。直前セッションの推定 1RM（小数 1 桁）と前回記録（重量 + 実績 reps）を表示し、タップで該当種目のメニュー設定へ遷移する。`session` 未指定で未記録状態（— / NO LOG）を出す。`loading` の間は値欄を空のまま高さだけ確保し、未記録表示を出さない。',
       },
     },
   },
@@ -22,6 +22,7 @@ const meta: Meta<typeof ExerciseCard> = {
       description: 'カードの種目。タップ時のメニュー遷移先 params に使う',
     },
     session: { control: 'object', description: '直前セッション（未指定で未記録表示）' },
+    loading: { control: 'boolean', description: '直前セッションの読み込み中（値欄を空にする）' },
   },
   decorators: [() => ({ template: '<div style="width: 342px;"><story /></div>' })],
 }
@@ -40,6 +41,27 @@ export const Default: Story = {
 export const NoRecord: Story = {
   args: {
     exercise: 'squat',
+  },
+}
+
+// 直前セッションの読み込み中。ラベルだけ出し、値欄は Default と同じ高さの空欄にする
+export const Loading: Story = {
+  args: {
+    exercise: 'squat',
+    loading: true,
+  },
+}
+
+// 未読込を未記録に見せない規則（spec「読み込み中の表示」）は視覚差分では守れないため assert する
+export const LoadingBehavior: Story = {
+  args: {
+    exercise: 'squat',
+    loading: true,
+  },
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByText('NO LOG')).toBeNull()
   },
 }
 
