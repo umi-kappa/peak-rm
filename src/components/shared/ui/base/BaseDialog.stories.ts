@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fireEvent, fn, within } from 'storybook/test'
+import { expect, fireEvent, fn, waitFor, within } from 'storybook/test'
 import BaseDialog from '@/components/shared/ui/base/BaseDialog.vue'
 import { topLayerDocs } from '@/stories/topLayerDocs'
 
@@ -71,5 +71,14 @@ export const Behavior: Story = {
     await fireEvent.pointerDown(canvas.getByRole('textbox', { name: 'Sample input' }))
     await fireEvent.click(dialog)
     await expect(args.onCancel).toHaveBeenCalledTimes(2)
+
+    // 本物の window.visualViewport が配置レイヤーへ配線されていることを確認する。
+    // useVisualViewport.spec は fake を注入する経路しか通らず、本番で使う deps 省略経路
+    // （= window.visualViewport へのフォールバック）はここでしか通らない。
+    // height / offsetTop は read-only でテストから動かせないため、追従そのものは spec が担う
+    await waitFor(() => {
+      expect(dialog.style.height).toBe(`${window.visualViewport?.height}px`)
+      expect(dialog.style.top).toBe(`${window.visualViewport?.offsetTop}px`)
+    })
   },
 }

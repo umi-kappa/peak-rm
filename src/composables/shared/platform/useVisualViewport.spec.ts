@@ -1,28 +1,34 @@
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { effectScope } from 'vue'
 import {
   useVisualViewport,
   type VisualViewportLike,
 } from '@/composables/shared/platform/useVisualViewport'
 
-// offsetTop / height を書き換えて resize / scroll を発火できる最小の fake
+// offsetTop / height を書き換えて resize / scroll を発火できる最小の fake。
+// 解除は本物の EventTarget と同じく type と listener 参照の両方が一致したときだけ通す
+// （type だけで消す fake は、別の関数参照を渡す実装の退行を見逃す）
 function makeVisualViewport(offsetTop = 0, height = 800) {
-  const listeners = new Map<string, () => void>()
+  const listeners = new Set<{ type: string; listener: () => void }>()
   const viewport = {
     offsetTop,
     height,
     addEventListener: vi.fn((type: string, listener: () => void) => {
-      listeners.set(type, listener)
+      listeners.add({ type, listener })
     }),
-    removeEventListener: vi.fn((type: string) => {
-      listeners.delete(type)
+    removeEventListener: vi.fn((type: string, listener: () => void) => {
+      for (const entry of listeners) {
+        if (entry.type === type && entry.listener === listener) listeners.delete(entry)
+      }
     }),
   }
   return {
     viewport: viewport as unknown as VisualViewportLike,
     fire(type: 'resize' | 'scroll', next: { offsetTop?: number; height?: number }) {
       Object.assign(viewport, next)
-      listeners.get(type)?.()
+      for (const entry of listeners) {
+        if (entry.type === type) entry.listener()
+      }
     },
     listenerCount: () => listeners.size,
   }
@@ -34,6 +40,11 @@ function setup(visualViewport?: VisualViewportLike) {
   if (!result) throw new Error('effectScope.run が undefined を返しました')
   return { scope, ...result }
 }
+
+// stubGlobal はテストが途中で落ちても戻るよう afterEach で解除する
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 test('初期値は現在の offsetTop / height', () => {
   const { viewport } = makeVisualViewport(12, 700)
@@ -67,7 +78,10 @@ test('スコープ破棄でリスナーを外す', () => {
 })
 
 test('非対応環境（visualViewport 無し）では height が undefined のまま', () => {
-  // deps 省略時は window.visualViewport を見る。happy-dom には無いため非対応環境として振る舞う
+  // deps 省略時は window.visualViewport を見る。DOM シムが将来この API を生やしても
+  // テストの意味が変わらないよう、非対応であることを明示する
+  vi.stubGlobal('visualViewport', undefined)
+
   const { offsetTop, height } = setup()
 
   expect(offsetTop.value).toBe(0)

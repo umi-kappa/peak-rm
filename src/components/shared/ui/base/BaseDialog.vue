@@ -17,6 +17,12 @@ const emit = defineEmits<{
 const dialogEl = useTemplateRef<HTMLDialogElement>('dialogEl')
 const titleId = useId()
 
+// click は mousedown / mouseup の共通祖先で発火するため、パネル内のドラッグ操作を
+// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する
+//（backdrop = カードの外側 = 透明な dialog 要素そのもの）。
+// イベントハンドラ間の受け渡しにしか使わず表示に影響しないため、ref にしない
+let pressedOnBackdrop = false
+
 // dialog 要素は可視領域（visual viewport）いっぱいの透明な配置レイヤーにし、カード（.panel）を
 // その中央に置く。iOS はソフトキーボードで可視領域だけを縮めるため、レイヤーを追従させないと
 // 中央配置のカード下部（SetEditDialog の SAVE）がキーボードの裏に隠れる。
@@ -27,12 +33,6 @@ const layerStyle = computed(() =>
     ? undefined
     : { top: `${offsetTop.value}px`, height: `${height.value}px` },
 )
-
-// click は mousedown / mouseup の共通祖先で発火するため、パネル内のドラッグ操作を
-// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する
-//（backdrop = カードの外側 = 透明な dialog 要素そのもの）。
-// イベントハンドラ間の受け渡しにしか使わず表示に影響しないため、ref にしない
-let pressedOnBackdrop = false
 
 function onCancel() {
   emit('cancel')
@@ -97,6 +97,12 @@ onBeforeUnmount(() => dialogEl.value?.close())
   border: 0;
   background: transparent;
   overflow: visible;
+
+  /* display の上書きで UA 既定の dialog:not([open]) { display: none } が効かなくなるため、
+     閉じている間は明示的に隠す（マウント = 表示という不変条件を CSS 側でも自己強制する） */
+  &:not([open]) {
+    display: none;
+  }
 
   &.inset-16 .panel {
     width: calc(100% - var(--space-16) * 2);

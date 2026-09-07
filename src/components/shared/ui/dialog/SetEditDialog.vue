@@ -125,6 +125,9 @@ function onCancel() {
 .divider {
   width: 100%;
   height: 1px;
+  /* .panel が縦 flex で、他の子は自動最小サイズで止まるため、レイヤーより高いときは
+     縮み分が唯一縮めるこの 1px の線に集中して 0 になる */
+  flex-shrink: 0;
   margin: 0;
   border: 0;
   background: var(--color-line-dark);
@@ -148,7 +151,7 @@ function onCancel() {
   border: 1px solid var(--color-line-dark);
   border-radius: var(--radius);
   color: var(--color-text);
-  /* form control は body のフォントを継承しないため明示する（global.css の button リセットと同趣旨） */
+  /* form control は body のフォントを継承しないため明示する（global.css の button / a リセットと同趣旨） */
   font: inherit;
   /* モバイル前提のため手動リサイズは持たせない（入力に応じた高さはブラウザのスクロールに任せる） */
   resize: none;

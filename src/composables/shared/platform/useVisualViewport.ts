@@ -1,6 +1,6 @@
 import { onScopeDispose, ref } from 'vue'
 
-/** useVisualViewport が使う面だけに絞った VisualViewport。テストはキャストなしで素朴な fake を渡せる */
+/** useVisualViewport が使う面だけに絞った VisualViewport。テストはこの面だけの fake を渡せばよい */
 export type VisualViewportLike = Pick<
   VisualViewport,
   'offsetTop' | 'height' | 'addEventListener' | 'removeEventListener'
