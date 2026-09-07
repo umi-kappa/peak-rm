@@ -7,9 +7,14 @@ import {
   useFatalError,
 } from '@/composables/shared/error/useFatalError'
 import { sessionInjectionKey, useSession } from '@/composables/shared/session/useSession'
+import {
+  sessionLeaveConfirmInjectionKey,
+  useSessionLeaveConfirm,
+} from '@/composables/shared/session/useSessionLeaveConfirm'
 import { audioCueInjectionKey, useAudioCue } from '@/composables/shared/platform/useAudioCue'
 import { useWakeLock, wakeLockInjectionKey } from '@/composables/shared/platform/useWakeLock'
 import { installSessionEndRelease } from '@/composables/shared/platform/installSessionEndRelease'
+import { installSessionKeepAwake } from '@/composables/shared/platform/installSessionKeepAwake'
 import { registerSW } from 'virtual:pwa-register'
 import { requestPersistentStorage } from '@/storage/db'
 import { backup, backupInjectionKey } from '@/storage/backup'
@@ -22,10 +27,13 @@ import '@/styles/global.css'
 // 参照するため、ここで生成して配る
 //（Pinia は導入しない・規約 docs/conventions.md「状態管理」）。
 const session = useSession()
-const router = createAppRouter(session)
+// フロー離脱の確認も router のガードと App.vue（ダイアログ描画）が同じインスタンスを見る
+const leaveConfirm = useSessionLeaveConfirm()
+const router = createAppRouter(session, leaveConfirm)
 
 const app = createApp(App).use(router)
 app.provide(sessionInjectionKey, session)
+app.provide(sessionLeaveConfirmInjectionKey, leaveConfirm)
 // 画面が直接使うリポジトリも provide で配り、home / menu / history / result が inject で受ける
 // （Storybook では provide decorator で fake repo に差し替える）
 app.provide(sessionRepoInjectionKey, sessionRepo)
@@ -48,6 +56,8 @@ installErrorBoundary(app, router, fatalError.report)
 
 // 解除の配線は fatal error も終端として扱うため、境界の生成後に置く
 installSessionEndRelease(session, fatalError, wakeLock, audioCue)
+// 背景化で自動解除された Wake Lock を前景復帰で取り直す。解除側と対称に fatal error 中は取り直さない
+installSessionKeepAwake(session, fatalError, wakeLock)
 
 app.mount('#app')
 

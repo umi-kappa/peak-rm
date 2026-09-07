@@ -36,9 +36,10 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   const phase = ref<TrainingPhase>('done')
   // setActive 中の現セットの実績回数。results には completeSet で初めて積む。
   const draftReps = ref(0)
-  // completeSet の永続化 await 中の再入（二重タップ）ガード。初回セット完了は insert のため、
-  // patchResults の上書きと違い並走すると同一 id の二重 insert で例外になる
-  let persistingSet = false
+  // 進行中の completeSet の永続化。再入（二重タップ）ガードを兼ねる: 初回セット完了は insert のため、
+  // patchResults の上書きと違い並走すると同一 id の二重 insert で例外になる。
+  // Promise で持つのは、離脱確認のガードが settled() で完了を待ってから行き先を決めるため
+  let persisting: Promise<void> | undefined
 
   function start(menu: Menu) {
     if (menu.sets < 1) throw new Error(`menu.sets must be >= 1: ${menu.sets}`)
@@ -60,39 +61,57 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
   }
 
   async function completeSet() {
-    if (persistingSet) return
+    if (persisting) return
     if (phase.value !== 'setActive') return
     const current = session.value
     if (current === undefined) return
-    persistingSet = true
+    persisting = persistSet(current)
     try {
-      const results = [...current.results, { actualReps: draftReps.value, memo: '' }]
-      const isFirstSet = current.results.length === 0
-      const isLastSet = results.length === current.menu.sets
-      // 初回セット完了で初めて DB へ insert する（開始時には insert しない）。以降は results を増分 patch。
-      // 完遂かどうかは results から都度導出されるため、書き込みは results のみで足りる
-      if (isFirstSet) {
-        await repo.insert({ ...current, results })
-      } else {
-        await repo.patchResults(current.id, results)
-      }
-      // await 中に discard()（Import の全置換）や leave() → start()（離脱後の新セッション開始）が
-      // 割り込んでいたら書き戻さない。破棄済みセッションを復活させたり、新しいセッションを
-      // 古い内容で上書きしたりしないため、phase ではなくセッション実体の同一性で判定する
-      // （shallowRef + イミュータブル更新なので参照比較で足りる。phase は同じ値へ戻ってこられる）
-      if (session.value !== current) return
-      if (isLastSet) {
-        session.value = { ...current, results }
-        phase.value = 'done'
-        return
-      }
-      // await 中にブラウザバック等の leave() でフローが終端していたら書き戻さない。
-      // done を interval で上書きすると、離脱済みのフローへセッションガードを素通りして再入できてしまう
-      if (phase.value !== 'setActive') return
-      session.value = { ...current, results }
-      phase.value = 'interval'
+      await persisting
     } finally {
-      persistingSet = false
+      persisting = undefined
+    }
+  }
+
+  async function persistSet(current: Session) {
+    const results = [...current.results, { actualReps: draftReps.value, memo: '' }]
+    const isFirstSet = current.results.length === 0
+    const isLastSet = results.length === current.menu.sets
+    // 初回セット完了で初めて DB へ insert する（開始時には insert しない）。以降は results を増分 patch。
+    // 完遂かどうかは results から都度導出されるため、書き込みは results のみで足りる
+    if (isFirstSet) {
+      await repo.insert({ ...current, results })
+    } else {
+      await repo.patchResults(current.id, results)
+    }
+    // await 中に discard()（Import の全置換）や leave() → start()（離脱後の新セッション開始）が
+    // 割り込んでいたら書き戻さない。破棄済みセッションを復活させたり、新しいセッションを
+    // 古い内容で上書きしたりしないため、phase ではなくセッション実体の同一性で判定する
+    // （shallowRef + イミュータブル更新なので参照比較で足りる。phase は同じ値へ戻ってこられる）
+    if (session.value !== current) return
+    if (isLastSet) {
+      session.value = { ...current, results }
+      phase.value = 'done'
+      return
+    }
+    // await 中にブラウザバック等の leave() でフローが終端していたら書き戻さない。
+    // done を interval で上書きすると、離脱済みのフローへセッションガードを素通りして再入できてしまう
+    if (phase.value !== 'setActive') return
+    session.value = { ...current, results }
+    phase.value = 'interval'
+  }
+
+  /**
+   * 進行中のセット完了の永続化が終わるまで待つ（無ければ即座に解決する）。離脱確認のガードが
+   * キャンセルを受けたとき、書き込みで進む phase を見てから行き先を決めるために使う
+   * （spec「セッションフローからの離脱」）。失敗は completeSet を await している画面側が
+   * エラー境界へ流すので、ここでは投げない
+   */
+  async function settled() {
+    try {
+      await persisting
+    } catch {
+      // 失敗の報告は completeSet の呼び出し側に任せる
     }
   }
 
@@ -155,6 +174,7 @@ export function useSession(deps: SessionDeps = { sessionRepo }) {
     maxOneRm: computed(() => (session.value ? sessionMaxOneRm(session.value) : 0)),
     start,
     completeSet,
+    settled,
     nextSet,
     abort,
     leave,

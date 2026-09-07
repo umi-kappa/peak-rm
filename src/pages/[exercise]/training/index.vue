@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { EXERCISE_LABELS } from '@/core/constants'
 import { MENU_MAX } from '@/core/menu'
 import { sessionInjectionKey } from '@/composables/shared/session/useSession'
+import { sessionLeaveConfirmInjectionKey } from '@/composables/shared/session/useSessionLeaveConfirm'
 import { audioCueInjectionKey } from '@/composables/shared/platform/useAudioCue'
 import { useBackNavigation } from '@/composables/shared/navigation/useBackNavigation'
 import { injectRequired } from '@/composables/shared/inject/injectRequired'
@@ -20,6 +21,8 @@ const router = useRouter()
 const { goBack } = useBackNavigation()
 
 const session = injectRequired(sessionInjectionKey)
+// セット完了の書き込み待ちに戻るが入ると離脱確認が開く。開いたらこの画面からは遷移しない（completeSet 参照）
+const leaveConfirm = injectRequired(sessionLeaveConfirmInjectionKey)
 const audioCue = injectRequired(audioCueInjectionKey)
 
 // 表示するのは開始時に焼き込んだ Session.menu のみ。変更 UI を持たず「トレーニング中変更不可」を担保する
@@ -41,9 +44,15 @@ async function completeSet() {
   // インターバルの通知音が鳴らなくなる（spec「中断からの復帰」）。
   // 最善努力で composable 内が失敗を握るため、完了を待たず投げっぱなしにする
   void audioCue.prepare()
+  // 書き込みを待つ間に離脱確認が開いたかを、待ち終えたあとに比べる
+  const asked = leaveConfirm.generation.value
   await session.completeSet()
   // await 中にブラウザバック等で training を離脱していたら遷移しない（離脱先から引き戻さない）
   if (route.name !== 'training') return
+  // 書き込みを待つ間に離脱確認が開いていたら、答えの前後を問わず遷移しない。戻るで履歴の位置はホームへ
+  // 移っているため、ここで replace するとホームの段が上書きされる。行き先は答えに応じて router の
+  // ガードが決める（確定ならホーム、キャンセルなら書き込みを待ってから進んだ phase の画面）
+  if (leaveConfirm.generation.value !== asked) return
   if (session.phase.value === 'done') {
     router.replace({ name: 'result', params: route.params, query: { origin: 'session' } })
     return

@@ -69,6 +69,48 @@ describe('useWakeLock', () => {
     expect(requestScreenLock).toHaveBeenCalledTimes(2)
   })
 
+  test('背景化でブラウザが自動解除した Wake Lock は、次の acquire で取り直す', async () => {
+    const { wakeLock, requestScreenLock, sentinel } = setup()
+    await wakeLock.acquire()
+    // 前景復帰時の再取得（spec「Wake Lock のライフサイクル」）。released は sentinel 側で立つ
+    sentinel.released = true
+    await wakeLock.acquire()
+    expect(requestScreenLock).toHaveBeenCalledTimes(2)
+  })
+
+  test('取得を待つ間に重ねて acquire しても要求は 1 回に絞る', async () => {
+    const { wakeLock, requestScreenLock, settle } = setupPending()
+    const first = wakeLock.acquire()
+    const second = wakeLock.acquire()
+    settle()
+    await Promise.all([first, second])
+    expect(requestScreenLock).toHaveBeenCalledTimes(1)
+  })
+
+  test('取得を待つ間の後着は、先着に届いた Wake Lock が自動解除済みなら取り直す', async () => {
+    const { wakeLock, requestScreenLock, sentinel, settle } = setupPending()
+    const first = wakeLock.acquire()
+    const second = wakeLock.acquire()
+    // 先着に届く sentinel は、付与直後の背景化でブラウザが解除したもの
+    sentinel.released = true
+    settle()
+    await first
+    expect(requestScreenLock).toHaveBeenCalledTimes(2)
+    settle()
+    await second
+  })
+
+  test('取得を待つ間に終端していたら、後着は取り直さない', async () => {
+    const { wakeLock, requestScreenLock, settle } = setupPending()
+    const first = wakeLock.acquire()
+    const second = wakeLock.acquire()
+    await wakeLock.release()
+    settle()
+    await Promise.all([first, second])
+    // 終端後のセッションに Wake Lock を付けると誰も解除しない
+    expect(requestScreenLock).toHaveBeenCalledTimes(1)
+  })
+
   test('取得を待つ間に終端していたら、届いた Wake Lock を保持せず解除する', async () => {
     const { wakeLock, sentinel, settle } = setupPending()
     const acquiring = wakeLock.acquire()
@@ -110,6 +152,17 @@ describe('useWakeLock', () => {
     })
     await expect(wakeLock.acquire()).resolves.toBeUndefined()
     expect(console.error).toHaveBeenCalled()
+  })
+
+  test('取得に失敗しても、次の acquire で再び要求する', async () => {
+    const requestScreenLock = vi
+      .fn<() => Promise<WakeLockHandle>>()
+      .mockRejectedValueOnce(new Error('denied'))
+      .mockResolvedValue(makeFakeSentinel())
+    const wakeLock = useWakeLock({ requestScreenLock })
+    await wakeLock.acquire()
+    await wakeLock.acquire()
+    expect(requestScreenLock).toHaveBeenCalledTimes(2)
   })
 
   test('解除に失敗しても呼び出し元へ投げない', async () => {
