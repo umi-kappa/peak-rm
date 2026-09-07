@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useId, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, useId, useTemplateRef } from 'vue'
+import { useVisualViewport } from '@/composables/shared/platform/useVisualViewport'
 
 const { title, inset = 16 } = defineProps<{
   /** ヘッダーの h2 に表示する見出し。dialog のアクセシブルネーム（aria-labelledby）を兼ねる */
@@ -16,8 +17,20 @@ const emit = defineEmits<{
 const dialogEl = useTemplateRef<HTMLDialogElement>('dialogEl')
 const titleId = useId()
 
+// dialog 要素は可視領域（visual viewport）いっぱいの透明な配置レイヤーにし、カード（.panel）を
+// その中央に置く。iOS はソフトキーボードで可視領域だけを縮めるため、レイヤーを追従させないと
+// 中央配置のカード下部（SetEditDialog の SAVE）がキーボードの裏に隠れる。
+// 非対応環境では undefined にして CSS のフォールバック（画面全体）に任せる
+const { offsetTop, height } = useVisualViewport()
+const layerStyle = computed(() =>
+  height.value === undefined
+    ? undefined
+    : { top: `${offsetTop.value}px`, height: `${height.value}px` },
+)
+
 // click は mousedown / mouseup の共通祖先で発火するため、パネル内のドラッグ操作を
-// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する。
+// backdrop 上で離しても target が dialog になる。押下起点も backdrop のときだけ cancel する
+//（backdrop = カードの外側 = 透明な dialog 要素そのもの）。
 // イベントハンドラ間の受け渡しにしか使わず表示に影響しないため、ref にしない
 let pressedOnBackdrop = false
 
@@ -33,7 +46,9 @@ function onBackdropClick(event: MouseEvent) {
   if (pressedOnBackdrop && event.target === dialogEl.value) emit('cancel')
 }
 
-// マウント = 表示。開閉は呼び出し側の v-if が唯一のソースで、open prop は持たない
+// マウント = 表示。開閉は呼び出し側の v-if が唯一のソースで、open prop は持たない。
+// 初期フォーカスはネイティブに任せる（中身の autofocus を優先し、無ければ最初のフォーカス可能要素）。
+// どこに置くかは中身の責務（SetEditDialog は SAVE に autofocus）
 onMounted(() => dialogEl.value?.showModal())
 // DOM 除去だけで閉じるとネイティブのフォーカス復元（showModal 前の要素へ戻す）が働かないため、
 // アンマウント前に close() を通す
@@ -45,6 +60,7 @@ onBeforeUnmount(() => dialogEl.value?.close())
     ref="dialogEl"
     class="base-dialog"
     :class="`inset-${inset}`"
+    :style="layerStyle"
     :aria-labelledby="titleId"
     @cancel.prevent="onCancel"
     @pointerdown="onBackdropPointerdown"
@@ -61,20 +77,32 @@ onBeforeUnmount(() => dialogEl.value?.close())
 </template>
 
 <style scoped>
+/* 透明な配置レイヤー。UA の dialog 既定（fit-content・margin auto・max-* の余白・枠・背景）を打ち消し、
+   可視領域いっぱいに広げてカードを中央に置く。top / height はキーボード表示中だけ script が
+   visual viewport の値で上書きする（design「8. Modal」）。モーダル機構（top layer・inert・ESC・
+   フォーカス復元・::backdrop）は dialog 要素のまま担う */
 .base-dialog {
-  max-width: 400px;
-  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
   padding: 0;
-  background: var(--color-bg-light);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius);
-  color: var(--color-text);
+  border: 0;
+  background: transparent;
+  overflow: visible;
 
-  &.inset-16 {
+  &.inset-16 .panel {
     width: calc(100% - var(--space-16) * 2);
   }
 
-  &.inset-24 {
+  &.inset-24 .panel {
     width: calc(100% - var(--space-24) * 2);
   }
 
@@ -83,11 +111,20 @@ onBeforeUnmount(() => dialogEl.value?.close())
   }
 }
 
+/* 見えているカード。レイヤーより高くなったら（キーボード表示中の小さい端末）中をスクロールさせる */
 .panel {
   display: flex;
   flex-direction: column;
   gap: var(--space-20);
+  max-width: 400px;
+  max-height: 100%;
   padding: var(--space-20);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  color: var(--color-text);
 }
 
 .head {

@@ -11,7 +11,7 @@ const meta: Meta<typeof BaseDialog> = {
       story: topLayerDocs(240),
       description: {
         component:
-          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。マウント = 表示（開閉は呼び出し側の `v-if` が唯一のソース）で `showModal()` し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。ネイティブのフォーカス復元が働くよう、アンマウント前に `close()` を通す。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
+          'ネイティブ `<dialog>` の足回りを一元化するモーダルの外殻。マウント = 表示（開閉は呼び出し側の `v-if` が唯一のソース）で `showModal()` し、ESC / backdrop タップで `cancel` を emit する（backdrop は押下起点も backdrop のときだけ発火）。ネイティブのフォーカス復元が働くよう、アンマウント前に `close()` を通す。初期フォーカスは中身が `autofocus` で決める（無ければ最初のフォーカス可能要素）。dialog 要素は可視領域いっぱいの透明な配置レイヤーで、カードをその中央に置く。iOS のソフトキーボードで可視領域が縮んだときは `visualViewport` に追従してレイヤーを縮め、収まらないカードは中をスクロールさせる（下部の SAVE をキーボードの裏に隠さない）。`title` はヘッダーの h2 と dialog のアクセシブルネーム（aria-labelledby）を兼ねる。h2 直下に gap-12 で従属要素を置く `header` slot と、gap-20 で残りを並べる default slot を持つ。',
       },
     },
   },

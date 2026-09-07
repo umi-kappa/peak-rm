@@ -89,15 +89,19 @@ function onCancel() {
 
     <div class="field">
       <BaseLabel id="set-edit-note-label">NOTE</BaseLabel>
+      <!-- 高さは 4 行分（rows）。ステッパー・ボタンと並ぶ 1 画面の中で、メモを数行読み書きできる余裕を持たせる -->
       <textarea
         v-model="draftMemo"
         class="memo"
+        rows="4"
         placeholder="ADD NOTE"
         aria-labelledby="set-edit-note-label"
       />
     </div>
 
-    <BaseButton @click="onSave">SAVE</BaseButton>
+    <!-- 初期フォーカスは SAVE に置く（BaseDialog の showModal は既定で最初のフォーカス可能要素 = Decrease に
+         フォーカスし、Enter がそのまま減算になる）。textarea に置くとモバイルで開くたびキーボードが出る -->
+    <BaseButton autofocus @click="onSave">SAVE</BaseButton>
   </BaseDialog>
 </template>
 
@@ -139,7 +143,6 @@ function onCancel() {
 }
 
 .memo {
-  min-height: 64px;
   padding: var(--space-12);
   background: var(--color-bg-light);
   border: 1px solid var(--color-line-dark);

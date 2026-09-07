@@ -228,12 +228,13 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### 8. Modal (`M_Modal` — セット編集)
 
 - フルスクリーンオーバーレイ + 中央モーダル
+- ソフトキーボード表示中は可視領域 (visual viewport) の中央に置き直し、収まらない高さはモーダル内をスクロールさせる (下部の `SAVE` をキーボードの裏に隠さない。iOS はキーボードでレイアウトビューポートを縮めないため CSS だけでは追従できず、`visualViewport` の値で位置と高さを決める)
 - 背景は暗幕 (`backdrop`)。モーダル背後の画面は暗幕越しに見える
 - **影は使わない**。背景からの分離は枠線 (`line`) と暗幕が担う (装飾的な影はトーンガイドに反する)
 - モーダル内容:
   - Header: 種目名 (sans title semibold uppercase) + 重量 (mono stat bold) `KG` + `SET` unit + Set 番号 (mono stat bold)
   - 実績回数 Stepper (large)
-  - メモテキストエリア (min-height 64 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
+  - メモテキストエリア (高さ 4 行分 ≈ 104 px, sans body regular, 未入力時は placeholder `ADD NOTE` fg2)
   - 下部: `SAVE` (primary, fill accent)
 - 閉じるための × は無い (保存のみで閉じる)
 

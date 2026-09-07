@@ -11,7 +11,7 @@ const meta: Meta<typeof SetEditDialog> = {
       story: topLayerDocs(560),
       description: {
         component:
-          '完了セットの実績回数とメモを編集するモーダル。BaseDialog の外殻に編集フォームを載せ、呼び出し側が `v-if` で出し分ける（マウント = 表示。ドラフトの初期化はマウント時に行う）。重量は表示のみで編集 UI を持たず、SAVE で編集後の `SetResult` を `save` に emit する（保存と閉じるは呼び出し側の責務）。閉じる用の × ボタンは置かず、ESC / backdrop は編集を破棄する `cancel` を emit する。`repsReadonly`（履歴詳細用）はステッパーを出さず実績を静的表示にし、メモだけ編集できる。',
+          '完了セットの実績回数とメモを編集するモーダル。BaseDialog の外殻に編集フォームを載せ、呼び出し側が `v-if` で出し分ける（マウント = 表示。ドラフトの初期化はマウント時に行う）。重量は表示のみで編集 UI を持たず、SAVE で編集後の `SetResult` を `save` に emit する（保存と閉じるは呼び出し側の責務）。閉じる用の × ボタンは置かず、ESC / backdrop は編集を破棄する `cancel` を emit する。`repsReadonly`（履歴詳細用）はステッパーを出さず実績を静的表示にし、メモだけ編集できる。初期フォーカスは SAVE（ステッパーの Decrease に落ちて Enter が減算にならないようにする）。',
       },
     },
   },
@@ -56,8 +56,8 @@ export const EmptyMemo: Story = {
   args: { memo: '' },
 }
 
-// 実績・メモの編集結果が save の payload に配線されていることと、シェルの cancel が
-// 再 emit されることを確認する（ESC / backdrop の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
+// 初期フォーカスが SAVE にあること、実績・メモの編集結果が save の payload に配線されていること、
+// シェルの cancel が再 emit されることを確認する（ESC / backdrop の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
 export const Behavior: Story = {
   args: { memo: '', onSave: fn(), onCancel: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
@@ -65,6 +65,7 @@ export const Behavior: Story = {
     const canvas = within(canvasElement)
     // role の name 指定は title → シェルの aria-labelledby 配線（dialog = h2 / textbox = NOTE ラベル）の退行検出を兼ねる
     const dialog = canvas.getByRole('dialog', { name: 'BENCH PRESS' })
+    await expect(canvas.getByRole('button', { name: 'SAVE' })).toHaveFocus()
     await userEvent.click(canvas.getByRole('button', { name: 'Increase' }))
     await userEvent.type(canvas.getByRole('textbox', { name: 'NOTE' }), 'フォームを意識した')
     await userEvent.click(canvas.getByRole('button', { name: 'SAVE' }))

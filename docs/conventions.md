@@ -19,7 +19,7 @@ src/
       navigation/      # useBackNavigation（AppBar の戻る標準。history.state.back があれば router.back()、無ければ fallback へ replace）
       inject/          # injectRequired（main.ts が app.provide した必須依存を受ける。欠落は配線バグとして throw）
       session/         # useSession / useIntervalTimer（実行中セッションの状態系。useSession は main.ts が生成し router ガードと画面で共有）+ useSessionLeaveConfirm（フロー離脱確認の待ち合わせ。main.ts が生成し router ガードと App.vue で共有）
-      platform/        # useWakeLock / useAudioCue（ブラウザ API glue）+ installSessionEndRelease（セッション終端で解除する配線）/ installSessionKeepAwake（前景復帰で Wake Lock を取り直す配線）
+      platform/        # useWakeLock / useAudioCue / useVisualViewport（ブラウザ API glue）+ installSessionEndRelease（セッション終端で解除する配線）/ installSessionKeepAwake（前景復帰で Wake Lock を取り直す配線）
       ui/inputs/       # useNumberStepper（入力部品のブラウザ glue・長押しリピート等）
   components/
     app/               # App ルート（App.vue）専用のコンポーネント（ErrorScreen.vue）
