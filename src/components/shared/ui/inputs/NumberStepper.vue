@@ -101,11 +101,8 @@ watchEffect(() => {
   border: 1px solid var(--color-line);
   background: var(--color-bg-light);
   color: var(--color-text);
-  /* 長押しリピート操作を妨げるブラウザ標準動作（ダブルタップズーム・テキスト選択・iOS のコールアウト）を抑止 */
+  /* 長押しリピート操作を妨げるダブルタップズームを抑止（テキスト選択・コールアウトの抑止は global.css の button が持つ） */
   touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
   transition: background-color var(--transition);
 
   &:focus-visible {

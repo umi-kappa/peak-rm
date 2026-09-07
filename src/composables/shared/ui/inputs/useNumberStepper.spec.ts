@@ -2,10 +2,17 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { effectScope, ref } from 'vue'
 import type { StepperOptions } from '@/core/stepper'
 import {
+  NUMBER_STEPPER_ACCELERATE_AFTER_TICKS,
+  NUMBER_STEPPER_ACCELERATED_STEPS,
   NUMBER_STEPPER_REPEAT_DELAY_MS,
   NUMBER_STEPPER_REPEAT_INTERVAL_MS,
   useNumberStepper,
 } from '@/composables/shared/ui/inputs/useNumberStepper'
+
+// 長押し判定から加速に入る直前（等速リピートを NUMBER_STEPPER_ACCELERATE_AFTER_TICKS 回終えた時点）までの時間
+const UNTIL_ACCELERATION_MS =
+  NUMBER_STEPPER_REPEAT_DELAY_MS +
+  NUMBER_STEPPER_REPEAT_INTERVAL_MS * NUMBER_STEPPER_ACCELERATE_AFTER_TICKS
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -100,6 +107,61 @@ describe('useNumberStepper', () => {
     stop()
     vi.advanceTimersByTime(10_000)
     expect(value.value).toBe(3)
+  })
+
+  test('リピートが NUMBER_STEPPER_ACCELERATE_AFTER_TICKS 回続いたら 1 回あたり NUMBER_STEPPER_ACCELERATED_STEPS step 進む', () => {
+    const { value, startIncrement } = setup(0)
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS)
+    expect(value.value).toBe(1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS)
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(
+      1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS,
+    )
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_INTERVAL_MS * 2)
+    expect(value.value).toBe(
+      1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS * 3,
+    )
+  })
+
+  test('加速後も刻みに乗った値のまま進む', () => {
+    const { value, startIncrement } = setup(40, ref({ step: 0.25 }))
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(
+      40 + 0.25 * (1 + NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + NUMBER_STEPPER_ACCELERATED_STEPS),
+    )
+  })
+
+  test('加速後も max を上回らない', () => {
+    const { value, startIncrement } = setup(
+      0,
+      ref({ step: 1, max: NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2 }),
+    )
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 3)
+    expect(value.value).toBe(NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2)
+  })
+
+  test('加速後も min を下回らない', () => {
+    const { value, startDecrement } = setup(
+      NUMBER_STEPPER_ACCELERATE_AFTER_TICKS + 2,
+      ref({ step: 1, min: 0 }),
+    )
+    startDecrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS * 3)
+    expect(value.value).toBe(0)
+  })
+
+  test('離して押し直すと等速リピートからやり直す', () => {
+    const { value, startIncrement, stop } = setup(0)
+    startIncrement()
+    vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    stop()
+    const accelerated = value.value
+    startIncrement()
+    vi.advanceTimersByTime(NUMBER_STEPPER_REPEAT_DELAY_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)
+    expect(value.value).toBe(accelerated + 2)
   })
 
   test('start を連続で呼んでも多重リピートしない', () => {

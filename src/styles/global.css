@@ -12,6 +12,10 @@ body {
 
 html {
   font-size: 62.5%;
+  /* ダーク固定のアプリなので UA のフォーム部品・スクロールバー・dialog の backdrop もダークで描かせる */
+  color-scheme: dark;
+  /* トレーニング中の縦スワイプが pull-to-refresh でセッション画面をリロードするのを防ぐ */
+  overscroll-behavior: none;
 }
 
 body {
@@ -29,6 +33,11 @@ button {
   font: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  /* 長押しでテキスト選択ハンドルや iOS のコールアウトが出ないようにする。
+     router-link で <a> になるボタン（CardButton / IconButton / NavLink）は各コンポーネントで同じ抑止を補う */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* 一覧は読み上げに項目数と位置を伝えるための list で、箇条書きとしては使わないため余白を落とす */

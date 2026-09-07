@@ -59,6 +59,9 @@ function onClick() {
   /* router-link 版は <a> になり global.css の button リセットが効かないため、ここで補う */
   cursor: pointer;
   text-decoration: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   transition:
     background-color var(--transition),
     color var(--transition);
