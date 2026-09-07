@@ -31,10 +31,6 @@ const { to, icon, label } = defineProps<{
   padding-inline: var(--space-4);
   color: var(--color-text-secondary);
   text-decoration: none;
-  /* <a> には global.css の button の長押し抑止が効かないため、ここで補う */
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
 
   &:focus-visible {
     outline: 2px solid var(--color-accent);

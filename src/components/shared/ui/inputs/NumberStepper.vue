@@ -101,7 +101,7 @@ watchEffect(() => {
   border: 1px solid var(--color-line);
   background: var(--color-bg-light);
   color: var(--color-text);
-  /* 長押しリピート操作を妨げるダブルタップズームを抑止（テキスト選択・コールアウトの抑止は global.css の button が持つ） */
+  /* 長押しリピート操作を妨げるダブルタップズームを抑止（テキスト選択・コールアウトの抑止は global.css の button / a リセットが持つ） */
   touch-action: manipulation;
   transition: background-color var(--transition);
 

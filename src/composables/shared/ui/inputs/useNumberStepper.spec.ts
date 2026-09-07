@@ -22,13 +22,15 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
+const POINTER_ID = 1
+
 // startIncrement / startDecrement は pointerdown ハンドラとして PointerEvent を受け取り capture を取得するため、
 // タイマーロジックの検証では setPointerCapture を持つ最小限のスタブイベントを注入する
-function pointerDown(button = 0): PointerEvent {
+function pointerDown(button = 0, setPointerCapture: (pointerId: number) => void = () => {}) {
   return {
     button,
-    currentTarget: { setPointerCapture: () => {} },
-    pointerId: 1,
+    currentTarget: { setPointerCapture },
+    pointerId: POINTER_ID,
   } as unknown as PointerEvent
 }
 
@@ -41,7 +43,8 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
   return {
     scope,
     value,
-    startIncrement: (button?: number) => startIncrement(pointerDown(button)),
+    startIncrement: (button?: number, setPointerCapture?: (pointerId: number) => void) =>
+      startIncrement(pointerDown(button, setPointerCapture)),
     startDecrement: (button?: number) => startDecrement(pointerDown(button)),
     stepUp,
     stepDown,
@@ -50,6 +53,24 @@ function setup(initial: number, options?: Parameters<typeof useNumberStepper>[1]
 }
 
 describe('useNumberStepper', () => {
+  // 長押しの体感（design「Stepper」の 0.5 s / 100 ms / 1 s で 4 刻み）は定数そのものが決めるため、
+  // 実値を直接固定する。他のテストは定数から期待値を導出するので、値を変えても気付けない
+  test('長押しリピートの定数は design で決めた実値になっている', () => {
+    expect(NUMBER_STEPPER_REPEAT_DELAY_MS).toBe(500)
+    expect(NUMBER_STEPPER_REPEAT_INTERVAL_MS).toBe(100)
+    expect(NUMBER_STEPPER_ACCELERATE_AFTER_TICKS).toBe(10)
+    expect(NUMBER_STEPPER_ACCELERATED_STEPS).toBe(4)
+  })
+
+  test('pointerdown で pointer capture を取得する', () => {
+    const setPointerCapture = vi.fn()
+    const { startIncrement } = setup(8)
+
+    startIncrement(0, setPointerCapture)
+
+    expect(setPointerCapture).toHaveBeenCalledWith(POINTER_ID)
+  })
+
   test('startIncrement で即座に 1 step 増える', () => {
     const { value, startIncrement } = setup(8)
     startIncrement()
@@ -124,7 +145,7 @@ describe('useNumberStepper', () => {
     )
   })
 
-  test('加速後も刻みに乗った値のまま進む', () => {
+  test('加速しても step の刻み幅は変わらない', () => {
     const { value, startIncrement } = setup(40, ref({ step: 0.25 }))
     startIncrement()
     vi.advanceTimersByTime(UNTIL_ACCELERATION_MS + NUMBER_STEPPER_REPEAT_INTERVAL_MS)

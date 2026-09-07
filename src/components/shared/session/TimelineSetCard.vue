@@ -219,6 +219,11 @@ function onClick() {
 
 .memo-text {
   color: var(--color-text);
+  /* 完了セットはカード自体が <button> で長押し選択を抑止しているが、
+     ユーザーが書いた本文はコピーできるようにする */
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* 文字色は .memo の secondary をそのまま継承する */

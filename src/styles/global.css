@@ -14,8 +14,9 @@ html {
   font-size: 62.5%;
   /* ダーク固定のアプリなので UA のフォーム部品・スクロールバー・dialog の backdrop もダークで描かせる */
   color-scheme: dark;
-  /* トレーニング中の縦スワイプが pull-to-refresh でセッション画面をリロードするのを防ぐ */
-  overscroll-behavior: none;
+  /* トレーニング中の縦スワイプが pull-to-refresh でセッション画面をリロードするのを防ぐ。
+     横はブラウザタブの戻る / 進むジェスチャを残すため軸を明示する */
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -28,13 +29,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button {
+/* router-link で <a> になるボタン（CardButton / IconButton / NavLink）にも同じリセットを届ける。
+   :where() で詳細度を 0 にし、各コンポーネントの指定が必ず勝つようにする */
+:where(button, a) {
   /* UA スタイルの font / line-height を打ち消し、body の既定を継承させる */
   font: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  /* 長押しでテキスト選択ハンドルや iOS のコールアウトが出ないようにする。
-     router-link で <a> になるボタン（CardButton / IconButton / NavLink）は各コンポーネントで同じ抑止を補う */
+  /* 長押しでテキスト選択ハンドルや iOS のコールアウトが出ないようにする */
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;

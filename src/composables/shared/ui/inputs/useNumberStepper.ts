@@ -5,7 +5,8 @@ import { increment, decrement, type StepperOptions } from '@/core/stepper'
 export const NUMBER_STEPPER_REPEAT_DELAY_MS = 500
 // 長押し中のリピート間隔
 export const NUMBER_STEPPER_REPEAT_INTERVAL_MS = 100
-// 加速に入るまでのリピート回数（NUMBER_STEPPER_REPEAT_INTERVAL_MS × 10 = 1 秒の長押し）
+// 加速に入るまでの等速リピート回数。等速リピートが 1 秒続いた次の tick から加速する
+//（長押し開始からは NUMBER_STEPPER_REPEAT_DELAY_MS + 11 tick = 1.6 秒）
 export const NUMBER_STEPPER_ACCELERATE_AFTER_TICKS = 10
 // 加速後に 1 回のリピートで進める step 数
 export const NUMBER_STEPPER_ACCELERATED_STEPS = 4
@@ -16,7 +17,7 @@ export const NUMBER_STEPPER_ACCELERATED_STEPS = 4
  * NUMBER_STEPPER_REPEAT_DELAY_MS 経過後から NUMBER_STEPPER_REPEAT_INTERVAL_MS 間隔でリピートする。
  * リピートが NUMBER_STEPPER_ACCELERATE_AFTER_TICKS 回続いたら 1 回あたり NUMBER_STEPPER_ACCELERATED_STEPS step
  * 進めて加速する（0.25 kg 刻みの重量を 40 → 100 kg にするような大きな移動を数秒で済ませるため）。
- * 加速は step を大きくするのではなく 1 step の適用を繰り返すため、刻みへの整列と clamp は core/stepper のまま。
+ * 加速は step を大きくするのではなく 1 step の適用を繰り返すため、刻み幅と clamp の規則は core/stepper のまま。
  * stepUp / stepDown は keydown 用の一段適用。リピートは持たず、押しっぱなしは OS のキーリピートに任せる。
  * pointerdown 時に pointer capture を取得するため、ボタン外で離しても pointerup / pointercancel がボタンへ届き確実に stop できる。
  * min / max 到達後はタイマーを止めず clamp による no-op を続ける。
