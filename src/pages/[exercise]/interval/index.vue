@@ -215,8 +215,12 @@ onScopeDispose(audioCue.stop)
   align-items: baseline;
 }
 
+/* 通知音の停止は鳴っている最中に急いで押す操作なので、IconButton の 40px 例外を使わず
+   タップ最小 44px（design「Tap Target」）まで広げる。外形は使用側が決める（conventions「プリミティブの外形幅」） */
 .stop-alarm {
   justify-self: end;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .centis {

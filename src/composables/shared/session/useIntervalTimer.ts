@@ -1,6 +1,8 @@
 import { computed, onScopeDispose, ref, type InjectionKey } from 'vue'
 
-// カウント更新の tick 間隔。センチ秒表示（例: .32）が滑らかに見える粒度にする
+// カウント更新の tick 間隔。センチ秒表示（例: .32）の下 1 桁は 5 刻みで飛ぶが、見た目には流れて見える粒度と
+// 再描画コストの折り合い。requestAnimationFrame にはしない: バックグラウンドで止まり、0 秒到達
+//（reachedZero → 通知音の開始）が前景復帰まで遅れる。setInterval は間引かれても止まらない
 const INTERVAL_TIMER_TICK_MS = 50
 // 超過表示の上限秒数。到達後はカウントを進めず +3:00 のまま固定する（spec「インターバルタイマー」）
 const INTERVAL_TIMER_OVERRUN_CAP_SEC = 180

@@ -119,9 +119,9 @@ text-shadow:
 
 最小 **44 px** (iOS HIG)。全ボタン・stepper で遵守。
 
-例外: `IconButton` は 40 × 40 px とする（AppBar の戻る・補助操作、Home のブランド行の Settings、インターバルの通知音の停止に使う。いずれも隣接要素と十分な間隔を取って単独で置く前提。ただし通知音の停止だけは鳴っている最中に押す操作で、この前提が弱い）。
+例外: `IconButton` は 40 × 40 px とする（AppBar の戻る・補助操作、Home のブランド行の Settings に使う。いずれも隣接要素と十分な間隔を取って単独で置く前提）。インターバルの通知音の停止だけは鳴っている最中に急いで押す操作でこの前提が弱いため、使用側で 44 × 44 px に広げる。
 
-例外: History の種目タブは高さ 33 px (padding 8)。padding を一律に上げて 44 px にすると最長ラベル `BENCH PRESS` が折り返す (§6) ため、高さは上げずに 3 等分した横幅で当たり判定を確保する。
+History の種目タブは padding 8 のまま min-height で 44 px を確保する（padding を一律に上げると最長ラベル `BENCH PRESS` が 3 分割幅で折り返す。§6）。
 
 ### Line Height
 
@@ -201,7 +201,7 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### 6. History (`M_History`)
 
 - AppBar: "HISTORY"
-- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)
+- 種目タブ (3 つ): Bench / Squat / Deadlift。active は fill fg, text bg, bold; inactive は transparent, text fg3, regular。padding は 8px (12px では最長ラベル `BENCH PRESS` が 3 分割幅で折り返す)。高さは min-height 44 px (Tap Target)
 - Est. 1RM カード (surface, `lineSoft` 枠, radius 4, padding 16)
   - ヘッダー左: `EST. 1RM` Label + `99.0` (mono stat bold, accent + glow) + `KG` unit
   - ヘッダー右: `LAST 8 SESSIONS` Label (fg3) + 上下矢印 12 px + `+9.0` (mono body bold) + `KG` unit。**Result の Delta badge と違い pill 枠は無く**、数値も accent にせず fg のまま (カード内で立てるのはヘッドラインの `99.0` だけ)
@@ -245,7 +245,7 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 ### グローバル
 
 - すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」(`spec.md` §4)・トレーニング中 / インターバル中からのセッションフロー離脱 (§5)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
-- タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面)。`opacity` は使わない
+- タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面、Home の History 行はシェブロン)。向きは常に一段**上げる** (明るくする) 方向で、暗く落とす向きは使わない。`opacity` は使わない
 - アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る (`../spec.md`「トーンガイド」)
 
 ### Timer (`M_Interval`)
