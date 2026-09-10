@@ -151,6 +151,8 @@
 - トレーニング画面は **`Session.menu` のみを参照** する
 - TypeScript 型では `Session.menu: Readonly<Menu>` とし、コンパイラレベルで変更を禁止する
 
+背景と退けた案は [ADR 0004](decisions/0004-menu-immutability-in-state-model.md)。
+
 ---
 
 ### 4. インターバルタイマー（セット間）
@@ -214,6 +216,7 @@
 - 確認の対象はトレーニング中・インターバル中からの離脱のみ。結果確認画面からの離脱（`FINISH` / ←）はセッションが既に終端しているため対象外。タブを閉じる / リロードも対象外で、§1 のとおり確認なしに中断として残る
 - 終了扱いにするのはフローだけで、セッションのデータ自体は結果確認画面が参照しうるためメモリに残す（DB への追加書き込みはしない）。この保持を明示的に破棄する唯一の操作が §7 の Import 確定である（次のセッションの開始でも上書きされる）
 - 離脱後にブラウザの「進む」等でトレーニング中・インターバル中へ再入しようとしても、実行中セッションが終端していれば router のセッションガードがホームへ差し替える（結果確認画面は履歴詳細からも開くためガード対象外）
+- 実装上の責務分担（ガードが行き先を決める）と退けた案は [ADR 0009](decisions/0009-leave-confirmation-decided-by-router-guard.md)
 
 #### 結果確認画面
 
@@ -496,7 +499,7 @@ function isComplete(session: ReadonlySession): boolean {
 
 ## ⚠️ エラーハンドリング
 
-**判断基準**: 「この失敗は根幹（トレーニングを実行して実績を記録し、それを正しく見せること）を壊すか？」
+**判断基準**: 「この失敗は根幹（トレーニングを実行して実績を記録し、それを正しく見せること）を壊すか？」（背景と退けた案は [ADR 0006](decisions/0006-single-error-boundary-explicit-degradation.md)）
 
 - **壊さない（周辺の縮退）**: Wake Lock 取得失敗 / タイマー音の再生失敗 / `navigator.storage.persist()` の拒否 / Service Worker 登録失敗（オフラインキャッシュが効かないだけ）など、本仕様が**最善努力**と定めるもの。失敗しても該当機能を諦めるだけでアプリは継続する
 - **壊す・不明（想定外）**: IndexedDB の読み書き失敗・実装バグ・未知の例外。全画面のエラー画面に切り替え、事実と違う表示や記録の続行をさせない
@@ -513,7 +516,7 @@ function isComplete(session: ReadonlySession): boolean {
 
 ## 🎨 デザイン
 
-- デザイントークンと画面構造の正本は `docs/design/README.md`。そこに書かれていない詳細値は実装が正本（`docs/conventions.md`「デザイントークン」）
+- デザイントークンと画面構造の正本は [docs/design/README.md](design/README.md)。そこに書かれていない詳細値は実装が正本（[docs/conventions.md](conventions.md)「デザイントークン」）
 - 画面のビジュアルデザインは **Claude Design** で作成する
 - そのため、本仕様書に記載している **画面構成・画面遷移・UI 要素の配置** は、デザイン作成過程で **変更される可能性がある**
 - 一方、機能仕様（操作の振る舞い・制約）、データモデル、1RM 計算式、ストレージ設計などのコア仕様は、デザイン変更に左右されない
@@ -547,24 +550,14 @@ function isComplete(session: ReadonlySession): boolean {
 
 ## 🧱 技術スタック
 
-| 区分 | 採用 |
-| --- | --- |
-| フレームワーク | Vue 3 + Vite + TypeScript（Composition API + `<script setup>`） |
-| スタイリング | scoped CSS（Tailwind なし） |
-| グラフ | vue-chartjs（Chart.js ベース） |
-| ストレージ | IndexedDB（Dexie.js） |
-| PWA | vite-plugin-pwa（インストール可能・オフライン対応） |
-| コンポーネント開発 | Storybook（Vue 3 + Vite） |
-| テスト | Vitest projects（ロジックは `happy-dom`、Story の play 関数は `@storybook/addon-vitest` + headless Chromium。すべて Vitest で実行） |
-| Lint / Format | ESLint + Prettier |
-| Git hooks | husky + lint-staged（pre-commit で lint-staged → unit テスト。typecheck と Story テストは CI） |
+採用技術の一覧は [README.md](../README.md) の「技術スタック」節を正本とする。選定の背景は [docs/decisions/](decisions/README.md)。
 
 ### テスト方針
 
 - **ロジック層**（1RM 計算、`sessions` の保存・更新、その他 composable のビジネスロジック）は **Vitest**（`unit` project、`happy-dom`）で単体テスト
 - **コンポーネント層**（メニュー設定フォーム、トレーニング画面のセット表示、タイマー UI など）は **Storybook** に Story を書き、`play` 関数でクリック・入力などのインタラクションテストを記述。play 関数は **`@storybook/addon-vitest` + Vitest browser mode（headless Chromium / Playwright）** で実行する（`storybook` project）
 - 実ブラウザ・実描画に依存する視覚検証は **Chromatic**（visual regression）が担う
-- ロジックと Story は役割で分担し、同じ振る舞いを両方では書かない
+- ロジックと Story は役割で分担し、同じ振る舞いを両方では書かない。背景と退けた案は [ADR 0003](decisions/0003-test-split-vitest-storybook-chromatic.md)
 
 ---
 
@@ -573,7 +566,7 @@ function isComplete(session: ReadonlySession): boolean {
 ### 本体アプリ
 
 - **ホスティング**: [Cloudflare Pages](https://pages.cloudflare.com/)（無料枠で帯域無制限・商用利用制限なし）
-- **公開 URL**: Cloudflare Pages のデフォルトサブドメイン（例: `peak-rm.pages.dev`）。独自ドメインは設定しない
+- **公開 URL**: <https://peak-rm.pages.dev/>（Cloudflare Pages のデフォルトサブドメイン）。独自ドメインは設定しない
 - **デプロイトリガー**: `main` ブランチへの push で自動ビルド・デプロイ（GitHub 連携）
 - **ビルド設定**:
   - ビルドコマンド: `npm run build`
@@ -628,7 +621,7 @@ Chromatic の snapshot は「story 数 × viewport 数 × ブラウザ数 × ビ
 
 - **骨組みは即描画する**: 値に依存せず位置が確定する要素（AppBar・種目タブ・セクション見出し・footer のボタン）は読み込みを待たずに出す。履歴の `SESSIONS` 見出しは読み込み後に上へ 1RM カードが入るため位置が動くが、タップ対象ではないので骨組みに含める
 - **値と、値に依存する要素は読み込み完了後に一度に出す**: 数値・一覧の行・カード・空表示（`—` / `NO LOG` / `NO SESSIONS`）が対象。空表示は「読み込みが完了して、かつ記録が無い」ときにだけ出す
-- **読み込み完了後にタップ対象の位置が動かない**: 先に出した要素の高さは値が入っても変わらないようにする。常設のボタンは消さずに `disabled` で待つ（`docs/conventions.md`「状態表現（操作できない状態）」の一時的に押せない場合の扱い）。例外はホームの種目カードで、多セットで前回記録の reps が 2 行に折り返す場合だけ `LAST` 列が `EST. 1RM` 列より高くなり、そのカードの高さが読み込み完了で増える（1 行に収まる限り動かない）
+- **読み込み完了後にタップ対象の位置が動かない**: 先に出した要素の高さは値が入っても変わらないようにする。常設のボタンは消さずに `disabled` で待つ（[docs/conventions.md](conventions.md)「状態表現（操作できない状態）」の一時的に押せない場合の扱い）。例外はホームの種目カードで、多セットで前回記録の reps が 2 行に折り返す場合だけ `LAST` 列が `EST. 1RM` 列より高くなり、そのカードの高さが読み込み完了で増える（1 行に収まる限り動かない）
 
 画面ごとの当て方:
 
