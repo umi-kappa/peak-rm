@@ -57,7 +57,8 @@ export const EmptyMemo: Story = {
 }
 
 // 初期フォーカスが SAVE にあること、実績・メモの編集結果が save の payload に配線されていること、
-// シェルの cancel が再 emit されることを確認する（ESC / backdrop の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
+// シェルの cancel が再 emit されること、シェルの既定のまま backdrop でも cancel が出ることを確認する
+// （ドラッグはみ出し等の発火パターン網羅はシェル側 BaseDialog の Behavior が担う）
 export const Behavior: Story = {
   args: { memo: '', onSave: fn(), onCancel: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
@@ -77,5 +78,9 @@ export const Behavior: Story = {
     // シェル → SetEditDialog の cancel 転送配線。SetEditDialog は閉じるボタンを持たず、この転送が唯一の閉じ経路
     await fireEvent(dialog, new Event('cancel', { cancelable: true }))
     await expect(args.onCancel).toHaveBeenCalledOnce()
+    // backdrop タップでも cancel が出る（シェルの既定を使う。ESC の無い環境ではこれが唯一の脱出路）
+    await fireEvent.pointerDown(dialog)
+    await fireEvent.click(dialog)
+    await expect(args.onCancel).toHaveBeenCalledTimes(2)
   },
 }

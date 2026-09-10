@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
 import ConfirmDialog from '@/components/shared/ui/dialog/ConfirmDialog.vue'
 import { topLayerDocs } from '@/stories/topLayerDocs'
 
@@ -50,7 +50,7 @@ export const WithMessage: Story = {
   },
 }
 
-// 確定 / キャンセルが各 emit に配線されていることを確認する
+// 確定 / キャンセルが各 emit に配線されていること、backdrop でもキャンセルできることを確認する
 export const Behavior: Story = {
   args: { onConfirm: fn(), onCancel: fn() },
   parameters: { chromatic: { disableSnapshot: true } },
@@ -60,5 +60,10 @@ export const Behavior: Story = {
     await expect(args.onConfirm).toHaveBeenCalledOnce()
     await userEvent.click(canvas.getByRole('button', { name: 'キャンセル' }))
     await expect(args.onCancel).toHaveBeenCalledOnce()
+    // backdrop タップでも cancel が出る（シェルの既定を使う。確認は誤タップで閉じてよい）
+    const dialog = canvas.getByRole('dialog', { name: 'トレーニングを中断しますか？' })
+    await fireEvent.pointerDown(dialog)
+    await fireEvent.click(dialog)
+    await expect(args.onCancel).toHaveBeenCalledTimes(2)
   },
 }
