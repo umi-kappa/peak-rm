@@ -209,12 +209,13 @@ export const Behavior: Story = {
     // 投げても、直列化のガードが効いていれば検証は 1 回しか走らない
     await selectFile(canvasElement)
     await selectFile(canvasElement)
+
+    // ファイルの読み取りが非同期なので、ダイアログは findBy で待つ。検証の呼び出し回数は
+    // 読み取り完了後にしか確定しないため、ダイアログを待ってから見る
+    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(backup.parseImport).toHaveBeenCalledOnce()
     // 選んだファイルの本文がそのまま検証へ渡っている
     await expect(backup.parseImport).toHaveBeenCalledWith('{}')
-
-    // ファイルの読み取りが非同期なので、ダイアログは findBy で待つ
-    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(
       canvas.getByText('現在の記録はすべて消え、ファイルの内容に置き換わります。'),
     ).toBeVisible()
