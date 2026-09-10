@@ -2,7 +2,7 @@ import { readonly, ref } from 'vue'
 import { expect, test, vi } from 'vitest'
 import { createMemoryHistory } from 'vue-router'
 import type { Router } from 'vue-router'
-import { createAppRouter, routes } from '@/router'
+import { createAppRouter, routes, SESSION_FLOW_ROUTES } from '@/router'
 import type { TrainingPhase } from '@/composables/shared/session/useSession'
 import { useSessionLeaveConfirm } from '@/composables/shared/session/useSessionLeaveConfirm'
 
@@ -71,6 +71,17 @@ test('ページロード直後の非 home への遷移は home にリダイレ�
   )
   // isReady を挟まず最初の遷移を session フローのディープリンクに向ける = from が START_LOCATION
   await router.push('/benchPress/training')
+  expect(router.currentRoute.value.name).toBe('home')
+})
+
+test('ページロード直後の history ディープリンクも home にリダイレクトされる', async () => {
+  const router = createAppRouter(
+    createFakeSession('setActive').session,
+    createFakeLeaveConfirm(),
+    createMemoryHistory(),
+  )
+  // 実行中セッションの画面ではないので、リダイレクトの理由は終端後の再入禁止でなくページロード直後だけ
+  await router.push('/history')
   expect(router.currentRoute.value.name).toBe('home')
 })
 
@@ -157,20 +168,43 @@ test('実行中セッションが終端していても result へは入れる（
   expect(router.currentRoute.value.name).toBe('result')
 })
 
-test('session フローの外へ遷移すると leave で実行中セッションを終端する', async () => {
-  const { phaseRef, session } = createFakeSession('setActive')
+test.each([
+  { name: 'training', phase: 'setActive' },
+  { name: 'interval', phase: 'interval' },
+] satisfies { name: string; phase: TrainingPhase }[])(
+  '$name から session フローの外へ遷移すると leave で実行中セッションを終端する',
+  async ({ name, phase }) => {
+    const { phaseRef, session } = createFakeSession(phase)
+    const router = createAppRouter(session, createFakeLeaveConfirm(), createMemoryHistory())
+    await router.push({ name: 'home' })
+
+    await router.push({ name, params: { exercise: 'benchPress' } })
+    expect(router.currentRoute.value.name).toBe(name)
+    expect(session.leave).not.toHaveBeenCalled()
+
+    // セッションフローからブラウザの戻るでホームへ離脱する
+    router.back()
+    await waitForNavigation(router)
+    expect(router.currentRoute.value.name).toBe('home')
+    expect(session.leave).toHaveBeenCalledOnce()
+    expect(phaseRef.value).toBe('done')
+  },
+)
+
+// 結果確認画面は開始時点で phase が done なので、終端の観測は leave の呼び出しで行う
+test('結果確認画面から session フローの外へ遷移しても leave で実行中セッションを終端する', async () => {
+  const { session } = createFakeSession('done')
   const router = createAppRouter(session, createFakeLeaveConfirm(), createMemoryHistory())
   await router.push({ name: 'home' })
 
-  await router.push({ name: 'training', params: { exercise: 'benchPress' } })
+  await router.push({ name: 'result', params: { exercise: 'benchPress' } })
+  expect(router.currentRoute.value.name).toBe('result')
   expect(session.leave).not.toHaveBeenCalled()
 
-  // トレーニング中にブラウザの戻るでホームへ離脱（spec「セッションフローからの離脱」）
   router.back()
   await waitForNavigation(router)
   expect(router.currentRoute.value.name).toBe('home')
   expect(session.leave).toHaveBeenCalledOnce()
-  expect(phaseRef.value).toBe('done')
 })
 
 test('戻るで離脱した後に進むで再入しようとしてもホームに落ちる', async () => {
@@ -371,6 +405,41 @@ test('重ねた離脱操作に畳まれた問い合わせでは、phase が進�
   expect(session.settled).not.toHaveBeenCalled()
 })
 
+test('書き込みを待つ間に畳まれた問い合わせでは、進んだ phase の画面へ進めない', async () => {
+  const { phaseRef, session } = createFakeSession('setActive')
+  // セット完了の書き込みを手動で終わらせ、待っている間に 2 度目の離脱操作が入る順序を作る
+  let finishWrite: (() => void) | undefined
+  session.settled.mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finishWrite = () => {
+          phaseRef.value = 'interval'
+          resolve()
+        }
+      }),
+  )
+  const leaveConfirm = useSessionLeaveConfirm()
+  const router = createAppRouter(session, leaveConfirm, createMemoryHistory())
+  await router.push({ name: 'home' })
+  await router.push({ name: 'training', params: { exercise: 'benchPress' } })
+
+  router.back()
+  await vi.waitFor(() => expect(leaveConfirm.pending.value).toBe(true))
+  leaveConfirm.cancel()
+  await vi.waitFor(() => expect(session.settled).toHaveBeenCalledOnce())
+
+  // 書き込みを待っている間の 2 度目の離脱操作。キャンセルは畳まれたので、書き込みで phase が
+  // 進んでもインターバルへ進めて後から押す確定を追い越してはいけない
+  const second = router.push({ name: 'menu', params: { exercise: 'benchPress' } })
+  await vi.waitFor(() => expect(leaveConfirm.generation.value).toBe(2))
+  finishWrite?.()
+  leaveConfirm.confirm()
+  await second
+
+  expect(router.currentRoute.value.name).toBe('menu')
+  expect(session.leave).toHaveBeenCalledOnce()
+})
+
 test('離脱確認をキャンセルした後にもう一度戻ると、改めて確認を挟んで離脱できる', async () => {
   const { session } = createFakeSession('setActive')
   const leaveConfirm = useSessionLeaveConfirm()
@@ -392,4 +461,11 @@ test('離脱確認をキャンセルした後にもう一度戻ると、改め�
   await waitForNavigation(router)
   expect(router.currentRoute.value.name).toBe('home')
   expect(session.leave).toHaveBeenCalledOnce()
+})
+
+test('SESSION_FLOW_ROUTES の各 name が routes 定義に実在する', () => {
+  const routeNames = routes.map((route) => route.name)
+  for (const name of SESSION_FLOW_ROUTES) {
+    expect(routeNames).toContain(name)
+  }
 })

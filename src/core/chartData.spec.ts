@@ -28,8 +28,8 @@ describe('buildOneRmChartData', () => {
     ])
 
     expect(data?.points).toEqual([
-      { oneRm: 100 * (1 + 8 / 40), dayLabel: '05/09' },
-      { oneRm: 110 * (1 + 8 / 40), dayLabel: '05/12' },
+      { oneRm: 120, dayLabel: '05/09' },
+      { oneRm: 132, dayLabel: '05/12' },
     ])
   })
 
@@ -39,7 +39,7 @@ describe('buildOneRmChartData', () => {
       makeSession(at(5, 12, 9), 110, [8]),
     ])
 
-    expect(data?.points).toEqual([{ oneRm: 100 * (1 + 8 / 40), dayLabel: '05/12' }])
+    expect(data?.points).toEqual([{ oneRm: 120, dayLabel: '05/12' }])
   })
 
   test('点が 8 個を超えたら直近 8 点だけを残す', () => {
@@ -62,6 +62,18 @@ describe('buildOneRmChartData', () => {
     ])
   })
 
+  test('9 日分のうち最新日が全セットスキップでも直近 8 点が表示される', () => {
+    const sessions = Array.from({ length: 9 }, (_, index) =>
+      makeSession(at(5, index + 1), 100 + index, index === 8 ? [0] : [8]),
+    )
+
+    const data = buildOneRmChartData(sessions)
+
+    expect(data?.points).toHaveLength(8)
+    expect(data?.points.at(-1)).toEqual({ oneRm: 128.4, dayLabel: '05/08' })
+    expect(data?.latest).toBe(128.4)
+  })
+
   test('latest は終点・delta は表示区間の「終点 − 始点」', () => {
     const data = buildOneRmChartData([
       makeSession(at(5, 9), 100, [8]),
@@ -69,8 +81,8 @@ describe('buildOneRmChartData', () => {
       makeSession(at(5, 12), 110, [8]),
     ])
 
-    expect(data?.latest).toBe(110 * (1 + 8 / 40))
-    expect(data?.delta).toBe(110 * (1 + 8 / 40) - 100 * (1 + 8 / 40))
+    expect(data?.latest).toBe(132)
+    expect(data?.delta).toBe(12)
   })
 
   test('delta は両端を表示桁へ丸めてから引く（表示値の差と一致させる）', () => {
@@ -98,7 +110,7 @@ describe('buildOneRmChartData', () => {
   test('点が 1 つだけなら delta は出さない', () => {
     const data = buildOneRmChartData([makeSession(at(5, 12), 100, [8])])
 
-    expect(data?.latest).toBe(100 * (1 + 8 / 40))
+    expect(data?.latest).toBe(120)
     expect(data?.delta).toBeUndefined()
   })
 
@@ -108,7 +120,7 @@ describe('buildOneRmChartData', () => {
       makeSession(at(5, 12), 100, [0, 0, 0]),
     ])
 
-    expect(data?.points).toEqual([{ oneRm: 100 * (1 + 8 / 40), dayLabel: '05/09' }])
+    expect(data?.points).toEqual([{ oneRm: 120, dayLabel: '05/09' }])
     expect(data?.delta).toBeUndefined()
   })
 

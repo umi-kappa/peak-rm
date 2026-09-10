@@ -26,7 +26,7 @@ function reps(actualReps: number): SetResult {
 describe('sessionMaxOneRm', () => {
   test('複数セットのうち最大の 1RM を採用する', () => {
     const session = makeSession('benchPress', 100, 8, 3, [reps(8), reps(10), reps(6)])
-    expect(sessionMaxOneRm(session)).toBe(100 * (1 + 10 / 40))
+    expect(sessionMaxOneRm(session)).toBe(125)
   })
 
   test('実績 0 回のセットは除外する', () => {
@@ -36,7 +36,7 @@ describe('sessionMaxOneRm', () => {
 
   test('中断（未実施セットあり）でも実施済みセットがあれば算出する', () => {
     const session = makeSession('squat', 100, 8, 3, [reps(8)])
-    expect(sessionMaxOneRm(session)).toBeCloseTo(100 * (1 + 8 / 33.3))
+    expect(sessionMaxOneRm(session)).toBeCloseTo(124.024, 3)
   })
 
   test('全セット 0 回なら 0 を返す', () => {
