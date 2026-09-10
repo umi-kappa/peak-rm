@@ -5,12 +5,13 @@
 ## 正本
 
 - 機能仕様・データモデル・設計判断: `docs/spec.md`
+- 設計判断の背景と検討経緯（ADR）: `docs/decisions/`
 - 実装・命名・アクセシビリティ・テスト・スタイル規約: `docs/conventions.md`
 - UI・デザイントークン・画面リファレンス: `docs/design/README.md`
 - セットアップと利用可能なコマンド: `README.md` と `package.json`
 - 進捗と残作業: GitHub Issues
 
-機能や挙動を変更する前に `docs/spec.md` の該当箇所を、コードを変更する前に `docs/conventions.md` の該当箇所を読む。UI を変更するときは `docs/design/README.md` も読む。仕様と実装が矛盾している場合や、新しいプロダクト判断が必要な場合は、独自に補完せず作業を止めて相談する。
+機能や挙動を変更する前に `docs/spec.md` の該当箇所を、コードを変更する前に `docs/conventions.md` の該当箇所を読む。規約や仕様が ADR にリンクしている決定を変えるときは、その ADR も読む。UI を変更するときは `docs/design/README.md` も読む。仕様と実装が矛盾している場合や、新しいプロダクト判断が必要な場合は、独自に補完せず作業を止めて相談する。
 
 ## プロダクトの不変条件
 
