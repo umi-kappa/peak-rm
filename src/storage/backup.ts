@@ -115,11 +115,11 @@ function toSession(value: Session): Session {
 }
 
 /**
- * ダウンロードさせるファイル名と中身を組み立てる。
+ * ダウンロードさせるファイル名と中身、書き出したセッション件数を返す。
  * envelope の形・整形・ファイル名まで backup が持ち、画面には DOM の書き出しだけを残す。
  * 日付はローカルカレンダー日（localDayKey が `YYYY-MM-DD` を返す）。
  */
-async function createExport(): Promise<{ fileName: string; json: string }> {
+async function createExport(): Promise<{ fileName: string; json: string; count: number }> {
   const exportedAt = Date.now()
   const envelope: ExportEnvelope = {
     schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -130,6 +130,7 @@ async function createExport(): Promise<{ fileName: string; json: string }> {
   return {
     fileName: `peak-rm-export-${localDayKey(exportedAt)}.json`,
     json: JSON.stringify(envelope),
+    count: envelope.sessions.length,
   }
 }
 

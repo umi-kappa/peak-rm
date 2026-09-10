@@ -29,7 +29,10 @@ const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 // deep proxy のまま Dexie へ渡すと structured clone が壊れるため shallowRef で持つ
 const pendingSessions = shallowRef<Session[]>()
 
-// Import の結果（検証エラー / 置換完了）を伝えるモーダルの内容。表示条件も兼ねる
+// Export の完了と Import の結果（検証エラー / 置換完了）を伝えるモーダルの内容。表示条件も兼ねる。
+// Export と Import は互いを直列化しない。createExport 中・読み取りから確認ダイアログまで・
+// 置換トランザクション中は相手の行も押せるため、どちらの通知も後着に上書きされうる。
+// 窓は ms〜数百 ms なので据え置く
 const notice = ref<Notice>()
 
 // ファイルの読み取り開始から置換完了までを 1 本に直列化する。読み取りの await 中はまだ
@@ -37,8 +40,17 @@ const notice = ref<Notice>()
 // 表示中のダイアログの件数と置換対象を裏で差し替える
 const importing = ref(false)
 
+// createExport の await 中に再押下されると同じ内容のファイルが複数生成されるため、書き出し中の
+// 再押下を無視する。Import の importing は確認ダイアログ中も握るが、こちらは createExport から
+// ダウンロード起動までの区間だけ立てる
+const exporting = ref(false)
+
 async function exportData() {
-  const { fileName, json } = await backup.createExport()
+  if (exporting.value) return
+  // 書き出しの失敗は境界へ流れページごと unmount されるため、その経路では戻さない
+  exporting.value = true
+
+  const { fileName, json, count } = await backup.createExport()
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
@@ -49,6 +61,8 @@ async function exportData() {
   link.remove()
   // ダウンロード開始前に revoke するとブラウザが転送を取り消すため、転送が始まるまで待って解放する
   setTimeout(() => URL.revokeObjectURL(url), 1000)
+  exporting.value = false
+  notice.value = { title: `${count} 件のセッションを書き出しました`, message: fileName }
 }
 
 function openFilePicker() {

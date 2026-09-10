@@ -71,9 +71,10 @@ describe('createExport', () => {
     await db.sessions.bulkAdd([makeSession('s1'), makeSession('s2', 'squat', 2000)])
 
     const before = Date.now()
-    const { json } = await backup.createExport()
+    const { json, count } = await backup.createExport()
     const envelope = JSON.parse(json) as ExportEnvelope
 
+    expect(count).toBe(2)
     expect(envelope.schemaVersion).toBe(BACKUP_SCHEMA_VERSION)
     // 固定値でも通らないよう、書き出し時刻が呼び出し区間に収まることまで見る
     expect(envelope.exportedAt).toBeGreaterThanOrEqual(before)
@@ -82,7 +83,8 @@ describe('createExport', () => {
   })
 
   test('記録が無ければ sessions は空配列になる', async () => {
-    const { json } = await backup.createExport()
+    const { json, count } = await backup.createExport()
+    expect(count).toBe(0)
     expect((JSON.parse(json) as ExportEnvelope).sessions).toEqual([])
   })
 
