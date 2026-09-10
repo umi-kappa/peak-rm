@@ -127,7 +127,7 @@ npm run test:storybook # Story の play 関数のみ実行
 npm run test:watch    # ファイル変更を監視して再実行
 ```
 
-Vitest を projects 構成で動かす。`unit`（ロジック spec、`happy-dom`）と `storybook`（Story の `play` 関数、`@storybook/addon-vitest` で **headless Chromium** 実行）。`npm test` は両方を走らせるため、pre-commit でも play 関数が headless ブラウザで検証される。
+Vitest を projects 構成で動かす。`unit`（ロジック spec、`happy-dom`）と `storybook`（Story の `play` 関数、`@storybook/addon-vitest` で **headless Chromium** 実行）。`npm test` は両方を走らせる。pre-commit では `unit` のみを走らせ、`storybook` は CI で走らせる。
 
 ### Storybook のローカル起動
 
@@ -148,7 +148,7 @@ npx pwa-assets-generator assets/icon-source.svg
 
 ### Git hooks（commit 時の自動チェック）
 
-`husky` + `lint-staged` により、commit 時に pre-commit フックで lint-staged → typecheck → test が自動で走り、いずれか失敗すると commit は中断される。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
+`husky` + `lint-staged` により、commit 時に pre-commit フックで lint-staged → unit テストが自動で走り、いずれか失敗すると commit は中断される。typecheck と Story テストは CI が担う。`npm install`（`prepare` script）でフックが有効化されるため、追加設定は不要。
 
 対象 glob・実行順・設計方針など詳細は [docs/conventions.md](docs/conventions.md) の「Git hooks」節を参照する。
 

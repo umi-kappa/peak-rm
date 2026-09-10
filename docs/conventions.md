@@ -255,13 +255,13 @@ npm run build-storybook # storybook-static/ に静的ビルド生成
 
 ## Git hooks
 
-`husky` + `lint-staged` を導入し、commit 時に pre-commit フック（`.husky/pre-commit`）で品質チェックを自動実行する。`npm install`（`prepare: "husky"` script）でフックが有効化される。
+`husky` + `lint-staged` を導入し、commit 時に pre-commit フック（`.husky/pre-commit`）で軽量な品質チェック（整形・lint・unit テスト）を自動実行する。`npm install`（`prepare: "husky"` script）でフックが有効化される。
 
-- 実行順は `npx lint-staged` → `npm run typecheck` → `npm run test`。いずれか失敗で commit を中断する
+- 実行順は `npx lint-staged` → `npx vitest run --project unit`。いずれか失敗で commit を中断する
 - `lint-staged`（設定は `package.json`）は **変更ファイルのみ** 対象。`*.{ts,vue}` は ESLint `--fix` → Prettier `--write` を順に実行し、`*.{js,cjs,json,md,css,html}` は Prettier `--write`。glob を重複させると同一ファイルへ並行書き込みが起きるため、`ts` / `vue` は1エントリに配列でまとめて直列化する
-- `typecheck` / `test` は **プロジェクト全体** を対象に実行する
-- `npm run test` は `vitest run`（run モード）。watch にしないこと（フックが終了しなくなる）。Story の play 関数も `storybook` project（headless Chromium）として含まれるため、フックで一緒に検証される（初回 `npx playwright install chromium` が必要）
-- フックは pre-commit に集約する。pre-push は設けない
+- unit テストは **プロジェクト全体** を対象に実行する（約 2 秒）。`vitest run`（run モード）にし、watch にしないこと（フックが終了しなくなるため）
+- `typecheck` と Story の play テスト（`storybook` project、headless Chromium）は CI（`ci.yml` の `check` ジョブ）に任せ、フックでは走らせない。ブラウザ起動を伴う検証は1 行のコメント修正でも数十秒かかり、細かいコミット運用と相性が悪く `--no-verify` を誘発する。CI が PR で同じ検証を走らせるため二重になる
+- フックは pre-commit に集約し、pre-push は設けない（重い検証は CI に寄せる方針。#21 以前からの意図）
 
 ## スタイル（CSS）
 

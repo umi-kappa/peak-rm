@@ -557,7 +557,7 @@ function isComplete(session: ReadonlySession): boolean {
 | コンポーネント開発 | Storybook（Vue 3 + Vite） |
 | テスト | Vitest projects（ロジックは `happy-dom`、Story の play 関数は `@storybook/addon-vitest` + headless Chromium。すべて Vitest で実行） |
 | Lint / Format | ESLint + Prettier |
-| Git hooks | husky + lint-staged（pre-commit で lint-staged → typecheck → test） |
+| Git hooks | husky + lint-staged（pre-commit で lint-staged → unit テスト。typecheck と Story テストは CI） |
 
 ### テスト方針
 
