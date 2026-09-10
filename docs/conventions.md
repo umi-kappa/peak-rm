@@ -131,6 +131,7 @@ src/
 
 - **恒久的に操作できない（read-only な文脈）** → **入力 UI ごと出さない**。`disabled` にして残さず、静的表示へ切り替える（履歴一覧から開いた結果確認画面のセット編集。spec「実績値の編集ポリシー」）。押せないコントロールを並べても操作肢を探させるだけで、状態モデル上そもそも操作肢を持たないことを UI でも表す
 - **常設のコントロールが一時的に押せないだけ** → **ネイティブの `disabled`** で活性 / 非活性を表す（インターバル画面の通知音の停止ボタン。鳴っていない間は押せない）。位置が動くと慌てて探すことになるコントロールは、消さずに置いたまま状態だけ変える
+- **長押しでリピートするコントロールは min / max 到達時も `disabled` にしない**（`NumberStepper` の + / −）。`disabled` になった要素は pointer capture を失い、pointerup / pointercancel が届かずリピートが止まらなくなるため。到達後はタイマーを止めず clamp による no-op を続ける
 
 いずれの場合も**見た目だけ落として押せるままにはしない**。押せるように見えて何も起きない状態は、支援技術にも指にも嘘をつくため、ネイティブの `disabled` で「今は押せない」を正しく伝える。見た目の書き方は「スタイル（CSS）」節を参照する。
 
@@ -245,6 +246,12 @@ npm run test:watch      # ファイル変更を監視して再実行
 npm run storybook       # http://localhost:6006 で起動
 npm run build-storybook # storybook-static/ に静的ビルド生成
 ```
+
+## Git
+
+- コミットメッセージは `<type>: #<Issue 番号> <要約>` で書く（例: `feat: #33 セッション実行 composable useSession を実装`）。type は feat / fix / docs / test / chore / refactor / style
+- ブランチ名は `issue/<番号>-<slug>`。複数 Issue をまとめる場合は番号をすべて列挙し、範囲表記は使わない（例: `issue/126-127-128-129-session-fixes`）
+- PR 本文の末尾に `Closes #<番号>` を Issue ごとに列挙する。散文での参照だけでは自動 Close されない
 
 ## Git hooks
 

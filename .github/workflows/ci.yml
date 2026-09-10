@@ -2,7 +2,16 @@ name: CI
 
 on:
   pull_request:
+  # main の commit にも CI ステータスを付け、既定ブランチに Playwright の cache を作るため
+  # （pull_request イベントで作った cache は PR の ref にスコープされ、他の PR から復元できない）。
+  push:
+    branches: [main]
 
+permissions:
+  contents: read
+
+# ジョブ名は main のブランチ保護の required checks（`lint / typecheck / test` と `build-storybook`）と結合している。
+# 変更時は GitHub 側の設定も更新する。
 jobs:
   check:
     name: lint / typecheck / test
@@ -19,6 +28,8 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
