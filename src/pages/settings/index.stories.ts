@@ -1,6 +1,6 @@
 import { provide } from 'vue'
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import SettingsPage from '@/pages/settings/index.vue'
 import { sessionInjectionKey, type SessionStore } from '@/composables/shared/session/useSession'
 import { backupInjectionKey, type Backup, type ImportParseResult } from '@/storage/backup'
@@ -31,6 +31,18 @@ function fileInputOf(canvasElement: HTMLElement): HTMLInputElement {
   return input
 }
 
+type ExportResult = Awaited<ReturnType<Backup['createExport']>>
+
+// createExport を任意のタイミングで解決させるため、resolve を外へ出した Promise を作る。
+// 解決を止めている間が「書き出し中」なので、その間の再押下が捨てられることを ExportBehavior が見る
+function makeDeferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((r) => {
+    resolve = r
+  })
+  return { promise, resolve }
+}
+
 // 選び直しの検証に使うため、全 story で同一インスタンスを使い回す。userEvent.upload は
 // input.files との参照一致で変化を判定するので、画面が input.value を空へ戻していなければ
 // 2 回目の change が発火せず、その退行が Behavior で落ちる
@@ -54,7 +66,7 @@ const meta: Meta<typeof SettingsPage> = {
     docs: {
       description: {
         component:
-          '設定画面。データ操作（Export / Import）と Version 表示だけを置く（トレーニング挙動を変える設定は持たない）。Export は全セッションの envelope JSON をダウンロードし、Import はファイルの検証を通ったあと件数の確認ダイアログを経て全データを置き換える。置換の確定ではメモリ上の実行中セッションも破棄する。検証エラーと置換完了はどちらも AlertDialog で伝える。データ源は provide された backup なので、stories は fake を provide して検証結果を再現する。',
+          '設定画面。データ操作（Export / Import）と Version 表示だけを置く（トレーニング挙動を変える設定は持たない）。Export は全セッションの envelope JSON をダウンロードし、完了時に件数とファイル名を AlertDialog で伝える。Import はファイルの検証を通ったあと件数の確認ダイアログを経て全データを置き換える。置換の確定ではメモリ上の実行中セッションも破棄する。検証エラーと置換完了はどちらも AlertDialog で伝える。データ源は provide された backup なので、stories は fake を provide して検証結果を再現する。',
       },
     },
   },
@@ -101,6 +113,17 @@ export const ImportConfirm: Story = {
   },
 }
 
+// 書き出し完了のモーダル。ImportFailed / ImportConfirm と同じく到達のための play だけを持ち、
+// 件数とファイル名は fake（makeBackup）の既定値がそのまま出る
+export const ExportDone: Story = {
+  loaders: [loadSettingsPage()],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
+    await expect(await canvas.findByText('2 件のセッションを書き出しました')).toBeVisible()
+  },
+}
+
 // 検証エラー時は理由を伝えるだけで DB に触らない配線を確認する
 export const ImportFailedBehavior: Story = {
   loaders: [loadSettingsPage({ ok: false, message: 'schemaVersion が 1 ではありません' })],
@@ -123,7 +146,49 @@ export const ImportFailedBehavior: Story = {
   },
 }
 
-// Export の呼び出し、ファイル選択 → 件数の確認 → 確定で置換 → 完了モーダル、キャンセルでは
+// Export は行の押下から backup.createExport まで配線されていることと、書き出し中の再押下を
+// 捨てること、完了モーダルを閉じたあとに再実行できることを見る（Blob の生成とダウンロード起動は
+// DOM 側の責務で、headless では検証できない）
+export const ExportBehavior: Story = {
+  loaders: [
+    async () => {
+      const loaded = await loadSettingsPage()()
+      const exportDeferred = makeDeferred<ExportResult>()
+      const backup: Backup = { ...loaded.backup, createExport: fn(() => exportDeferred.promise) }
+      return { ...loaded, backup, exportDeferred }
+    },
+  ],
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    const backup = backupOf(loaded)
+    const exportDeferred = loaded.exportDeferred as ReturnType<typeof makeDeferred<ExportResult>>
+
+    // createExport の await 中に 2 回目を押しても、ガードが効いていれば書き出しは 1 回しか走らない
+    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
+    await expect(backup.createExport).toHaveBeenCalledOnce()
+
+    // 件数とファイル名が createExport の戻り値から配線されていることを見るため、実装に文言を
+    // 直書きしても通らない値（ExportDone が出す既定値の 2 件とも別の値）で解決し、同じ変数から文言を組む
+    const exportResult = { fileName: 'peak-rm-export-2026-01-31.json', json: '{}', count: 7 }
+    exportDeferred.resolve(exportResult)
+    const dialog = within(
+      await canvas.findByRole('dialog', {
+        name: `${exportResult.count} 件のセッションを書き出しました`,
+      }),
+    )
+    await expect(dialog.getByText(exportResult.fileName)).toBeVisible()
+    await userEvent.click(dialog.getByRole('button', { name: '閉じる' }))
+    await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument()
+
+    // 完了のあとも Export を再開できる（exportData がガードを解いている）
+    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
+    await expect(backup.createExport).toHaveBeenCalledTimes(2)
+  },
+}
+
+// ファイル選択 → 件数の確認 → 確定で置換 → 完了モーダル、キャンセルでは
 // 置換しない配線を確認する（検証そのものは backup.spec、ダイアログの emit は
 // ConfirmDialog / AlertDialog の story が担う）
 export const Behavior: Story = {
@@ -140,21 +205,17 @@ export const Behavior: Story = {
     // MIME が割り当てられない環境でも Export ファイルを選べるよう拡張子も持たせている
     await expect(fileInputOf(canvasElement)).toHaveAttribute('accept', 'application/json,.json')
 
-    // Export は行の押下から backup.createExport まで配線されていることだけを見る
-    // （Blob の生成とダウンロード起動は DOM 側の責務で、headless では検証できない）
-    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
-    await expect(backup.createExport).toHaveBeenCalledOnce()
-
     // 読み取りの await 中はまだ確認ダイアログが無く Import 行が生きている。ここで 2 回目を
     // 投げても、直列化のガードが効いていれば検証は 1 回しか走らない
     await selectFile(canvasElement)
     await selectFile(canvasElement)
+
+    // ファイルの読み取りが非同期なので、ダイアログは findBy で待つ。検証の呼び出し回数は
+    // 読み取り完了後にしか確定しないため、ダイアログを待ってから見る
+    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(backup.parseImport).toHaveBeenCalledOnce()
     // 選んだファイルの本文がそのまま検証へ渡っている
     await expect(backup.parseImport).toHaveBeenCalledWith('{}')
-
-    // ファイルの読み取りが非同期なので、ダイアログは findBy で待つ
-    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(
       canvas.getByText('現在の記録はすべて消え、ファイルの内容に置き換わります。'),
     ).toBeVisible()
@@ -178,8 +239,10 @@ export const Behavior: Story = {
     await userEvent.click(canvas.getByRole('button', { name: '閉じる' }))
     await expect(canvas.queryByText('2 件のセッションを読み込みました')).not.toBeInTheDocument()
 
-    // 置換完了のあとも Import を再開できる（confirmImport が直列化のロックを解いている）
+    // 置換完了のあとも Import を再開できる（confirmImport が直列化のロックを解いている）。
+    // 読み取り完了後に出る確認ダイアログを待ってから呼び出し回数を見る
     await selectFile(canvasElement)
+    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(backup.parseImport).toHaveBeenCalledTimes(3)
   },
 }

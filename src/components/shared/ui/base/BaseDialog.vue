@@ -2,15 +2,21 @@
 import { computed, onBeforeUnmount, onMounted, useId, useTemplateRef } from 'vue'
 import { useVisualViewport } from '@/composables/shared/platform/useVisualViewport'
 
-const { title, inset = 16 } = defineProps<{
+const {
+  title,
+  inset = 16,
+  dismissOnBackdrop = true,
+} = defineProps<{
   /** ヘッダーの h2 に表示する見出し。dialog のアクセシブルネーム（aria-labelledby）を兼ねる */
   title: string
   /** 画面端からの横インセット。top layer に出るため通常フローの親が幅を決められず、prop で受ける */
   inset?: 16 | 24
+  /** backdrop タップでも cancel を emit するか。読んで閉じるだけの結果通知は誤タップで消さないよう false にする */
+  dismissOnBackdrop?: boolean
 }>()
 
 const emit = defineEmits<{
-  /** ESC / backdrop タップ。閉じる判断・後処理は呼び出し側が担う */
+  /** ESC / backdrop タップ（backdrop は dismissOnBackdrop のときだけ）。閉じる判断・後処理は呼び出し側が担う */
   cancel: []
 }>()
 
@@ -43,7 +49,7 @@ function onBackdropPointerdown(event: PointerEvent) {
 }
 
 function onBackdropClick(event: MouseEvent) {
-  if (pressedOnBackdrop && event.target === dialogEl.value) emit('cancel')
+  if (dismissOnBackdrop && pressedOnBackdrop && event.target === dialogEl.value) emit('cancel')
 }
 
 // マウント = 表示。開閉は呼び出し側の v-if が唯一のソースで、open prop は持たない。

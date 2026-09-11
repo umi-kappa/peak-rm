@@ -71,7 +71,12 @@ export function makeSessionRepo(
  */
 export function makeBackup(parsed: ImportParseResult = { ok: true, sessions: [] }): Backup {
   return {
-    createExport: fn(async () => ({ fileName: 'peak-rm-export-2026-05-12.json', json: '{}' })),
+    // 画面は json を表示に使わないため、中身と件数は独立した固定値でよい
+    createExport: fn(async () => ({
+      fileName: 'peak-rm-export-2026-05-12.json',
+      json: '{}',
+      count: 2,
+    })),
     // 入力を無視して parsed を返す（成功 / 失敗の分岐は stories 側が決める）。
     // parseImport は引数を使わないが、宣言しなくても fn が実引数を記録するので、
     // play 関数は渡された本文を toHaveBeenCalledWith で assert できる

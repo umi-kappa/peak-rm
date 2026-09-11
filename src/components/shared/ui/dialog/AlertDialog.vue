@@ -22,7 +22,8 @@ function onClose() {
 </script>
 
 <template>
-  <BaseDialog :title :inset="24" @cancel="onClose">
+  <!-- 結果を読む前に消えないよう backdrop では閉じない。開いた直後の連打 2 打目は backdrop に落ちる -->
+  <BaseDialog :title :inset="24" :dismiss-on-backdrop="false" @cancel="onClose">
     <template v-if="message" #header>
       <p class="message">{{ message }}</p>
     </template>
