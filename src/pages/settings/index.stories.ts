@@ -239,8 +239,10 @@ export const Behavior: Story = {
     await userEvent.click(canvas.getByRole('button', { name: '閉じる' }))
     await expect(canvas.queryByText('2 件のセッションを読み込みました')).not.toBeInTheDocument()
 
-    // 置換完了のあとも Import を再開できる（confirmImport が直列化のロックを解いている）
+    // 置換完了のあとも Import を再開できる（confirmImport が直列化のロックを解いている）。
+    // 読み取り完了後に出る確認ダイアログを待ってから呼び出し回数を見る
     await selectFile(canvasElement)
+    await expect(await canvas.findByText('2 件のセッションを置き換えますか？')).toBeVisible()
     await expect(backup.parseImport).toHaveBeenCalledTimes(3)
   },
 }
