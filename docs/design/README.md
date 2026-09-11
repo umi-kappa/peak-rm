@@ -1,20 +1,20 @@
 # Design
 
-PeakRM のデザインリファレンス (デザイントークン・画面構造・トーン)。機能仕様とプロダクトコンセプトの実装指針は `../spec.md` を参照。
+PeakRM のデザインリファレンス (デザイントークン・画面構造・トーン)。機能仕様とプロダクトコンセプトの実装指針は [docs/spec.md](../spec.md) を参照。
 
 ## このデザインについて
 
-この README がデザインの上流正本で、ここに書かれたトークンとレイアウト値を `../spec.md`「技術スタック」指定の Vue 3 + Vite + TypeScript、scoped CSS で実装する。Tailwind は使わない。コンポーネント境界は実装側の責務分割に従い、README の語彙 (Card / AppBar 等) を実装名に揃えることはしない (`../conventions.md`「デザイントークン」)。
+この README がデザインの上流正本で、ここに書かれたトークンとレイアウト値をルートの [README.md](../../README.md)「技術スタック」指定の Vue 3 + Vite + TypeScript、scoped CSS で実装する。Tailwind は使わない。コンポーネント境界は実装側の責務分割に従い、README の語彙 (Card / AppBar 等) を実装名に揃えることはしない ([docs/conventions.md](../conventions.md)「デザイントークン」)。
 
 ## Fidelity
 
-**High-fidelity**: 色・タイポグラフィ・スペーシング・インタラクションすべて確定済み。実装はピクセル単位で一致させ、変更時も同じ精度で揃える。デザイントークン (色・フォントサイズ・ウエイト・スペース) には厳密に従い、独自の値や中間サイズを足さない。ここに載っていない値の扱いは `../conventions.md`「デザイントークン」を参照。
+**High-fidelity**: 色・タイポグラフィ・スペーシング・インタラクションすべて確定済み。実装はピクセル単位で一致させ、変更時も同じ精度で揃える。デザイントークン (色・フォントサイズ・ウエイト・スペース) には厳密に従い、独自の値や中間サイズを足さない。ここに載っていない値の扱いは [docs/conventions.md](../conventions.md)「デザイントークン」を参照。
 
 ---
 
 ## Design Tokens
 
-以下の各表がトークン値の正本。実装は `src/styles/tokens.css` の CSS カスタムプロパティとして持つ（命名規則は `../conventions.md`「デザイントークン」）。
+以下の各表がトークン値の正本。実装は `src/styles/tokens.css` の CSS カスタムプロパティとして持つ（命名規則は [docs/conventions.md](../conventions.md)「デザイントークン」）。
 
 ### Color (Dark mode・モノトーン + シアンアクセント)
 
@@ -168,10 +168,10 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 - ヒーロー数値: `82.5` (mono display bold, accent, glow) + `KG` unit
 - 副情報: `× 8` (mono title semibold) + `REPS` unit
 - 中央ラベル: `REPS DONE` (sans body regular)
-- Stepper (large): 実績回数を 0〜99 で調整可能（上限は安全弁、`spec.md` §3）
+- Stepper (large): 実績回数を 0〜99 で調整可能（上限は安全弁、[docs/spec.md](../spec.md) §3）
 - Primary CTA: `COMPLETE SET` (caps mono bold, fill accent)。最終セットでは `FINISH SESSION`
 
-**注意:** この画面に中断ボタンは無い (`spec.md` §3)。中断はインターバル画面から。
+**注意:** この画面に中断ボタンは無い ([docs/spec.md](../spec.md) §3)。中断はインターバル画面から。
 
 ### 4. Interval (`M_Interval`)
 
@@ -244,18 +244,18 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 
 ### グローバル
 
-- 保存済みデータを読む画面 (Home / Menu / Result / History) は、読み込み中も枠・見出し・ラベル・下部 CTA を出したまま値だけを空にする。値が入る場所は空のまま高さを保ち、記録なしの表示 (`—` / `NO LOG` / `NO SESSIONS`) は読み込みが終わってからだけ出す (未読込を未記録に見せない。`../spec.md`「読み込み中の表示」)
+- 保存済みデータを読む画面 (Home / Menu / Result / History) は、読み込み中も枠・見出し・ラベル・下部 CTA を出したまま値だけを空にする。値が入る場所は空のまま高さを保ち、記録なしの表示 (`—` / `NO LOG` / `NO SESSIONS`) は読み込みが終わってからだけ出す (未読込を未記録に見せない。[docs/spec.md](../spec.md)「読み込み中の表示」)
 - 読み込み中の常設ボタン (Menu の `START SESSION`、Result の削除) は消さず、押せない状態で置いたままにする。押せない状態は文字色を 3 次まで落とし、塗りを持つボタンはアクセントの塗りを外して面と枠線をカードと同じ階調に置く
-- すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」(`spec.md` §4)・トレーニング中 / インターバル中からのセッションフロー離脱 (§5)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
+- すべての画面遷移は即時 (確認ダイアログなし)。例外: 破壊的操作には確認ダイアログを振る — インターバルの「中断」([docs/spec.md](../spec.md) §4)・トレーニング中 / インターバル中からのセッションフロー離脱 (§5)・履歴詳細のセッション削除 (§5)・Import の全置換 (§7)
 - タップ feedback: button・stepper はアクティブ時に面・枠線・文字色のいずれかを一段変える (`transition` 300 ms)。どれを変えるかは要素ごとに違う (primary は面 + 文字色、secondary は枠線、stepper とカードは面、Home の History 行はシェブロン)。向きは一段**上げる** (明るくする) 方向に揃える。例外は primary で、アクセントの塗りを外して文字色をアクセントにする反転にする (塗りが既にパレットで最も明るい面のため、上げる余地が無い)。`opacity` は使わない
-- アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る (`../spec.md`「トーンガイド」)
+- アニメーションは控えめ。コンセプト「祝祭演出禁止」を守る ([docs/spec.md](../spec.md)「トーンガイド」)
 
 ### Timer (`M_Interval`)
 
 - セット完了で **自動開始**
 - 0 秒到達時: **音のみで通知**。バイブ・画面遷移は禁止。**通知の手段としての**ハイライトも禁止（停止ボタンの活性表現は除く）
 - 通知音は止めるまで鳴り続ける。**停止ボタン**（`VolumeX`）をタイマー数値の右横に常時置く。鳴っていない間は fg3 に落とし、鳴り始めたら通常色 (fg2) に戻す。数値は中央のまま動かさない
-- 停止するのは音だけで、タイマーは止めない (`spec.md` §4)
+- 停止するのは音だけで、タイマーは止めない ([docs/spec.md](../spec.md) §4)
 - 残り時間は `0:47.32` のように分:秒 + センチ秒で表示 (センチ秒は超過中も含め常に併記)
 - 超過時間を `+0:12` のように分:秒で表示 (上限 `+3:00` で頭打ち)
 - 「次のセットへ」「中断」はタイマー中でも押下可能
@@ -265,24 +265,24 @@ AppBar は Home 以外の全画面で共通: 左に戻る (`IconButton` + Chevro
 - 左 [−] / 右 [+] ボタンタップで刻み分増減
 - 長押しで連続増減 (0.5 s 後から 100 ms 間隔)。1 s 続けたら 1 回あたり 4 刻みに加速し、重量 0.25 kg 刻みの大きな移動を数秒で済ませる
 - 中央値は表示のみ (タップで直接編集はしない)。`tabular-nums` で揃える
-- `0.25 kg` / `1 rep` / `1 set` / `10 sec` の刻みは `spec.md` §2 参照
+- `0.25 kg` / `1 rep` / `1 set` / `10 sec` の刻みは [docs/spec.md](../spec.md) §2 参照
 
 ### Linear Progression アクセント (M_Menu)
 
 - 直前セッションが完遂していれば `LAST SESSION COMPLETED!` バナー + 重量 diff 表示
-- 増量幅: Bench `+2.5 kg` / Squat・Deadlift `+5 kg` (`spec.md` §2)
+- 増量幅: Bench `+2.5 kg` / Squat・Deadlift `+5 kg` ([docs/spec.md](../spec.md) §2)
 
 ### Set Edit Modal (M_Modal)
 
 - 完了セットカード全体のタップで開く（インターバル・結果確認・履歴詳細で共通。カード右端の ✎ は目印）
 - SAVE で確定して閉じる。× ボタンなし
-- 履歴詳細から開いた場合は実績回数は read-only (`spec.md` §3 「実績値の編集ポリシー」)
+- 履歴詳細から開いた場合は実績回数は read-only ([docs/spec.md](../spec.md) §3 「実績値の編集ポリシー」)
 
 ### Visual treatments
 
 - アクセント色を使うすべての数字に neon glow (上記 CSS 参照)
 - mono 数字には常に `font-variant-numeric: tabular-nums` を指定 (Stepper 内で数値の位置がブレないため)
-- Unit ラベルは常に大文字表記 + mono regular (`text-transform` ではなく文字列そのものを大文字で書く。`../conventions.md`「スタイル（CSS）」)
+- Unit ラベルは常に大文字表記 + mono regular (`text-transform` ではなく文字列そのものを大文字で書く。[docs/conventions.md](../conventions.md)「スタイル（CSS）」)
 
 ---
 

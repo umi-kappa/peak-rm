@@ -9,15 +9,15 @@ describe('estimateOneRm', () => {
   })
 
   test('スクワットは w × (1 + r / 33.3) で計算する', () => {
-    expect(estimateOneRm('squat', 100, 8)).toBeCloseTo(100 * (1 + 8 / 33.3))
+    expect(estimateOneRm('squat', 100, 8)).toBeCloseTo(124.024, 3)
   })
 
   test('デッドリフトはスクワットと同じ係数で計算する', () => {
-    expect(estimateOneRm('deadlift', 100, 8)).toBeCloseTo(100 * (1 + 8 / 33.3))
+    expect(estimateOneRm('deadlift', 100, 8)).toBeCloseTo(124.024, 3)
   })
 
   test('reps = 1（有効レンジ下限）は除外せず計算する', () => {
-    expect(estimateOneRm('benchPress', 100, 1)).toBe(100 * (1 + 1 / 40))
+    expect(estimateOneRm('benchPress', 100, 1)).toBeCloseTo(102.5, 3)
   })
 
   test('実績 0 回（スキップ）は 1RM 計算から除外して 0 を返す', () => {
@@ -29,7 +29,7 @@ describe('estimateOneRm', () => {
   })
 
   test('有効レンジ（12）を超える reps も例外を投げず計算する', () => {
-    expect(estimateOneRm('benchPress', 100, 15)).toBe(100 * (1 + 15 / 40))
+    expect(estimateOneRm('benchPress', 100, 15)).toBe(137.5)
   })
 })
 

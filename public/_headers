@@ -1,4 +1,7 @@
 # Cloudflare Pages: 全レスポンスに noindex を付与し検索エンジンのインデックス登録を防ぐ
 # 個人用アプリのため、検索結果に一切表示させない（クロール可否に依存しないヘッダー方式）
+# MIME タイプの推測を防ぎ、別オリジンへ送るリファラーをオリジンのみに制限する
 /*
   X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

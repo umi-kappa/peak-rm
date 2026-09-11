@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { isExercise } from '@/core/constants'
+import { EXERCISE_ORDER, isExercise } from '@/core/constants'
 
 describe('isExercise', () => {
   test('定義済みの全種目を Exercise と判定する', () => {
@@ -20,4 +20,8 @@ describe('isExercise', () => {
     expect(isExercise(['squat'])).toBe(false)
     expect(isExercise(undefined)).toBe(false)
   })
+})
+
+test('EXERCISE_ORDER は benchPress → squat → deadlift の順', () => {
+  expect(EXERCISE_ORDER).toEqual(['benchPress', 'squat', 'deadlift'])
 })

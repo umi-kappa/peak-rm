@@ -11,20 +11,15 @@ const preview: Preview = {
   parameters: {
     // Chromatic snapshot は viewport 1 つ（390px・モバイル前提）のみ。ブラウザは Chrome のみ（デフォルト）。
     chromatic: { viewports: [390] },
+    // Storybook 10 では旧 values / default が無視されるため、options と initialGlobals で背景を指定する。
     backgrounds: {
-      default: 'dark',
-      values: [
-        { name: 'dark', value: '#0a0a0b' },
-        { name: 'surface', value: '#141416' },
-      ],
-    },
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
+      options: {
+        dark: { name: 'Dark', value: 'var(--color-bg)' },
+        surface: { name: 'Surface', value: 'var(--color-bg-light)' },
       },
     },
   },
+  initialGlobals: { backgrounds: { value: 'dark' } },
 }
 
 export default preview

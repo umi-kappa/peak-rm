@@ -61,7 +61,7 @@ installSessionKeepAwake(session, fatalError, wakeLock)
 
 app.mount('#app')
 
-// ITP 自動退避の抑止を最善努力で要求する（spec §7: 初回起動時に要求し、拒否されても機能に影響しない縮退）。
+// ITP 自動退避の抑止を最善努力で要求する（spec §7 データ Export / Import: 初回起動時に要求し、拒否されても機能に影響しない縮退）。
 // 拒否・例外は関数内で握って false を返すため、起動を待たせず投げっぱなしでよい。
 void requestPersistentStorage()
 

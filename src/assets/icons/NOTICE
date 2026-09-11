@@ -26,9 +26,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The following icons used in this project are derived from the Feather project:
 
-arrow-up, check, chevron-left, chevron-right, download, minus, plus, trash-2, upload
+arrow-down, arrow-up, check, chevron-left, chevron-right, download, minus, plus, trash-2, upload, volume-x
 
-（このプロジェクトで使用している lucide アイコンのうち上記 9 種が Feather 由来。
+（このプロジェクトで使用している lucide アイコンのうち上記 11 種が Feather 由来。
 残り settings / history / pen-line / trending-up / file-text は lucide 独自で ISC のみ。）
 
 The MIT License (MIT) (for the icons listed above)

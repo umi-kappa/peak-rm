@@ -7,5 +7,5 @@
     },
     "types": ["vite/client", "node", "vite-svg-loader"]
   },
-  "include": ["src/**/*", "src/**/*.vue", "vite.config.ts", ".storybook/**/*"]
+  "include": ["src/**/*", "src/**/*.vue", "vite.config.ts", "vitest.config.ts", ".storybook/**/*"]
 }

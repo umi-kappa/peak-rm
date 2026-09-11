@@ -75,6 +75,15 @@ describe('永続化シーケンス', () => {
 })
 
 describe('remove', () => {
+  test('存在しない id を渡しても throw せず、他のセッションを消さない', async () => {
+    const session = makeSession('keep', 'benchPress', 1000)
+    await sessionRepo.insert(session)
+
+    await expect(sessionRepo.remove('missing')).resolves.toBeUndefined()
+
+    expect(await db.sessions.toArray()).toEqual([session])
+  })
+
   test('当該 1 件のみ削除し、他セッションに影響しない', async () => {
     await sessionRepo.insert(makeSession('keep', 'benchPress', 1000))
     await sessionRepo.insert(makeSession('gone', 'squat', 2000))

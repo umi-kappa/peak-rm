@@ -4,13 +4,14 @@
 
 ## 正本
 
-- 機能仕様・データモデル・設計判断: `docs/spec.md`
-- 実装・命名・アクセシビリティ・テスト・スタイル規約: `docs/conventions.md`
-- UI・デザイントークン・画面リファレンス: `docs/design/README.md`
-- セットアップと利用可能なコマンド: `README.md` と `package.json`
+- 機能仕様・データモデル・設計判断: [docs/spec.md](docs/spec.md)
+- 設計判断の背景と検討経緯（ADR）: [docs/decisions/](docs/decisions/README.md)
+- 実装・命名・アクセシビリティ・テスト・スタイル規約: [docs/conventions.md](docs/conventions.md)
+- UI・デザイントークン・画面リファレンス: [docs/design/README.md](docs/design/README.md)
+- セットアップ・利用可能なコマンド・技術スタック: [README.md](README.md) と `package.json`
 - 進捗と残作業: GitHub Issues
 
-機能や挙動を変更する前に `docs/spec.md` の該当箇所を、コードを変更する前に `docs/conventions.md` の該当箇所を読む。UI を変更するときは `docs/design/README.md` も読む。仕様と実装が矛盾している場合や、新しいプロダクト判断が必要な場合は、独自に補完せず作業を止めて相談する。
+機能や挙動を変更する前に [docs/spec.md](docs/spec.md) の該当箇所を、コードを変更する前に [docs/conventions.md](docs/conventions.md) の該当箇所を読む。規約や仕様が ADR にリンクしている決定を変えるときは、その ADR も読む。UI を変更するときは [docs/design/README.md](docs/design/README.md) も読む。仕様と実装が矛盾している場合や、新しいプロダクト判断が必要な場合は、独自に補完せず作業を止めて相談する。
 
 ## プロダクトの不変条件
 
@@ -21,7 +22,7 @@
 - 根幹を壊すエラーは握りつぶさず共通エラー境界へ流す。最善努力と仕様で定めた機能だけを局所的に縮退させる
 - 利便性だけを理由に、仕様でスコープ外とされた機能を追加しない
 
-詳細や例外は必ず `docs/spec.md` を優先する。
+詳細や例外は必ず [docs/spec.md](docs/spec.md) を優先する。
 
 ## 作業手順
 
@@ -43,7 +44,7 @@
 - 画面エントリ: `src/pages/`
 - テストと Story は対象ファイルの隣に置く
 
-より詳しい依存方向と配置規則は `docs/conventions.md` を参照する。
+より詳しい依存方向と配置規則は [docs/conventions.md](docs/conventions.md) を参照する。
 
 ## 検証
 

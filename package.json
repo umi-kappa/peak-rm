@@ -2,7 +2,11 @@
   "name": "peak-rm",
   "private": true,
   "version": "0.0.0",
+  "description": "1RM の成長を可視化するシンプルなトレーニングアプリ",
   "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",

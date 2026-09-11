@@ -129,10 +129,10 @@ test('グラフは選択中の種目のセッションから作り、切り替�
   const { chart, selectExercise, load } = useHistory({ repo: makeRepo([deadlift, bench]) })
 
   await load()
-  expect(chart.value?.points).toEqual([{ oneRm: 100 * (1 + 8 / 40), dayLabel: '01/01' }])
+  expect(chart.value?.points).toEqual([{ oneRm: 120, dayLabel: '01/01' }])
 
   selectExercise('deadlift')
-  expect(chart.value?.points).toEqual([{ oneRm: 100 * (1 + 8 / 33.3), dayLabel: '01/02' }])
+  expect(chart.value?.points).toEqual([{ oneRm: expect.closeTo(124.024, 3), dayLabel: '01/02' }])
 })
 
 test('記録が無い種目のグラフは undefined（画面はカードごと出さない）', async () => {

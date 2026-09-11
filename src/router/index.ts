@@ -53,7 +53,7 @@ export type SessionGuard = Pick<SessionStore, 'phase' | 'leave' | 'settled'>
 export type SessionLeaveConfirmGuard = Pick<SessionLeaveConfirmStore, 'request' | 'generation'>
 
 // セッションフロー内の route。フロー外への遷移で実行中セッションを終端させる判定に使う
-const SESSION_FLOW_ROUTES: ReadonlySet<unknown> = new Set(['training', 'interval', 'result'])
+export const SESSION_FLOW_ROUTES: ReadonlySet<unknown> = new Set(['training', 'interval', 'result'])
 
 // 実行中セッションの画面。終端後の再入禁止と、ここからフロー外へ出る遷移の離脱確認に使う
 const ACTIVE_SESSION_ROUTES: ReadonlySet<unknown> = new Set(['training', 'interval'])
