@@ -128,11 +128,12 @@ npm run build    # dist/ に本番ビルド生成
 npm run preview  # build 後の dist/ をローカルで確認
 ```
 
-### Lint / Format
+### Lint / Format / 型チェック
 
 ```bash
 npm run lint          # ESLint で静的解析
 npm run lint:fix      # ESLint の自動修正
+npm run typecheck     # vue-tsc で型とテンプレートを検査
 npm run format        # Prettier で整形
 npm run format:check  # Prettier の差分確認のみ
 ```

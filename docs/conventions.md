@@ -135,6 +135,12 @@ src/
 - **composable は関数単体でなく named なオブジェクトを返す**（`return { goBack }` → `const { goBack } = useBackNavigation()`）。呼び出し側の変数名が composable の意図した名前に揃い、公開項目の追加にも形を変えず対応できる
 - **`computed` の writable 形（`get` / `set` を渡す形）は使わない**。読み取り専用の `computed` と、更新する名前付き関数に分ける（例: `useHistory` の `exercise`（URL から導出）と `selectExercise()`（`router.replace` で URL を書き換え））。使用側は `v-model` の代わりに `:model-value` と `@update:model-value` を分けて渡す
   - 代入式の裏に副作用（router 遷移・永続化）が隠れると、書いた直後に読めない・呼び出し側が同期的な更新だと誤解するため
+- **テンプレートに書いた未知の prop・属性は原則として型エラーになる**（`tsconfig.json` の `vueCompilerOptions.strictTemplates`）。共有プリミティブの prop をリネーム・削除したときの書き換え漏れは `typecheck` が検出する。ただし次の 4 つは検出できないので、該当する prop を変えるときだけ grep で裏取りする
+  - root 要素の属性と同名の prop（`BaseDialog` / `AppBar` の `title`、`BaseButton` の `disabled` など）。root が別のコンポーネントならその子の prop 名も同様（`ConfirmDialog` の `title`、`NavLink` の `to`）。フォールスルー属性（`BaseLabel` の `id`、`BaseButton` の `autofocus`）をそのまま書けるよう `fallthroughAttributes` も有効にしており、root の属性・prop が受け入れ属性として推論されるため、旧 prop 名がそのまま通ってしまう
+  - `<component :is="…">` の動的タグ（`CardButton` / `IconButton` / `TimelineSetCard`）。`:is` が union 型だと props が検査されない
+  - `.stories.ts` の `template:` 文字列。テンプレート検査の対象は SFC の template だけ
+  - `v-bind="{ … }"` のオブジェクト形で渡したキー（次項の抜け道）。スプレッドされたキーは未知でも通る
+- **ライブラリのコンポーネントの型定義が実装にある prop を宣言していないときは、`v-bind` のオブジェクト形で型検査を外して渡す**（vue-chartjs の `Line` の `ariaLabel` を `v-bind="{ ariaLabel: … }"` で渡す）。型検査を外れる理由をコメントに残す
 - **template にインライン式で処理を書かない**（`@back="router.push({ name: 'home' })"` 禁止）。イベントハンドラは script の名前付き関数に切り出す（`@back="goHome"`）。presentational コンポーネント内の単純な emit 転送（`@click="emit('confirm')"`）は例外
 - **同名の prop バインドは same-name shorthand（Vue 3.4+）で書く**（`:open="open"` ではなく `:open`。`:to` / `:name` / `:border` も同様）。バインド先が同名の単純な変数のときだけ使え、別名・メンバー式・リテラル（`:inset="24"`）は通常の記法のまま
 - **単一要素の文字色の階調を切り替える prop は `tone` に統一する**（`BigNumber` の `tone: 'default' | 'accent' | 'tertiary'`、`NumberStepper` の `tone: 'default' | 'accent'`）
