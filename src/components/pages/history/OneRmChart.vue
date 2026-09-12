@@ -20,8 +20,10 @@ const options = computed(() => buildChartOptions(singlePoint.value))
 
 <template>
   <div class="one-rm-chart">
-    <!-- vue-chartjs は canvas に role="img" を付けるため、名前を渡さないと名前無しの画像になる -->
-    <Line :data :options :plugins="chartPlugins" aria-label="Est. 1RM trend" />
+    <!-- vue-chartjs は canvas に role="img" を付けるため、名前を渡さないと名前無しの画像になる。
+         Line の公開型は実装にある ariaLabel prop を宣言していないため、そのまま書くと未知 prop になる。
+         v-bind のオブジェクト形で型検査を外して渡す -->
+    <Line :data :options :plugins="chartPlugins" v-bind="{ ariaLabel: 'Est. 1RM trend' }" />
   </div>
 </template>
 

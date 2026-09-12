@@ -7,5 +7,9 @@
     },
     "types": ["vite/client", "node", "vite-svg-loader"]
   },
+  "vueCompilerOptions": {
+    "strictTemplates": true,
+    "fallthroughAttributes": true
+  },
   "include": ["src/**/*", "src/**/*.vue", "vite.config.ts", "vitest.config.ts", ".storybook/**/*"]
 }

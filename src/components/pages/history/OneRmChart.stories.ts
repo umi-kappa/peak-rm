@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import { expect, within } from 'storybook/test'
 import OneRmChart from '@/components/pages/history/OneRmChart.vue'
 
 const meta: Meta<typeof OneRmChart> = {
@@ -32,4 +33,15 @@ export const Default: Story = {
 // baseline はカードの床として残し、破線ヘルパーは始点と終点が同じ点なので 1 本になる
 export const SinglePoint: Story = {
   args: { values: [99] },
+}
+
+// canvas にアクセシブルネームが付く配線だけを確認する（v-bind のオブジェクト形で渡す ariaLabel は型では捕まらない）。
+// 描画内容の検証は OneRmChart.logic.spec が担う
+export const Behavior: Story = {
+  args: { values: [90, 95, 99] },
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('img', { name: 'Est. 1RM trend' })).toBeVisible()
+  },
 }
